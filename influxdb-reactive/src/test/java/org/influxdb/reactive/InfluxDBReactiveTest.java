@@ -1,23 +1,26 @@
 package org.influxdb.reactive;
 
 import io.reactivex.Maybe;
-import org.influxdb.InfluxDB;
+import okhttp3.RequestBody;
+import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Point;
 import org.influxdb.impl.InfluxDBServiceReactive;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jakub Bednar (bednar@github) (01/06/2018 10:56)
  */
-@Disabled
 @RunWith(JUnitPlatform.class)
 class InfluxDBReactiveTest {
 
@@ -38,8 +41,16 @@ class InfluxDBReactiveTest {
         influxDB = new InfluxDBReactiveImpl(options, influxDBService);
     }
 
+    @AfterEach
+	void finish()
+	{
+		influxDB.close();
+	}
+
     @Test
-    void writePoint() {
+    void writePoint() throws IOException {
+
+        ArgumentCaptor<RequestBody> requestBody = ArgumentCaptor.forClass(RequestBody.class);
 
         Point point = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
@@ -62,6 +73,15 @@ class InfluxDBReactiveTest {
                 Mockito.eq("autogen"),
                 Mockito.any(),
                 Mockito.eq("one"),
-                Mockito.any());
+                requestBody.capture());
+
+        // points
+        Buffer sink = new Buffer();
+        requestBody.getValue().writeTo(sink);
+
+        String expected = "h2o_feet,location=coyote_creek " +
+                "level\\\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+
+        Assertions.assertEquals(expected, sink.readUtf8());
     }
 }

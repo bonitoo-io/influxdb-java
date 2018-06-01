@@ -26,5 +26,5 @@ public interface InfluxDBServiceReactive extends InfluxDBService {
     Single<Response<String>> writePointsReactive(@Query(U) String username,
                                                  @Query(P) String password, @Query(DB) String database,
                                                  @Query(RP) String retentionPolicy, @Query(PRECISION) String precision,
-                                                 @Query(CONSISTENCY) String consistency, @Body RequestBody batchPoints);
+                                                 @Query(CONSISTENCY) String consistency, @Body RequestBody points);
 }

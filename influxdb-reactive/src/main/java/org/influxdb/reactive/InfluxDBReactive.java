@@ -107,4 +107,9 @@ public interface InfluxDBReactive {
      * found.
      */
     <M> Flowable<M> query(@Nonnull final Publisher<Query> query, @Nonnull final Class<M> measurementType);
+
+    /**
+     * Close thread for asynchronous batch writes.
+     */
+    void close();
 }
