@@ -20,30 +20,6 @@ import javax.annotation.Nonnull;
 public interface InfluxDBReactive {
 
     /**
-     * Write a single Point to the default database.
-     *
-     * @param point The point to write
-     * @return {@link Maybe} emitting the saved point.
-     */
-    Maybe<Point> writePoint(@Nonnull final Point point);
-
-    /**
-     * Write a bag of Points to the default database.
-     *
-     * @param points The points to write
-     * @return {@link Flowable} emitting the saved points.
-     */
-    Flowable<Point> writePoints(@Nonnull final Iterable<Point> points);
-
-    /**
-     * Write a stream of Points to the default database.
-     *
-     * @param pointStream The stream of points to write
-     * @return {@link Flowable} emitting the saved points.
-     */
-    Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream);
-
-    /**
      * Write a single Measurement to the default database.
      *
      * @param measurement The measurement to write
@@ -69,6 +45,30 @@ public interface InfluxDBReactive {
      * @return {@link Flowable} emitting the saved measurements.
      */
     <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> pointStream);
+
+    /**
+     * Write a single Point to the default database.
+     *
+     * @param point The point to write
+     * @return {@link Maybe} emitting the saved point.
+     */
+    Maybe<Point> writePoint(@Nonnull final Point point);
+
+    /**
+     * Write a bag of Points to the default database.
+     *
+     * @param points The points to write
+     * @return {@link Flowable} emitting the saved points.
+     */
+    Flowable<Point> writePoints(@Nonnull final Iterable<Point> points);
+
+    /**
+     * Write a stream of Points to the default database.
+     *
+     * @param pointStream The stream of points to write
+     * @return {@link Flowable} emitting the saved points.
+     */
+    Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream);
 
     /**
      * Execute a query against a default database.

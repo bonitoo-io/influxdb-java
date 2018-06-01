@@ -1,6 +1,7 @@
 package org.influxdb;
 
 import okhttp3.OkHttpClient;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -20,6 +21,9 @@ class InfluxDBOptionsTest {
         Assertions.assertEquals("http://influxdb:8086", options.getUrl());
         Assertions.assertNull(options.getPassword());
         Assertions.assertNull(options.getUsername());
+        Assertions.assertNull(options.getDatabase());
+        Assertions.assertEquals("autogen", options.getRetentionPolicy());
+        Assertions.assertEquals(InfluxDB.ConsistencyLevel.ONE, options.getConsistencyLevel());
         Assertions.assertNotNull(options.getOkHttpClient());
     }
 
@@ -32,12 +36,18 @@ class InfluxDBOptionsTest {
                 .url("http://influxdb:8086")
                 .username("admin")
                 .password("password")
+                .database("weather")
+                .retentionPolicy("short-policy")
+                .consistencyLevel(InfluxDB.ConsistencyLevel.ALL)
                 .okHttpClient(okBuilder)
                 .build();
 
         Assertions.assertEquals("http://influxdb:8086", options.getUrl());
         Assertions.assertEquals("admin", options.getUsername());
         Assertions.assertEquals("password", options.getPassword());
+        Assertions.assertEquals("weather", options.getDatabase());
+        Assertions.assertEquals("short-policy", options.getRetentionPolicy());
+        Assertions.assertEquals(InfluxDB.ConsistencyLevel.ALL, options.getConsistencyLevel());
         Assertions.assertEquals(okBuilder, options.getOkHttpClient());
     }
 
@@ -55,6 +65,28 @@ class InfluxDBOptionsTest {
         InfluxDBOptions.Builder builder = InfluxDBOptions.builder();
 
         Assertions.assertThrows(IllegalStateException.class, builder::build);
+    }
+
+    @Test
+    void retentionPolicyNull(){
+
+        InfluxDBOptions options = InfluxDBOptions.builder()
+                .url("http://influxdb:8086")
+                .retentionPolicy(null)
+                .build();
+
+        Assert.assertEquals("autogen", options.getRetentionPolicy());
+    }
+
+    @Test
+    void consistencyLevelNull(){
+
+        InfluxDBOptions options = InfluxDBOptions.builder()
+                .url("http://influxdb:8086")
+                .consistencyLevel(null)
+                .build();
+
+        Assert.assertEquals(InfluxDB.ConsistencyLevel.ONE, options.getConsistencyLevel());
     }
 
     @Test

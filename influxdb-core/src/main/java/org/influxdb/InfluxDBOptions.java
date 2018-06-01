@@ -23,6 +23,10 @@ public final class InfluxDBOptions {
     private String username;
     private String password;
 
+    private String database;
+    private String retentionPolicy;
+    private InfluxDB.ConsistencyLevel consistencyLevel;
+
     private OkHttpClient.Builder okHttpClient;
 
     private InfluxDBOptions(@Nonnull final Builder builder) {
@@ -33,6 +37,10 @@ public final class InfluxDBOptions {
 
         username = builder.username;
         password = builder.password;
+
+        database = builder.database;
+        retentionPolicy = builder.retentionPolicy;
+        consistencyLevel = builder.consistencyLevel;
 
         okHttpClient = builder.okHttpClient;
     }
@@ -71,6 +79,39 @@ public final class InfluxDBOptions {
     }
 
     /**
+     * The database which is used for writing points.
+     *
+     * @return database
+     * @since 3.0.0
+     */
+    @Nullable
+    public String getDatabase() {
+        return database;
+    }
+
+    /**
+     * The retention policy which is used for writing points.
+     *
+     * @return retention policy
+     * @since 3.0.0
+     */
+    @Nonnull
+    public String getRetentionPolicy() {
+        return retentionPolicy;
+    }
+
+    /**
+     * The consistency level which is used for writing points.
+     *
+     * @return retention policy
+     * @since 3.0.0
+     */
+    @Nonnull
+    public InfluxDB.ConsistencyLevel getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    /**
      * The HTTP client to use for communication to InfluxDB.
      *
      * @return okHttpClient
@@ -104,6 +145,10 @@ public final class InfluxDBOptions {
 
         private String username;
         private String password;
+
+        private String database;
+        private String retentionPolicy = "autogen";
+        private InfluxDB.ConsistencyLevel consistencyLevel = InfluxDB.ConsistencyLevel.ONE;
 
         private OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
 
@@ -145,6 +190,53 @@ public final class InfluxDBOptions {
         @Nonnull
         public Builder password(@Nullable final String password) {
             this.password = password;
+            return this;
+        }
+
+        /**
+         * Set the database which is used for writing points.
+         *
+         * @param database the database to set.
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder database(@Nullable final String database) {
+            this.database = database;
+            return this;
+        }
+
+        /**
+         * Set the retention policy which is used for writing points.
+         *
+         * @param retentionPolicy the retention policy to set. It may be null.
+         *                        If null than use default policy "autogen".
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder retentionPolicy(@Nullable final String retentionPolicy) {
+
+            if (retentionPolicy != null) {
+                this.retentionPolicy = retentionPolicy;
+            }
+            return this;
+        }
+
+        /**
+         * Set the consistency level which is used for writing points.
+         *
+         * @param consistencyLevel the consistency level to set. It may be null.
+         *                        If null than use default level {@code InfluxDB.ConsistencyLevel.ONE}.
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder consistencyLevel(@Nullable final InfluxDB.ConsistencyLevel consistencyLevel) {
+
+            if (consistencyLevel != null) {
+                this.consistencyLevel = consistencyLevel;
+            }
             return this;
         }
 

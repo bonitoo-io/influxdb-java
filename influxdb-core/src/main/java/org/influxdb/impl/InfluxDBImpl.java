@@ -113,11 +113,10 @@ public class InfluxDBImpl implements InfluxDB {
                 .username(username)
                 .password(password)
                 .okHttpClient(client)
+                .database(database)
+                .consistencyLevel(consistency)
+                .retentionPolicy(retentionPolicy)
                 .build());
-
-        setConsistency(consistency);
-        setDatabase(database);
-        setRetentionPolicy(retentionPolicy);
     }
 
     public InfluxDBImpl(@Nonnull final InfluxDBOptions options) {
@@ -156,6 +155,10 @@ public class InfluxDBImpl implements InfluxDB {
         } else {
             this.adapter = adapter;
         }
+
+        setConsistency(options.getConsistencyLevel());
+        setDatabase(options.getDatabase());
+        setRetentionPolicy(options.getRetentionPolicy());
     }
 
     private InetAddress parseHostAddress(final String url) {

@@ -3,10 +3,10 @@ package org.influxdb.reactive;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import org.influxdb.InfluxDBOptions;
-import org.influxdb.impl.InfluxDBServiceReactive;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
+import org.influxdb.impl.InfluxDBServiceReactive;
 import org.reactivestreams.Publisher;
 
 import javax.annotation.Nonnull;
@@ -17,6 +17,7 @@ import java.util.Objects;
  */
 class InfluxDBReactiveImpl implements InfluxDBReactive {
 
+    private final InfluxDBOptions options;
     private final InfluxDBServiceReactive influxDBService;
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
@@ -25,22 +26,8 @@ class InfluxDBReactiveImpl implements InfluxDBReactive {
         Objects.requireNonNull(options, "InfluxDBOptions is required");
         Objects.requireNonNull(influxDBService, "InfluxDBServiceReactive is required");
 
+        this.options = options;
         this.influxDBService = influxDBService;
-    }
-
-    @Override
-    public Maybe<Point> writePoint(@Nonnull final Point point) {
-        throw new IllegalStateException("Not implemented");
-    }
-
-    @Override
-    public Flowable<Point> writePoints(@Nonnull final Iterable<Point> points) {
-        throw new IllegalStateException("Not implemented");
-    }
-
-    @Override
-    public Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream) {
-        throw new IllegalStateException("Not implemented");
     }
 
     @Override
@@ -56,6 +43,49 @@ class InfluxDBReactiveImpl implements InfluxDBReactive {
     @Override
     public <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> pointStream) {
         throw new IllegalStateException("Not implemented");
+    }
+
+
+    @Override
+    public Maybe<Point> writePoint(@Nonnull final Point point) {
+
+        return writePoints(Flowable.just(point)).firstElement();
+    }
+
+    @Override
+    public Flowable<Point> writePoints(@Nonnull final Iterable<Point> points) {
+        throw new IllegalStateException("Not implemented");
+    }
+
+    @Override
+    public Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream) {
+
+//        private final PublishProcessor<Point> processor = PublishProcessor.create();
+//        influxDBService.
+//                writePointsReactive(
+//                        options.getUsername(),
+//                        options.getPassword(),
+//                        options.getDatabase(),
+//                        options.getRetentionPolicy(),
+//                        "",
+//                        options.getConsistencyLevel().value(),
+//                        null);
+
+//        processor.window(2).subscribe(onNext ->
+//                {
+//                    onNext.map(Point::lineProtocol).toList().subscribe(points -> {
+//
+//                        String collect = points.stream().collect(Collectors.joining("\\n"));
+//
+//                        System.out.println("collect = " + collect);
+//                    });
+//                },
+//                this::logError,
+//                this::logEnd);
+//
+//        publish = processor.publish();
+
+        return Flowable.fromPublisher(pointStream);
     }
 
     @Override
