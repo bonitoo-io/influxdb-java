@@ -26,10 +26,14 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <!-- Global Dependencies -->
+    <jsr305.version>3.0.2</jsr305.version>
     <!-- Core Dependencies -->
     <retrofit.version>2.4.0</retrofit.version>
     <!-- Test Dependencies -->
     <junit.version>5.2.0</junit.version>
+    <mockito.version>2.18.3</mockito.version>
+    <junit-platform-runner.version>1.2.0</junit-platform-runner.version>
   </properties>
 
   <modules>

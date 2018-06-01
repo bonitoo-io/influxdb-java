@@ -2,17 +2,71 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.influxdb</groupId>
-        <artifactId>influxdb-java-bom</artifactId>
-        <version>3.0-SNAPSHOT</version>
-    </parent>
-
+  <parent>
     <groupId>org.influxdb</groupId>
-    <artifactId>influxdb-reactive</artifactId>
+    <artifactId>influxdb-java-bom</artifactId>
     <version>3.0-SNAPSHOT</version>
+  </parent>
 
+  <artifactId>influxdb-reactive</artifactId>
+
+  <description>The Reactive Java API to access the InfluxDB</description>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.influxdb</groupId>
+      <artifactId>influxdb-java</artifactId>
+      <version>3.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.retrofit2</groupId>
+      <artifactId>adapter-rxjava2</artifactId>
+      <version>${retrofit.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.influxdb</groupId>
+          <artifactId>influxdb-java</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>io.reactivex.rxjava2</groupId>
+      <artifactId>rxjava</artifactId>
+      <version>2.1.14</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>${jsr305.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
     
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-runner</artifactId>
+      <version>${junit-platform-runner.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
 </project>
