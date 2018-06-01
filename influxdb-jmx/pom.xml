@@ -10,9 +10,6 @@
         <version>3.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.influxdb</groupId>
     <artifactId>influxdb-jmx</artifactId>
-    <version>3.0-SNAPSHOT</version>
 
-    
 </project>
