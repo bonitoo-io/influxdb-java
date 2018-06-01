@@ -26,7 +26,9 @@ public enum InfluxDBFactory {
    */
   public static InfluxDB connect(final String url) {
     Preconditions.checkNonEmptyString(url, "url");
-    return new InfluxDBImpl(url, null, null, new OkHttpClient.Builder());
+
+    InfluxDBOptions options = InfluxDBOptions.builder().url(url).build();
+    return new InfluxDBImpl(options);
   }
 
   /**
@@ -44,7 +46,14 @@ public enum InfluxDBFactory {
   public static InfluxDB connect(final String url, final String username, final String password) {
     Preconditions.checkNonEmptyString(url, "url");
     Preconditions.checkNonEmptyString(username, "username");
-    return new InfluxDBImpl(url, username, password, new OkHttpClient.Builder());
+
+    InfluxDBOptions options = InfluxDBOptions.builder()
+            .url(url)
+            .username(username)
+            .password(password)
+            .build();
+
+    return new InfluxDBImpl(options);
   }
 
   /**
@@ -59,7 +68,13 @@ public enum InfluxDBFactory {
   public static InfluxDB connect(final String url, final OkHttpClient.Builder client) {
     Preconditions.checkNonEmptyString(url, "url");
     Objects.requireNonNull(client, "client");
-    return new InfluxDBImpl(url, null, null, client);
+
+    InfluxDBOptions options = InfluxDBOptions.builder()
+            .url(url)
+            .okHttpClient(client)
+            .build();
+
+    return new InfluxDBImpl(options);
   }
 
   /**
@@ -81,6 +96,14 @@ public enum InfluxDBFactory {
     Preconditions.checkNonEmptyString(url, "url");
     Preconditions.checkNonEmptyString(username, "username");
     Objects.requireNonNull(client, "client");
-    return new InfluxDBImpl(url, username, password, client);
+
+    InfluxDBOptions options = InfluxDBOptions.builder()
+            .url(url)
+            .username(username)
+            .password(password)
+            .okHttpClient(client)
+            .build();
+
+    return new InfluxDBImpl(options);
   }
 }
