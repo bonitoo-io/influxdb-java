@@ -6,12 +6,9 @@ import io.reactivex.Single;
 import okhttp3.RequestBody;
 import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
-import org.influxdb.annotation.Column;
-import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.Point;
 import org.influxdb.impl.InfluxDBServiceReactive;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -22,11 +19,13 @@ import retrofit2.Response;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * @author Jakub Bednar (bednar@github) (01/06/2018 10:56)
@@ -52,7 +51,7 @@ class InfluxDBReactiveTest {
 
         requestBody = ArgumentCaptor.forClass(RequestBody.class);
 
-        Mockito.doAnswer(invocation -> Single.just(Response.success(null))).when(influxDBService).writePointsReactive(
+        Mockito.doAnswer(invocation -> Single.just(Response.success(null))).when(influxDBService).writePoints(
                 Mockito.eq("admin"),
                 Mockito.eq("password"),
                 Mockito.eq("weather"),
@@ -63,7 +62,7 @@ class InfluxDBReactiveTest {
     }
 
     @AfterEach
-    void finish() {
+    void cleanUp() {
         influxDB.close();
     }
 
@@ -73,7 +72,7 @@ class InfluxDBReactiveTest {
         Point point = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
                 .addField("water_level", 2.927)
-                .addField("level\\ description", "below 3 feet")
+                .addField("level description", "below 3 feet")
                 .time(1440046800, TimeUnit.NANOSECONDS)
                 .build();
 
@@ -85,10 +84,10 @@ class InfluxDBReactiveTest {
 
         // written point
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
         String actual = pointsBody(requestBody);
 
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -97,14 +96,14 @@ class InfluxDBReactiveTest {
         Point point1 = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
                 .addField("water_level", 2.927)
-                .addField("level\\ description", "below 3 feet")
+                .addField("level description", "below 3 feet")
                 .time(1440046800, TimeUnit.NANOSECONDS)
                 .build();
 
         Point point2 = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
                 .addField("water_level", 1.927)
-                .addField("level\\ description", "below 2 feet")
+                .addField("level description", "below 2 feet")
                 .time(1440049800, TimeUnit.NANOSECONDS)
                 .build();
 
@@ -121,14 +120,14 @@ class InfluxDBReactiveTest {
 
         // written points
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
         String actual = pointsBody(requestBody, 0);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 2 feet\",water_level=1.927 1440049800";
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
         actual = pointsBody(requestBody, 1);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -137,21 +136,21 @@ class InfluxDBReactiveTest {
         Point point1 = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
                 .addField("water_level", 2.927)
-                .addField("level\\ description", "below 3 feet")
+                .addField("level description", "below 3 feet")
                 .time(1440046800, TimeUnit.NANOSECONDS)
                 .build();
 
         Point point2 = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
                 .addField("water_level", 1.927)
-                .addField("level\\ description", "below 2 feet")
+                .addField("level description", "below 2 feet")
                 .time(1440049800, TimeUnit.NANOSECONDS)
                 .build();
 
         Point point3 = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
                 .addField("water_level", 5.927)
-                .addField("level\\ description", "over 5 feet")
+                .addField("level description", "over 5 feet")
                 .time(1440052800, TimeUnit.NANOSECONDS)
                 .build();
 
@@ -165,56 +164,56 @@ class InfluxDBReactiveTest {
 
         // written points
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
         String actual = pointsBody(requestBody, 0);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 2 feet\",water_level=1.927 1440049800";
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
         actual = pointsBody(requestBody, 1);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"over 5 feet\",water_level=5.927 1440052800";
+                "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
         actual = pointsBody(requestBody, 2);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void writeMeasurement() {
 
-        H20Feet measurement = new H20Feet(
+        H2OFeetMeasurement measurement = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046800L);
 
         // response
-        Maybe<H20Feet> measurementMaybe = influxDB.writeMeasurement(measurement);
+        Maybe<H2OFeetMeasurement> measurementMaybe = influxDB.writeMeasurement(measurement);
         measurementMaybe.test()
                 .assertSubscribed()
                 .assertValue(measurement);
 
         // written measurement
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
         String actual = pointsBody(requestBody);
 
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void writeMeasurementsIterable() {
 
-        H20Feet measurement1 = new H20Feet(
+        H2OFeetMeasurement measurement1 = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046800L);
 
-        H20Feet measurement2 = new H20Feet(
+        H2OFeetMeasurement measurement2 = new H2OFeetMeasurement(
                 "coyote_creek", 1.927, "below 2 feet", 1440049800L);
 
-        List<H20Feet> measurements = new ArrayList<>();
+        List<H2OFeetMeasurement> measurements = new ArrayList<>();
         measurements.add(measurement1);
         measurements.add(measurement2);
 
         // response
-        Flowable<H20Feet> measurementsFlowable = influxDB.writeMeasurements(measurements);
+        Flowable<H2OFeetMeasurement> measurementsFlowable = influxDB.writeMeasurements(measurements);
         measurementsFlowable.test()
                 .assertSubscribed()
                 .assertValueAt(0, measurement1)
@@ -222,30 +221,30 @@ class InfluxDBReactiveTest {
 
         // written measurements
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
         String actual = pointsBody(requestBody, 0);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 2 feet\",water_level=1.927 1440049800";
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
         actual = pointsBody(requestBody, 1);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     void writeMeasurementsPublisher() {
 
-        H20Feet measurement1 = new H20Feet(
+        H2OFeetMeasurement measurement1 = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046800L);
 
-        H20Feet measurement2 = new H20Feet(
+        H2OFeetMeasurement measurement2 = new H2OFeetMeasurement(
                 "coyote_creek", 1.927, "below 2 feet", 1440049800L);
 
-        H20Feet measurement3 = new H20Feet(
+        H2OFeetMeasurement measurement3 = new H2OFeetMeasurement(
                 "coyote_creek", 5.927, "over 5 feet", 1440052800L);
 
         // response
-        Flowable<H20Feet> measurementsFlowable = influxDB
+        Flowable<H2OFeetMeasurement> measurementsFlowable = influxDB
                 .writeMeasurements(Flowable.just(measurement1, measurement2, measurement3));
 
         measurementsFlowable.test()
@@ -256,19 +255,19 @@ class InfluxDBReactiveTest {
 
         // written measurements
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
         String actual = pointsBody(requestBody, 0);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"below 2 feet\",water_level=1.927 1440049800";
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
         actual = pointsBody(requestBody, 1);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\\\ description=\"over 5 feet\",water_level=5.927 1440052800";
+                "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
         actual = pointsBody(requestBody, 2);
-        Assertions.assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Nonnull
@@ -280,7 +279,8 @@ class InfluxDBReactiveTest {
     private String pointsBody(@Nonnull final ArgumentCaptor<RequestBody> requestBody,
                               @Nonnull final Integer captureValueIndex) {
 
-        Assertions.assertNotNull(requestBody);
+        Objects.requireNonNull(requestBody, "RequestBody is required");
+        Objects.requireNonNull(captureValueIndex, "CaptureValueIndex is required");
 
         Buffer sink = new Buffer();
         try {
@@ -289,45 +289,5 @@ class InfluxDBReactiveTest {
             throw new RuntimeException(e);
         }
         return sink.readUtf8();
-    }
-
-    @Measurement(name = "h2o_feet", timeUnit = TimeUnit.NANOSECONDS)
-    public static class H20Feet {
-
-        @Column(name = "location", tag = true)
-        private String location;
-
-        @Column(name = "water_level")
-        private Double level;
-
-        @Column(name = "level\\ description")
-        private String description;
-
-        @Column(name = "time")
-        private Instant time;
-
-        H20Feet(String location, Double level, String description, Long time) {
-            this.location = location;
-            this.level = level;
-            this.description = description;
-            this.time = Instant.ofEpochMilli(time);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof H20Feet)) return false;
-            H20Feet h20Feet = (H20Feet) o;
-            return Objects.equals(location, h20Feet.location) &&
-                    Objects.equals(level, h20Feet.level) &&
-                    Objects.equals(description, h20Feet.description) &&
-                    Objects.equals(time, h20Feet.time);
-        }
-
-        @Override
-        public int hashCode() {
-
-            return Objects.hash(location, level, description, time);
-        }
     }
 }

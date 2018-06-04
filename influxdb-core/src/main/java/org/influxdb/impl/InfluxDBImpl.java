@@ -2,14 +2,12 @@ package org.influxdb.impl;
 
 
 import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor.Level;
 import okio.BufferedSource;
 import org.influxdb.BatchOptions;
@@ -28,8 +26,6 @@ import org.influxdb.impl.BatchProcessor.UdpBatchEntry;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.moshi.MoshiConverterFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +39,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +52,7 @@ import java.util.function.Consumer;
  *
  * @author stefan.majer [at] gmail.com
  */
-public class InfluxDBImpl implements InfluxDB {
+public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements InfluxDB {
 
     static final okhttp3.MediaType MEDIA_TYPE_STRING = MediaType.parse("text/plain");
 
@@ -66,18 +61,12 @@ public class InfluxDBImpl implements InfluxDB {
     private final InetAddress hostAddress;
     private final String username;
     private final String password;
-    private final Retrofit retrofit;
-    private final InfluxDBService influxDBService;
     private BatchProcessor batchProcessor;
     private final AtomicBoolean batchEnabled = new AtomicBoolean(false);
     private final LongAdder writeCount = new LongAdder();
     private final LongAdder unBatchedCount = new LongAdder();
     private final LongAdder batchedCount = new LongAdder();
     private volatile DatagramSocket datagramSocket;
-    private final HttpLoggingInterceptor loggingInterceptor;
-    private final GzipRequestInterceptor gzipRequestInterceptor;
-    private LogLevel logLevel = LogLevel.NONE;
-    private JsonAdapter<QueryResult> adapter;
     private String database;
     private String retentionPolicy = "autogen";
     private ConsistencyLevel consistency = ConsistencyLevel.ONE;
@@ -127,34 +116,11 @@ public class InfluxDBImpl implements InfluxDB {
                          @Nullable final InfluxDBService service,
                          @Nullable final JsonAdapter<QueryResult> adapter) {
 
-        Objects.requireNonNull(options, "InfluxDBOptions is required");
+        super(InfluxDBService.class, options, service, adapter);
 
         this.hostAddress = parseHostAddress(options.getUrl());
         this.username = options.getUsername();
         this.password = options.getPassword();
-        this.loggingInterceptor = new HttpLoggingInterceptor();
-        this.loggingInterceptor.setLevel(Level.NONE);
-        this.gzipRequestInterceptor = new GzipRequestInterceptor();
-        this.retrofit = new Retrofit.Builder()
-                .baseUrl(options.getUrl())
-                .client(options.getOkHttpClient()
-                        .addInterceptor(loggingInterceptor)
-                        .addInterceptor(gzipRequestInterceptor).build())
-                .addConverterFactory(MoshiConverterFactory.create())
-                .build();
-
-        if (service == null) {
-            this.influxDBService = this.retrofit.create(InfluxDBService.class);
-        } else {
-            this.influxDBService = service;
-        }
-
-        if (adapter == null) {
-            Moshi moshi = new Moshi.Builder().build();
-            this.adapter = moshi.adapter(QueryResult.class);
-        } else {
-            this.adapter = adapter;
-        }
 
         setConsistency(options.getConsistencyLevel());
         setDatabase(options.getDatabase());

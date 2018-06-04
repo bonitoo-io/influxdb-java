@@ -2,6 +2,7 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.processors.PublishProcessor;
@@ -14,14 +15,21 @@ import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
+import org.influxdb.impl.AbstractInfluxDB;
 import org.influxdb.impl.InfluxDBServiceReactive;
+import org.influxdb.impl.TimeUtil;
 import org.reactivestreams.Publisher;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -29,25 +37,27 @@ import java.util.stream.Collectors;
 /**
  * @author Jakub Bednar (bednar@github) (01/06/2018 10:37)
  */
-class InfluxDBReactiveImpl implements InfluxDBReactive {
+class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReactive> implements InfluxDBReactive {
 
     private static final okhttp3.MediaType MEDIA_TYPE_STRING = MediaType.parse("text/plain");
 
     private final InfluxDBOptions options;
-    private final InfluxDBServiceReactive influxDBService;
     private final PublishProcessor<Point> processor;
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
-                         @Nonnull final InfluxDBServiceReactive influxDBService) {
+                         @Nullable final InfluxDBServiceReactive influxDBService) {
 
-        Objects.requireNonNull(options, "InfluxDBOptions is required");
-        Objects.requireNonNull(influxDBService, "InfluxDBServiceReactive is required");
+        super(InfluxDBServiceReactive.class, options, influxDBService, null);
 
         this.options = options;
-        this.influxDBService = influxDBService;
 
         this.processor = PublishProcessor.create();
         this.processor.buffer(1).subscribe(new WritePointsConsumer());
+    }
+
+    @Override
+    protected void configure(@Nonnull final Retrofit.Builder builder) {
+        builder.addCallAdapterFactory(RxJava2CallAdapterFactory.create());
     }
 
     @Override
@@ -146,10 +156,13 @@ class InfluxDBReactiveImpl implements InfluxDBReactive {
             InfluxDB.ConsistencyLevel consistencyLevel = options.getConsistencyLevel();
             String retentionPolicy = options.getRetentionPolicy();
 
-            influxDBService.writePointsReactive(
+            Single<Response<String>> responseSingle = influxDBService.writePoints(
                     username, password, database,
-                    retentionPolicy, "", consistencyLevel.value(),
+                    retentionPolicy, TimeUtil.toTimePrecision(TimeUnit.MILLISECONDS), consistencyLevel.value(),
                     body);
+
+            //TODO notify success, fail
+            responseSingle.subscribe();
         }
     }
 

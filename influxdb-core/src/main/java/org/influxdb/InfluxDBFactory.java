@@ -5,6 +5,7 @@ import org.influxdb.impl.InfluxDBImpl;
 import okhttp3.OkHttpClient;
 import org.influxdb.impl.Preconditions;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 
@@ -27,8 +28,11 @@ public enum InfluxDBFactory {
   public static InfluxDB connect(final String url) {
     Preconditions.checkNonEmptyString(url, "url");
 
-    InfluxDBOptions options = InfluxDBOptions.builder().url(url).build();
-    return new InfluxDBImpl(options);
+    InfluxDBOptions options = InfluxDBOptions.builder()
+            .url(url)
+            .build();
+
+    return connect(options);
   }
 
   /**
@@ -53,7 +57,7 @@ public enum InfluxDBFactory {
             .password(password)
             .build();
 
-    return new InfluxDBImpl(options);
+    return connect(options);
   }
 
   /**
@@ -74,7 +78,7 @@ public enum InfluxDBFactory {
             .okHttpClient(client)
             .build();
 
-    return new InfluxDBImpl(options);
+    return connect(options);
   }
 
   /**
@@ -104,6 +108,18 @@ public enum InfluxDBFactory {
             .okHttpClient(client)
             .build();
 
+    return connect(options);
+  }
+
+  /**
+   * Create a connection to a InfluxDB.
+   *
+   * @param options Various settings to control the behavior of a {@code InfluxDB}.
+   * @return a InfluxDB adapter suitable to access a InfluxDB.
+   */
+  public static InfluxDB connect(@Nonnull final InfluxDBOptions options) {
+
+    Objects.requireNonNull(options, "InfluxDBOptions is required");
     return new InfluxDBImpl(options);
   }
 }
