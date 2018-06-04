@@ -3,11 +3,14 @@ package org.influxdb.reactive;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.processors.PublishProcessor;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBOptions;
+import org.influxdb.annotation.Column;
+import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
@@ -15,8 +18,12 @@ import org.influxdb.impl.InfluxDBServiceReactive;
 import org.reactivestreams.Publisher;
 
 import javax.annotation.Nonnull;
+import java.lang.reflect.Field;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -45,39 +52,56 @@ class InfluxDBReactiveImpl implements InfluxDBReactive {
 
     @Override
     public <M> Maybe<M> writeMeasurement(@Nonnull final M measurement) {
-        throw new IllegalStateException("Not implemented");
+
+        Objects.requireNonNull(measurement, "Measurement is required");
+
+        return writeMeasurements(Flowable.just(measurement)).firstElement();
     }
 
     @Override
     public <M> Flowable<M> writeMeasurements(@Nonnull final Iterable<M> measurements) {
-        throw new IllegalStateException("Not implemented");
+
+        Objects.requireNonNull(measurements, "Measurements are required");
+
+        return writeMeasurements(Flowable.fromIterable(measurements));
     }
 
     @Override
-    public <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> pointStream) {
-        throw new IllegalStateException("Not implemented");
-    }
+    public <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> measurementStream) {
 
+        Objects.requireNonNull(measurementStream, "Measurement stream is required");
+
+        Flowable<M> emitting = Flowable.fromPublisher(measurementStream);
+        writePoints(emitting.map(new MeasurementToPoint<>()));
+
+        return emitting;
+    }
 
     @Override
     public Maybe<Point> writePoint(@Nonnull final Point point) {
+
+        Objects.requireNonNull(point, "Point is required");
 
         return writePoints(Flowable.just(point)).firstElement();
     }
 
     @Override
     public Flowable<Point> writePoints(@Nonnull final Iterable<Point> points) {
-        throw new IllegalStateException("Not implemented");
+
+        Objects.requireNonNull(points, "Points are required");
+
+        return writePoints(Flowable.fromIterable(points));
     }
 
     @Override
     public Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream) {
 
-        Flowable<Point> emmitting = Flowable.fromPublisher(pointStream);
+        Objects.requireNonNull(pointStream, "Point stream is required");
 
-        emmitting.subscribe(processor::onNext);
+        Flowable<Point> emitting = Flowable.fromPublisher(pointStream);
+        emitting.subscribe(processor::onNext);
 
-        return emmitting;
+        return emitting;
     }
 
     @Override
@@ -126,6 +150,71 @@ class InfluxDBReactiveImpl implements InfluxDBReactive {
                     username, password, database,
                     retentionPolicy, "", consistencyLevel.value(),
                     body);
+        }
+    }
+
+    /**
+     * Just a proof of concept.
+     * <p>
+     * TODO caching, testing, ...
+     */
+    private static class MeasurementToPoint<M> implements Function<M, Point> {
+
+        private static final Logger LOG = Logger.getLogger(MeasurementToPoint.class.getName());
+
+        @Override
+        public Point apply(final M measurement) {
+
+            Measurement def = measurement.getClass().getAnnotation(Measurement.class);
+
+            Point.Builder point = Point.measurement(def.name());
+
+            for (Field field : measurement.getClass().getDeclaredFields()) {
+
+                Column column = field.getAnnotation(Column.class);
+                if (column != null) {
+
+                    String name = column.name();
+                    Object value = null;
+
+                    try {
+                        field.setAccessible(true);
+                        value = field.get(measurement);
+                    } catch (IllegalAccessException e) {
+
+                        LOG.log(Level.WARNING,
+                                "Field {0} of {1} is not accessible",
+                                new Object[]{field.getName(), measurement});
+                    }
+
+                    if (value == null) {
+                        LOG.log(Level.FINEST, "Field {0} of {1} has null value",
+                                new Object[]{field.getName(), measurement});
+
+                        continue;
+                    }
+
+                    if (column.tag()) {
+                        point.tag(name, value.toString());
+                    } else if (Instant.class.isAssignableFrom(field.getType())) {
+
+                        point.time(((Instant) value).toEpochMilli(), def.timeUnit());
+                    } else {
+
+                        if (Double.class.isAssignableFrom(value.getClass())) {
+                            point.addField(name, (Double) value);
+                        } else if (Number.class.isAssignableFrom(value.getClass())) {
+
+                            point.addField(name, (Number) value);
+                        } else if (String.class.isAssignableFrom(value.getClass())) {
+
+                            point.addField(name, (String) value);
+                        }
+                    }
+                }
+            }
+
+            return point.build();
         }
     }
 }

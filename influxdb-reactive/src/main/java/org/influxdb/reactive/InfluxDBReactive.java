@@ -40,11 +40,11 @@ public interface InfluxDBReactive {
     /**
      * Write a stream of Measurements to the default database.
      *
-     * @param pointStream The stream of measurements to write
+     * @param measurementStream The stream of measurements to write
      * @param <M>         The type of the measurement (POJO)
      * @return {@link Flowable} emitting the saved measurements.
      */
-    <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> pointStream);
+    <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> measurementStream);
 
     /**
      * Write a single Point to the default database.
