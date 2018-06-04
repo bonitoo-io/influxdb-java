@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
  * Proof-of-concept API.
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)
+ * @since 3.0.0
  */
 @Experimental
 public interface InfluxDBReactive {
@@ -41,7 +42,7 @@ public interface InfluxDBReactive {
      * Write a stream of Measurements to the default database.
      *
      * @param measurementStream The stream of measurements to write
-     * @param <M>         The type of the measurement (POJO)
+     * @param <M>               The type of the measurement (POJO)
      * @return {@link Flowable} emitting the saved measurements.
      */
     <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> measurementStream);

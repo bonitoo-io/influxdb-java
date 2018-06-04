@@ -1,4 +1,4 @@
-package org.influxdb.reactive;
+package org.influxdb.impl;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
@@ -15,9 +15,8 @@ import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
-import org.influxdb.impl.AbstractInfluxDB;
-import org.influxdb.impl.InfluxDBServiceReactive;
-import org.influxdb.impl.TimeUtil;
+import org.influxdb.reactive.BatchOptionsReactive;
+import org.influxdb.reactive.InfluxDBReactive;
 import org.reactivestreams.Publisher;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -37,15 +36,22 @@ import java.util.stream.Collectors;
 /**
  * @author Jakub Bednar (bednar@github) (01/06/2018 10:37)
  */
-class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReactive> implements InfluxDBReactive {
+public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReactive> implements InfluxDBReactive {
 
     private static final okhttp3.MediaType MEDIA_TYPE_STRING = MediaType.parse("text/plain");
 
     private final InfluxDBOptions options;
     private final PublishProcessor<Point> processor;
 
-    InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
-                         @Nullable final InfluxDBServiceReactive influxDBService) {
+    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
+                                @Nullable final InfluxDBServiceReactive influxDBService) {
+
+        this(options, BatchOptionsReactive.DEFAULTS, influxDBService);
+    }
+
+    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
+                                @Nonnull final BatchOptionsReactive batchOptions,
+                                @Nullable final InfluxDBServiceReactive influxDBService) {
 
         super(InfluxDBServiceReactive.class, options, influxDBService, null);
 

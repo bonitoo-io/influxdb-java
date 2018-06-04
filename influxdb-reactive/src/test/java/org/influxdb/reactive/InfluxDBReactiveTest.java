@@ -7,6 +7,7 @@ import okhttp3.RequestBody;
 import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Point;
+import org.influxdb.impl.InfluxDBReactiveImpl;
 import org.influxdb.impl.InfluxDBServiceReactive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,7 @@ class InfluxDBReactiveTest {
                 .build();
 
         InfluxDBServiceReactive influxDBService = Mockito.mock(InfluxDBServiceReactive.class);
-        influxDB = new InfluxDBReactiveImpl(options, influxDBService);
+        influxDB = new InfluxDBReactiveImpl(options, BatchOptionsReactive.DISABLED, influxDBService);
 
         requestBody = ArgumentCaptor.forClass(RequestBody.class);
 
