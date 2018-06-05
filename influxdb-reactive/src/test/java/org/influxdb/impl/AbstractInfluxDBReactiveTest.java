@@ -1,11 +1,11 @@
-package org.influxdb.reactive;
+package org.influxdb.impl;
 
 import io.reactivex.Single;
 import okhttp3.RequestBody;
 import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
-import org.influxdb.impl.InfluxDBReactiveImpl;
-import org.influxdb.impl.InfluxDBServiceReactive;
+import org.influxdb.reactive.BatchOptionsReactive;
+import org.influxdb.reactive.InfluxDBReactive;
 import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -18,14 +18,14 @@ import java.util.Objects;
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 07:04)
  */
-abstract class AbstractInfluxDBReactiveTest {
+public abstract class AbstractInfluxDBReactiveTest {
 
-    InfluxDBReactive influxDB;
-    InfluxDBServiceReactive influxDBService;
+    protected InfluxDBReactive influxDB;
+    protected InfluxDBServiceReactive influxDBService;
 
-    ArgumentCaptor<RequestBody> requestBody;
+    protected ArgumentCaptor<RequestBody> requestBody;
 
-    void setUp(@Nonnull final BatchOptionsReactive batchOptions) {
+    protected void setUp(@Nonnull final BatchOptionsReactive batchOptions) {
 
         Objects.requireNonNull(batchOptions, "BatchOptionsReactive is required");
 
@@ -57,12 +57,12 @@ abstract class AbstractInfluxDBReactiveTest {
     }
 
     @Nonnull
-    String pointsBody() {
+    protected String pointsBody() {
         return pointsBody(0);
     }
 
     @Nonnull
-    String pointsBody(@Nonnull final Integer captureValueIndex) {
+    protected String pointsBody(@Nonnull final Integer captureValueIndex) {
 
         Objects.requireNonNull(captureValueIndex, "CaptureValueIndex is required");
 

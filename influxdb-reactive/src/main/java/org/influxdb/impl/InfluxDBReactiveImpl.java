@@ -5,6 +5,7 @@ import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.internal.util.ArrayListSupplier;
 import io.reactivex.processors.PublishProcessor;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -49,16 +50,26 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         this(options, BatchOptionsReactive.DEFAULTS, influxDBService);
     }
 
-    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
-                                @Nonnull final BatchOptionsReactive batchOptions,
-                                @Nullable final InfluxDBServiceReactive influxDBService) {
+    InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
+                         @Nonnull final BatchOptionsReactive batchOptions,
+                         @Nullable final InfluxDBServiceReactive influxDBService) {
 
         super(InfluxDBServiceReactive.class, options, influxDBService, null);
 
         this.options = options;
 
         this.processor = PublishProcessor.create();
-        this.processor.buffer(batchOptions.getActions()).subscribe(new WritePointsConsumer());
+        this.processor
+                //
+                // Batching
+                //
+                .buffer(batchOptions.getFlushDuration(), TimeUnit.MILLISECONDS,
+                        batchOptions.getBatchingScheduler(),
+                        batchOptions.getActions(),
+                        ArrayListSupplier.asCallable(),
+                        true)
+                .filter(it -> !it.isEmpty())
+                .subscribe(new WritePointsConsumer());
     }
 
     @Override

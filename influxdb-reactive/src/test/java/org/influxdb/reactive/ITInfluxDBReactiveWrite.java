@@ -2,15 +2,10 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.TestScheduler;
-import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
-import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
-import org.influxdb.impl.InfluxDBReactiveImpl;
+import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
 import org.influxdb.impl.InfluxDBResultMapper;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -25,38 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jakub Bednar (bednar@github) (04/06/2018 10:06)
  */
 @RunWith(JUnitPlatform.class)
-class ITInfluxDBReactiveWrite {
-
-    private static final String DATABASE_NAME = "reactive_database";
-
-    private InfluxDB influxDBCore;
-    private InfluxDBReactive influxDBReactive;
-
-    @BeforeEach
-    void setUp() {
-
-        String influxdbIP = System.getenv().getOrDefault("INFLUXDB_IP", "127.0.0.1");
-        String influxdbPort = System.getenv().getOrDefault("INFLUXDB_PORT_API", "8086");
-
-        InfluxDBOptions options = InfluxDBOptions.builder()
-                .url("http://" + influxdbIP + ":" + influxdbPort)
-                .username("admin")
-                .password("admin")
-                .database(DATABASE_NAME)
-                .build();
-
-        influxDBCore = InfluxDBFactory.connect(options);
-        influxDBCore.query(new Query("CREATE DATABASE " + DATABASE_NAME, null));
-
-        influxDBReactive = new InfluxDBReactiveImpl(options, BatchOptionsReactive.DISABLED, null);
-    }
-
-    @AfterEach
-    void cleanUp() {
-        influxDBReactive.close();
-        influxDBCore.query(new Query("DROP DATABASE " + DATABASE_NAME, null));
-        influxDBCore.close();
-    }
+class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
 
     @Test
     void write() {

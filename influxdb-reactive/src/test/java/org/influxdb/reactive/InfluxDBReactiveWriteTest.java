@@ -3,6 +3,7 @@ package org.influxdb.reactive;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import org.influxdb.dto.Point;
+import org.influxdb.impl.AbstractInfluxDBReactiveTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
