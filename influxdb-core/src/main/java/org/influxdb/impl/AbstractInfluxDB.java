@@ -18,7 +18,7 @@ import java.util.Objects;
  */
 public abstract class AbstractInfluxDB<T> {
 
-    protected final T influxDBService;
+    final T influxDBService;
 
     final HttpLoggingInterceptor loggingInterceptor;
 
@@ -27,10 +27,10 @@ public abstract class AbstractInfluxDB<T> {
     InfluxDB.LogLevel logLevel = InfluxDB.LogLevel.NONE;
     JsonAdapter<QueryResult> adapter;
 
-    public AbstractInfluxDB(@Nonnull final Class<T> influxDBServiceClass,
-                            @Nonnull final InfluxDBOptions options,
-                            @Nullable final T service,
-                            @Nullable final JsonAdapter<QueryResult> adapter) {
+    AbstractInfluxDB(@Nonnull final Class<T> influxDBServiceClass,
+                     @Nonnull final InfluxDBOptions options,
+                     @Nullable final T service,
+                     @Nullable final JsonAdapter<QueryResult> adapter) {
 
         Objects.requireNonNull(options, "InfluxDBOptions is required");
 

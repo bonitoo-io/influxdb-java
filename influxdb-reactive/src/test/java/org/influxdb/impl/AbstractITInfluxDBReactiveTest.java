@@ -9,6 +9,8 @@ import org.influxdb.reactive.InfluxDBReactive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 09:14)
  */
@@ -30,6 +32,7 @@ public abstract class AbstractITInfluxDBReactiveTest {
                 .username("admin")
                 .password("admin")
                 .database(DATABASE_NAME)
+                .precision(TimeUnit.MILLISECONDS)
                 .build();
 
         influxDBCore = InfluxDBFactory.connect(options);

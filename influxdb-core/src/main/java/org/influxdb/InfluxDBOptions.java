@@ -1,5 +1,6 @@
 package org.influxdb;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import org.influxdb.impl.Preconditions;
 
@@ -7,6 +8,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Various settings to control the behavior of a {@code InfluxDB}.
@@ -27,6 +30,9 @@ public final class InfluxDBOptions {
     private String retentionPolicy;
     private InfluxDB.ConsistencyLevel consistencyLevel;
 
+    private TimeUnit precision;
+    private MediaType mediaType;
+
     private OkHttpClient.Builder okHttpClient;
 
     private InfluxDBOptions(@Nonnull final Builder builder) {
@@ -38,9 +44,13 @@ public final class InfluxDBOptions {
         username = builder.username;
         password = builder.password;
 
+
         database = builder.database;
         retentionPolicy = builder.retentionPolicy;
         consistencyLevel = builder.consistencyLevel;
+
+        precision = builder.precision;
+        mediaType = builder.mediaType;
 
         okHttpClient = builder.okHttpClient;
     }
@@ -112,6 +122,28 @@ public final class InfluxDBOptions {
     }
 
     /**
+     * The default TimeUnit of the interval.
+     *
+     * @return time unit
+     * @since 3.0.0
+     */
+    @Nonnull
+    public TimeUnit getPrecision() {
+        return precision;
+    }
+
+    /**
+     * The encoding of the point's data.
+     *
+     * @return time unit
+     * @since 3.0.0
+     */
+    @Nonnull
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
+    /**
      * The HTTP client to use for communication to InfluxDB.
      *
      * @return okHttpClient
@@ -149,6 +181,9 @@ public final class InfluxDBOptions {
         private String database;
         private String retentionPolicy = "autogen";
         private InfluxDB.ConsistencyLevel consistencyLevel = InfluxDB.ConsistencyLevel.ONE;
+
+        private TimeUnit precision = TimeUnit.NANOSECONDS;
+        private MediaType mediaType = MediaType.parse("text/plain; charset=utf-8");
 
         private OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
 
@@ -227,7 +262,7 @@ public final class InfluxDBOptions {
          * Set the consistency level which is used for writing points.
          *
          * @param consistencyLevel the consistency level to set. It may be null.
-         *                        If null than use default level {@code InfluxDB.ConsistencyLevel.ONE}.
+         *                         If null than use default level {@link InfluxDB.ConsistencyLevel#ONE}.
          * @return {@code this}
          * @since 3.0.0
          */
@@ -236,6 +271,39 @@ public final class InfluxDBOptions {
 
             if (consistencyLevel != null) {
                 this.consistencyLevel = consistencyLevel;
+            }
+            return this;
+        }
+
+        /**
+         * Set the default TimeUnit of the interval.
+         *
+         * @param precision the default TimeUnit of the interval. It may be null.
+         *                  If null than use default level {@link TimeUnit#NANOSECONDS}.
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder precision(@Nullable final TimeUnit precision) {
+
+            if (precision != null) {
+                this.precision = precision;
+            }
+            return this;
+        }
+
+        /**
+         * Set the content type of HTTP request/response.
+         *
+         * @param mediaType the content type of HTTP request/response. It may be null.
+         *                 If null than use default encoding {@code text/plain; charset=utf-8}.
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder mediaType(@Nullable final MediaType mediaType) {
+            if (mediaType != null) {
+                this.mediaType = mediaType;
             }
             return this;
         }

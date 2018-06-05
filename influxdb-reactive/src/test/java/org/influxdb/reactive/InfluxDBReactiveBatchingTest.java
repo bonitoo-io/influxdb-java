@@ -5,6 +5,8 @@ import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import javax.annotation.Nonnull;
@@ -16,13 +18,14 @@ import java.util.stream.Stream;
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 07:04)
  */
+@RunWith(JUnitPlatform.class)
 class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
 
     @Test
     void flushByActions() {
 
         // after 5 actions
-        BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled().actions(5).flushDuration(1_000_000).build();
+        BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled().actions(5).flushInterval(1_000_000).build();
         setUp(batchOptions);
 
         Flowable<H2OFeetMeasurement> measurements = Flowable.just(
@@ -78,7 +81,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
         // after 5 actions or 1000 seconds
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
                 .actions(5)
-                .flushDuration(1_000_000)
+                .flushInterval(1_000_000)
                 .batchingScheduler(scheduler)
                 .build();
 

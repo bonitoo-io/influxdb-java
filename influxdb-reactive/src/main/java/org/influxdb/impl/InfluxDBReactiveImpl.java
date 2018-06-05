@@ -5,9 +5,7 @@ import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import io.reactivex.internal.util.ArrayListSupplier;
 import io.reactivex.processors.PublishProcessor;
-import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBOptions;
@@ -27,7 +25,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -39,15 +36,17 @@ import java.util.stream.Collectors;
  */
 public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReactive> implements InfluxDBReactive {
 
-    private static final okhttp3.MediaType MEDIA_TYPE_STRING = MediaType.parse("text/plain");
-
     private final InfluxDBOptions options;
     private final PublishProcessor<Point> processor;
 
-    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
-                                @Nullable final InfluxDBServiceReactive influxDBService) {
+    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
+        this(options, BatchOptionsReactive.DEFAULTS);
+    }
 
-        this(options, BatchOptionsReactive.DEFAULTS, influxDBService);
+    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
+                                @Nonnull final BatchOptionsReactive defaults) {
+
+        this(options, defaults, null);
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
@@ -63,12 +62,10 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 //
                 // Batching
                 //
-                .buffer(batchOptions.getFlushDuration(), TimeUnit.MILLISECONDS,
+                .window(batchOptions.getFlushInterval(), TimeUnit.MILLISECONDS,
                         batchOptions.getBatchingScheduler(),
                         batchOptions.getActions(),
-                        ArrayListSupplier.asCallable(),
                         true)
-                .filter(it -> !it.isEmpty())
                 .subscribe(new WritePointsConsumer());
     }
 
@@ -156,31 +153,40 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         processor.onComplete();
     }
 
-    private class WritePointsConsumer implements Consumer<List<Point>> {
+    private class WritePointsConsumer implements Consumer<Flowable<Point>> {
 
         @Override
-        public void accept(final List<Point> points) {
+        public void accept(final Flowable<Point> flowablePoints) {
 
-            String lineProtocols = points.stream()
+            flowablePoints
                     .map(Point::lineProtocol)
-                    .collect(Collectors.joining("\\n"));
+                    .toList()
+                    .filter(points -> !points.isEmpty())
+                    .map(points -> {
 
-            // TODO reactive content?
-            RequestBody body = RequestBody.create(MEDIA_TYPE_STRING, lineProtocols);
+                        String body = points.stream().collect(Collectors.joining("\\n"));
 
-            String username = options.getUsername();
-            String password = options.getPassword();
-            String database = options.getDatabase();
-            InfluxDB.ConsistencyLevel consistencyLevel = options.getConsistencyLevel();
-            String retentionPolicy = options.getRetentionPolicy();
+                        return RequestBody.create(options.getMediaType(), body);
+                    })
+                    .subscribe(requestBody -> {
 
-            Single<Response<String>> responseSingle = influxDBService.writePoints(
-                    username, password, database,
-                    retentionPolicy, TimeUtil.toTimePrecision(TimeUnit.MILLISECONDS), consistencyLevel.value(),
-                    body);
+                        String username = options.getUsername();
+                        String password = options.getPassword();
+                        String database = options.getDatabase();
+                        InfluxDB.ConsistencyLevel consistencyLevel = options.getConsistencyLevel();
+                        String retentionPolicy = options.getRetentionPolicy();
 
-            //TODO notify success, fail
-            responseSingle.subscribe();
+                        Single<Response<String>> responseSingle = influxDBService.writePoints(
+                                username, password, database,
+                                retentionPolicy,
+                                TimeUtil.toTimePrecision(options.getPrecision()),
+                                consistencyLevel.value(),
+                                //TODO body as flowable points
+                                requestBody);
+
+                        //TODO notify success, fail
+                        responseSingle.subscribe();
+                    });
         }
     }
 

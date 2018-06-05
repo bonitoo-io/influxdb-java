@@ -4,7 +4,6 @@ package org.influxdb.impl;
 import com.squareup.moshi.JsonAdapter;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -54,13 +53,12 @@ import java.util.function.Consumer;
  */
 public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements InfluxDB {
 
-    static final okhttp3.MediaType MEDIA_TYPE_STRING = MediaType.parse("text/plain");
-
     private static final String SHOW_DATABASE_COMMAND_ENCODED = Query.encode("SHOW DATABASES");
 
     private final InetAddress hostAddress;
     private final String username;
     private final String password;
+    private final TimeUnit precision = TimeUnit.NANOSECONDS;
     private BatchProcessor batchProcessor;
     private final AtomicBoolean batchEnabled = new AtomicBoolean(false);
     private final LongAdder writeCount = new LongAdder();
@@ -70,6 +68,7 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
     private String database;
     private String retentionPolicy = "autogen";
     private ConsistencyLevel consistency = ConsistencyLevel.ONE;
+    private final okhttp3.MediaType mediaType;
 
     public InfluxDBImpl(final String url, final String username, final String password,
                         final OkHttpClient.Builder client) {
@@ -121,6 +120,7 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
         this.hostAddress = parseHostAddress(options.getUrl());
         this.username = options.getUsername();
         this.password = options.getPassword();
+        this.mediaType = options.getMediaType();
 
         setConsistency(options.getConsistencyLevel());
         setDatabase(options.getDatabase());
@@ -354,7 +354,7 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
     @Override
     public void write(final BatchPoints batchPoints) {
         this.batchedCount.add(batchPoints.getPoints().size());
-        RequestBody lineProtocol = RequestBody.create(MEDIA_TYPE_STRING, batchPoints.lineProtocol());
+        RequestBody lineProtocol = RequestBody.create(mediaType, batchPoints.lineProtocol());
         execute(this.influxDBService.writePoints(
                 this.username,
                 this.password,
@@ -376,19 +376,19 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
                 retentionPolicy,
                 TimeUtil.toTimePrecision(precision),
                 consistency.value(),
-                RequestBody.create(MEDIA_TYPE_STRING, records)));
+                RequestBody.create(mediaType, records)));
     }
 
     @Override
     public void write(final String database, final String retentionPolicy, final ConsistencyLevel consistency,
                       final String records) {
-        write(database, retentionPolicy, consistency, TimeUnit.NANOSECONDS, records);
+        write(database, retentionPolicy, consistency, precision, records);
     }
 
     @Override
     public void write(final String database, final String retentionPolicy, final ConsistencyLevel consistency,
                       final List<String> records) {
-        write(database, retentionPolicy, consistency, TimeUnit.NANOSECONDS, records);
+        write(database, retentionPolicy, consistency, precision, records);
     }
 
 

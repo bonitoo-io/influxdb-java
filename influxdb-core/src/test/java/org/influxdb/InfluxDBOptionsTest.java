@@ -1,11 +1,14 @@
 package org.influxdb;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jakub Bednar (bednar@github) (01/06/2018 08:18)
@@ -24,6 +27,8 @@ class InfluxDBOptionsTest {
         Assertions.assertNull(options.getDatabase());
         Assertions.assertEquals("autogen", options.getRetentionPolicy());
         Assertions.assertEquals(InfluxDB.ConsistencyLevel.ONE, options.getConsistencyLevel());
+        Assertions.assertEquals(TimeUnit.NANOSECONDS, options.getPrecision());
+        Assertions.assertEquals(MediaType.parse("text/plain; charset=utf-8"), options.getMediaType());
         Assertions.assertNotNull(options.getOkHttpClient());
     }
 
@@ -39,6 +44,8 @@ class InfluxDBOptionsTest {
                 .database("weather")
                 .retentionPolicy("short-policy")
                 .consistencyLevel(InfluxDB.ConsistencyLevel.ALL)
+                .precision(TimeUnit.SECONDS)
+                .mediaType(MediaType.parse("text/plain; charset=US-ASCII"))
                 .okHttpClient(okBuilder)
                 .build();
 
@@ -48,6 +55,8 @@ class InfluxDBOptionsTest {
         Assertions.assertEquals("weather", options.getDatabase());
         Assertions.assertEquals("short-policy", options.getRetentionPolicy());
         Assertions.assertEquals(InfluxDB.ConsistencyLevel.ALL, options.getConsistencyLevel());
+        Assertions.assertEquals(TimeUnit.SECONDS, options.getPrecision());
+        Assertions.assertEquals(MediaType.parse("text/plain; charset=US-ASCII"), options.getMediaType());
         Assertions.assertEquals(okBuilder, options.getOkHttpClient());
     }
 
@@ -87,6 +96,28 @@ class InfluxDBOptionsTest {
                 .build();
 
         Assert.assertEquals(InfluxDB.ConsistencyLevel.ONE, options.getConsistencyLevel());
+    }
+
+    @Test
+    void precisionNull() {
+
+        InfluxDBOptions options = InfluxDBOptions.builder()
+                .url("http://influxdb:8086")
+                .precision(null)
+                .build();
+
+        Assert.assertEquals(TimeUnit.NANOSECONDS, options.getPrecision());
+    }
+
+    @Test
+    void encodingNull() {
+
+        InfluxDBOptions options = InfluxDBOptions.builder()
+                .url("http://influxdb:8086")
+                .mediaType(null)
+                .build();
+
+        Assert.assertEquals(MediaType.parse("text/plain; charset=utf-8"), options.getMediaType());
     }
 
     @Test

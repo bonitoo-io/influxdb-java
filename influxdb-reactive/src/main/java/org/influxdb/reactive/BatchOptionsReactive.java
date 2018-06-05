@@ -3,6 +3,7 @@ package org.influxdb.reactive;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import org.influxdb.BatchOptions;
+import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,8 +34,8 @@ public final class BatchOptionsReactive {
     public static final BatchOptionsReactive DISABLED = BatchOptionsReactive.disabled().build();
 
     private int actions;
-    private int flushDuration;
-    private int jitterDuration;
+    private int flushInterval;
+    private int jitterInterval;
     private int bufferLimit;
     private Scheduler batchingScheduler;
 
@@ -48,21 +49,21 @@ public final class BatchOptionsReactive {
     }
 
     /**
-     * @return flushDuration the time to wait at most (milliseconds)
-     * @see BatchOptionsReactive.Builder#flushDuration(int) (int)
+     * @return flushInterval the time to wait at most (milliseconds)
+     * @see BatchOptionsReactive.Builder#flushInterval(int) (int)
      * @since 3.0.0
      */
-    public int getFlushDuration() {
-        return flushDuration;
+    public int getFlushInterval() {
+        return flushInterval;
     }
 
     /**
      * @return batch flush interval jitter value (milliseconds)
-     * @see BatchOptionsReactive.Builder#jitterDuration(int)
+     * @see BatchOptionsReactive.Builder#jitterInterval(int)
      * @since 3.0.0
      */
-    public int getJitterDuration() {
-        return jitterDuration;
+    public int getJitterInterval() {
+        return jitterInterval;
     }
 
     /**
@@ -94,8 +95,8 @@ public final class BatchOptionsReactive {
         Objects.requireNonNull(builder, "BatchOptionsReactive.Builder is required");
 
         actions = builder.actions;
-        flushDuration = builder.flushDuration;
-        jitterDuration = builder.jitterDuration;
+        flushInterval = builder.flushInterval;
+        jitterInterval = builder.jitterInterval;
         bufferLimit = builder.bufferLimit;
         batchingScheduler = builder.batchingScheduler;
     }
@@ -131,8 +132,8 @@ public final class BatchOptionsReactive {
     public static class Builder {
 
         private int actions = DEFAULT_BATCH_ACTIONS_LIMIT;
-        private int flushDuration = DEFAULT_BATCH_INTERVAL_DURATION;
-        private int jitterDuration = DEFAULT_JITTER_INTERVAL_DURATION;
+        private int flushInterval = DEFAULT_BATCH_INTERVAL_DURATION;
+        private int jitterInterval = DEFAULT_JITTER_INTERVAL_DURATION;
         private int bufferLimit = DEFAULT_BUFFER_LIMIT;
         private Scheduler batchingScheduler;
 
@@ -145,6 +146,7 @@ public final class BatchOptionsReactive {
          */
         @Nonnull
         public Builder actions(final int actions) {
+            Preconditions.checkPositiveNumber(actions, "actions");
             this.actions = actions;
             return this;
         }
@@ -152,13 +154,14 @@ public final class BatchOptionsReactive {
         /**
          * Set the time to wait at most (milliseconds).
          *
-         * @param flushDuration the time to wait at most (milliseconds).
+         * @param flushInterval the time to wait at most (milliseconds).
          * @return {@code this}
          * @since 3.0.0
          */
         @Nonnull
-        public Builder flushDuration(final int flushDuration) {
-            this.flushDuration = flushDuration;
+        public Builder flushInterval(final int flushInterval) {
+            Preconditions.checkPositiveNumber(flushInterval, "flushInterval");
+            this.flushInterval = flushInterval;
             return this;
         }
 
@@ -167,13 +170,14 @@ public final class BatchOptionsReactive {
          * large write spikes for users running a large number of client instances.
          * ie, a jitter of 5s and flush duration 10s means flushes will happen every 10-15s.
          *
-         * @param jitterDuration (milliseconds)
+         * @param jitterInterval (milliseconds)
          * @return {@code this}
          * @since 3.0.0
          */
         @Nonnull
-        public Builder jitterDuration(final int jitterDuration) {
-            this.jitterDuration = jitterDuration;
+        public Builder jitterInterval(final int jitterInterval) {
+            Preconditions.checkNotNegativeNumber(jitterInterval, "jitterInterval");
+            this.jitterInterval = jitterInterval;
             return this;
         }
 
@@ -190,6 +194,7 @@ public final class BatchOptionsReactive {
          */
         @Nonnull
         public Builder bufferLimit(final int bufferLimit) {
+            Preconditions.checkNotNegativeNumber(bufferLimit, "bufferLimit");
             this.bufferLimit = bufferLimit;
             return this;
         }
