@@ -2,27 +2,14 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import io.reactivex.Single;
-import okhttp3.RequestBody;
-import okio.Buffer;
-import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Point;
-import org.influxdb.impl.InfluxDBReactiveImpl;
-import org.influxdb.impl.InfluxDBServiceReactive;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import retrofit2.Response;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,39 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Jakub Bednar (bednar@github) (01/06/2018 10:56)
  */
 @RunWith(JUnitPlatform.class)
-class InfluxDBReactiveTest {
-
-    private InfluxDBReactive influxDB;
-    private ArgumentCaptor<RequestBody> requestBody;
+class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
     @BeforeEach
     void setUp() {
 
-        InfluxDBOptions options = InfluxDBOptions.builder()
-                .url("http://influxdb:8086")
-                .username("admin")
-                .password("password")
-                .database("weather")
-                .build();
-
-        InfluxDBServiceReactive influxDBService = Mockito.mock(InfluxDBServiceReactive.class);
-        influxDB = new InfluxDBReactiveImpl(options, BatchOptionsReactive.DISABLED, influxDBService);
-
-        requestBody = ArgumentCaptor.forClass(RequestBody.class);
-
-        Mockito.doAnswer(invocation -> Single.just(Response.success(null))).when(influxDBService).writePoints(
-                Mockito.eq("admin"),
-                Mockito.eq("password"),
-                Mockito.eq("weather"),
-                Mockito.eq("autogen"),
-                Mockito.any(),
-                Mockito.eq("one"),
-                requestBody.capture());
-    }
-
-    @AfterEach
-    void cleanUp() {
-        influxDB.close();
+        super.setUp(BatchOptionsReactive.DISABLED);
     }
 
     @Test
@@ -86,9 +46,9 @@ class InfluxDBReactiveTest {
         // written point
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(requestBody);
+        String actual = pointsBody();
 
-        assertThat(actual).isEqualTo(expected);
+        org.assertj.core.api.Assertions.assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -122,12 +82,12 @@ class InfluxDBReactiveTest {
         // written points
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(requestBody, 0);
+        String actual = pointsBody(0);
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
-        actual = pointsBody(requestBody, 1);
+        actual = pointsBody(1);
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -166,17 +126,17 @@ class InfluxDBReactiveTest {
         // written points
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(requestBody, 0);
+        String actual = pointsBody(0);
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
-        actual = pointsBody(requestBody, 1);
+        actual = pointsBody(1);
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
-        actual = pointsBody(requestBody, 2);
+        actual = pointsBody(2);
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -195,7 +155,7 @@ class InfluxDBReactiveTest {
         // written measurement
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(requestBody);
+        String actual = pointsBody();
 
         assertThat(actual).isEqualTo(expected);
     }
@@ -223,12 +183,12 @@ class InfluxDBReactiveTest {
         // written measurements
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(requestBody, 0);
+        String actual = pointsBody(0);
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
-        actual = pointsBody(requestBody, 1);
+        actual = pointsBody(1);
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -257,38 +217,18 @@ class InfluxDBReactiveTest {
         // written measurements
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(requestBody, 0);
+        String actual = pointsBody(0);
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
-        actual = pointsBody(requestBody, 1);
+        actual = pointsBody(1);
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
-        actual = pointsBody(requestBody, 2);
+        actual = pointsBody(2);
         assertThat(actual).isEqualTo(expected);
     }
 
-    @Nonnull
-    private String pointsBody(@Nonnull final ArgumentCaptor<RequestBody> requestBody) {
-        return pointsBody(requestBody, 0);
-    }
-
-    @Nonnull
-    private String pointsBody(@Nonnull final ArgumentCaptor<RequestBody> requestBody,
-                              @Nonnull final Integer captureValueIndex) {
-
-        Objects.requireNonNull(requestBody, "RequestBody is required");
-        Objects.requireNonNull(captureValueIndex, "CaptureValueIndex is required");
-
-        Buffer sink = new Buffer();
-        try {
-            requestBody.getAllValues().get(captureValueIndex).writeTo(sink);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return sink.readUtf8();
-    }
 }

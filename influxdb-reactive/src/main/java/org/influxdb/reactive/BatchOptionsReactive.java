@@ -27,10 +27,7 @@ public final class BatchOptionsReactive {
     /**
      * Disabled batching.
      */
-    public static final BatchOptionsReactive DISABLED = BatchOptionsReactive.builder()
-            .actions(1)
-            .flushDuration(0)
-            .build();
+    public static final BatchOptionsReactive DISABLED = BatchOptionsReactive.disabled().build();
 
     private int actions;
     private int flushDuration;
@@ -92,6 +89,17 @@ public final class BatchOptionsReactive {
     @Nonnull
     public static BatchOptionsReactive.Builder builder() {
         return new BatchOptionsReactive.Builder();
+    }
+
+    /**
+     * Creates a builder instance with disabled batching.
+     *
+     * @return a builder
+     * @since 3.0.0
+     */
+    @Nonnull
+    public static BatchOptionsReactive.Builder disabled() {
+        return BatchOptionsReactive.builder().actions(1).flushDuration(0);
     }
 
     /**

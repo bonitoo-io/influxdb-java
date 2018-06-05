@@ -58,7 +58,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         this.options = options;
 
         this.processor = PublishProcessor.create();
-        this.processor.buffer(1).subscribe(new WritePointsConsumer());
+        this.processor.buffer(batchOptions.getActions()).subscribe(new WritePointsConsumer());
     }
 
     @Override
@@ -154,6 +154,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                     .map(Point::lineProtocol)
                     .collect(Collectors.joining("\\n"));
 
+            // TODO reactive content?
             RequestBody body = RequestBody.create(MEDIA_TYPE_STRING, lineProtocols);
 
             String username = options.getUsername();
