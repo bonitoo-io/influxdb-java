@@ -2,6 +2,7 @@ package org.influxdb.impl;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
@@ -16,6 +17,7 @@ import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
+import org.influxdb.reactive.InfluxDBReactiveListener;
 import org.reactivestreams.Publisher;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -38,6 +40,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
     private final InfluxDBOptions options;
     private final PublishProcessor<Point> processor;
+    private final InfluxDBReactiveListener listener;
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
         this(options, BatchOptionsReactive.DEFAULTS);
@@ -46,26 +49,48 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                                 @Nonnull final BatchOptionsReactive defaults) {
 
-        this(options, defaults, null);
+        this(options, defaults, null, throwable -> {
+        });
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                          @Nonnull final BatchOptionsReactive batchOptions,
-                         @Nullable final InfluxDBServiceReactive influxDBService) {
+                         @Nullable final InfluxDBServiceReactive influxDBService,
+                         @Nonnull final InfluxDBReactiveListener listener) {
 
         super(InfluxDBServiceReactive.class, options, influxDBService, null);
 
         this.options = options;
 
         this.processor = PublishProcessor.create();
-        this.processor
-                //
-                // Batching
-                //
-                .window(batchOptions.getFlushInterval(), TimeUnit.MILLISECONDS,
-                        batchOptions.getBatchingScheduler(),
-                        batchOptions.getActions(),
-                        true)
+        this.listener = listener;
+
+        Scheduler scheduler = batchOptions.getBatchingScheduler();
+
+        //
+        // Batching
+        //
+        Flowable<Flowable<Point>> window = this.processor.window(
+                batchOptions.getFlushInterval(),
+                TimeUnit.MILLISECONDS,
+                scheduler,
+                batchOptions.getActions(),
+                true);
+
+        //
+        // Jitter interval
+        //
+        if (batchOptions.getJitterInterval() != 0) {
+            window = window.timeout((Function<Flowable<Point>, Flowable<Long>>) it -> {
+
+                int timeout = (int) (Math.random() * batchOptions.getJitterInterval());
+
+                return Flowable.timer(timeout, TimeUnit.MILLISECONDS, scheduler);
+            }, Flowable.empty());
+        }
+
+        window
+                .doOnError(this.listener::doOnError)
                 .subscribe(new WritePointsConsumer());
     }
 

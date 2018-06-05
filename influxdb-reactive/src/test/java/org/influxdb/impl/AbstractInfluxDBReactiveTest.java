@@ -21,6 +21,7 @@ import java.util.Objects;
 public abstract class AbstractInfluxDBReactiveTest {
 
     protected InfluxDBReactive influxDB;
+    protected InfluxDBReactiveListenerVerifier verifier;
     protected InfluxDBServiceReactive influxDBService;
 
     protected ArgumentCaptor<RequestBody> requestBody;
@@ -37,7 +38,8 @@ public abstract class AbstractInfluxDBReactiveTest {
                 .build();
 
         influxDBService = Mockito.mock(InfluxDBServiceReactive.class);
-        influxDB = new InfluxDBReactiveImpl(options, batchOptions, influxDBService);
+        verifier = new InfluxDBReactiveListenerVerifier();
+        influxDB = new InfluxDBReactiveImpl(options, batchOptions, influxDBService, verifier);
 
         requestBody = ArgumentCaptor.forClass(RequestBody.class);
 

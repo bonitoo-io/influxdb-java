@@ -4,12 +4,13 @@ import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
-import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.concurrent.TimeUnit;
+
+import static org.influxdb.reactive.BatchOptionsReactive.DISABLED;
 
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 09:14)
@@ -20,6 +21,7 @@ public abstract class AbstractITInfluxDBReactiveTest {
 
     protected InfluxDB influxDBCore;
     protected InfluxDBReactive influxDBReactive;
+    protected InfluxDBReactiveListenerVerifier verifier;
 
     @BeforeEach
     void setUp() {
@@ -36,9 +38,10 @@ public abstract class AbstractITInfluxDBReactiveTest {
                 .build();
 
         influxDBCore = InfluxDBFactory.connect(options);
+        verifier = new InfluxDBReactiveListenerVerifier();
         influxDBCore.query(new Query("CREATE DATABASE " + DATABASE_NAME, null));
 
-        influxDBReactive = new InfluxDBReactiveImpl(options, BatchOptionsReactive.DISABLED, null);
+        influxDBReactive = new InfluxDBReactiveImpl(options, DISABLED, null, verifier);
     }
 
     @AfterEach

@@ -131,6 +131,35 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
         Assertions.assertThat(pointsBody()).isEqualTo(expectedContent);
     }
 
+    /**
+     * @see Flowable#timeout(long, TimeUnit)
+     */
+    @Test
+    void jitterWithoutEmittingNotThrowExceptionByTimeout() {
+
+        TestScheduler scheduler = new TestScheduler();
+
+        // after 5 actions or 10 seconds + 5 seconds jitter interval
+        BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
+                .actions(5)
+                .flushInterval(10_000)
+                .jitterInterval(5_000)
+                .batchingScheduler(scheduler)
+                .build();
+
+        setUp(batchOptions);
+
+        // publish measurement after 30 seconds
+        Flowable<H2OFeetMeasurement> just = Flowable.just(createMeasurement(1)).timeout(30, TimeUnit.SECONDS);
+        influxDB.writeMeasurements(just);
+
+        // move time to feature by 20 seconds (flush and jitter intervals elapsed)
+        scheduler.advanceTimeBy(16, TimeUnit.SECONDS);
+
+        // there is no exception
+        verifier.verify();
+    }
+
     @Test
     void flushBeforeClose() {
 
