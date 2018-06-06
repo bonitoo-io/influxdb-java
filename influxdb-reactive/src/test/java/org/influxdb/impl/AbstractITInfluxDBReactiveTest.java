@@ -1,5 +1,6 @@
 package org.influxdb.impl;
 
+import io.reactivex.schedulers.TestScheduler;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.InfluxDBOptions;
@@ -21,7 +22,6 @@ public abstract class AbstractITInfluxDBReactiveTest {
 
     protected InfluxDB influxDBCore;
     protected InfluxDBReactive influxDBReactive;
-    protected InfluxDBReactiveListenerVerifier verifier;
 
     @BeforeEach
     void setUp() {
@@ -38,10 +38,17 @@ public abstract class AbstractITInfluxDBReactiveTest {
                 .build();
 
         influxDBCore = InfluxDBFactory.connect(options);
-        verifier = new InfluxDBReactiveListenerVerifier();
         influxDBCore.query(new Query("CREATE DATABASE " + DATABASE_NAME, null));
 
-        influxDBReactive = new InfluxDBReactiveImpl(options, DISABLED, null, verifier);
+        InfluxDBReactiveListenerVerifier verifier = new InfluxDBReactiveListenerVerifier();
+        TestScheduler batchScheduler = new TestScheduler();
+        TestScheduler jitterScheduler = new TestScheduler();
+
+        influxDBReactive = new InfluxDBReactiveImpl(
+                options, DISABLED,
+                batchScheduler, jitterScheduler,
+                null,
+                verifier);
     }
 
     @AfterEach

@@ -1,12 +1,9 @@
 package org.influxdb.reactive;
 
-import io.reactivex.Scheduler;
-import io.reactivex.schedulers.Schedulers;
 import org.influxdb.BatchOptions;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Objects;
 
@@ -37,7 +34,6 @@ public final class BatchOptionsReactive {
     private int flushInterval;
     private int jitterInterval;
     private int bufferLimit;
-    private Scheduler batchingScheduler;
 
     /**
      * @return actions the number of actions to collect
@@ -75,21 +71,6 @@ public final class BatchOptionsReactive {
         return bufferLimit;
     }
 
-    /**
-     * @return the scheduler for trigger batch timed operation
-     * @see Schedulers#computation()
-     * @since 3.0.0
-     */
-    @Nonnull
-    public Scheduler getBatchingScheduler() {
-
-        if (batchingScheduler == null) {
-            return Schedulers.computation();
-        }
-
-        return batchingScheduler;
-    }
-
     private BatchOptionsReactive(@Nonnull final Builder builder) {
 
         Objects.requireNonNull(builder, "BatchOptionsReactive.Builder is required");
@@ -98,7 +79,6 @@ public final class BatchOptionsReactive {
         flushInterval = builder.flushInterval;
         jitterInterval = builder.jitterInterval;
         bufferLimit = builder.bufferLimit;
-        batchingScheduler = builder.batchingScheduler;
     }
 
     /**
@@ -135,7 +115,6 @@ public final class BatchOptionsReactive {
         private int flushInterval = DEFAULT_BATCH_INTERVAL_DURATION;
         private int jitterInterval = DEFAULT_JITTER_INTERVAL_DURATION;
         private int bufferLimit = DEFAULT_BUFFER_LIMIT;
-        private Scheduler batchingScheduler;
 
         /**
          * Set the number of actions to collect.
@@ -196,21 +175,6 @@ public final class BatchOptionsReactive {
         public Builder bufferLimit(final int bufferLimit) {
             Preconditions.checkNotNegativeNumber(bufferLimit, "bufferLimit");
             this.bufferLimit = bufferLimit;
-            return this;
-        }
-
-        /**
-         * Set the scheduler for trigger batch timed operation. This may
-         * It can be null, than use {@link Schedulers#computation()}.
-         *
-         * @param batchingScheduler the scheduler for trigger batch timed operation.
-         *                          It can be null, than use {@link Schedulers#computation()}.
-         * @return {@code this}
-         * @since 3.0.0
-         */
-        @Nonnull
-        public Builder batchingScheduler(@Nullable final Scheduler batchingScheduler) {
-            this.batchingScheduler = batchingScheduler;
             return this;
         }
 

@@ -1,7 +1,6 @@
 package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
-import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
 import org.junit.jupiter.api.Test;
@@ -34,7 +33,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 createMeasurement(3),
                 createMeasurement(4));
 
-        influxDB.writeMeasurements(measurements);
+        influxDBReactive.writeMeasurements(measurements);
 
         // only 4 actions
         Mockito.verify(influxDBService, Mockito.never()).writePoints(
@@ -47,7 +46,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 Mockito.any());
 
         // the fifth action => store to InfluxDB
-        influxDB.writeMeasurement(createMeasurement(5));
+        influxDBReactive.writeMeasurement(createMeasurement(5));
 
         // was call remote API
         Mockito.verify(influxDBService, Mockito.only()).writePoints(
@@ -71,18 +70,18 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 .collect(Collectors.joining("\\n"));
 
         Assertions.assertThat(pointsBody()).isEqualTo(expectedContent);
+
+        // there is no exception
+        verifier.verify();
     }
 
     @Test
     void flushByDuration() {
 
-        TestScheduler scheduler = new TestScheduler();
-
         // after 5 actions or 1000 seconds
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
                 .actions(5)
                 .flushInterval(1_000_000)
-                .batchingScheduler(scheduler)
                 .build();
 
         setUp(batchOptions);
@@ -93,7 +92,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 createMeasurement(3),
                 createMeasurement(4));
 
-        influxDB.writeMeasurements(measurements);
+        influxDBReactive.writeMeasurements(measurements);
 
         // without call remote api
         Mockito.verify(influxDBService, Mockito.never()).writePoints(
@@ -106,7 +105,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 Mockito.any());
 
         // 1_000_000 milliseconds to feature
-        scheduler.advanceTimeBy(1_000_000, TimeUnit.MILLISECONDS);
+        batchScheduler.advanceTimeBy(1_000_000, TimeUnit.MILLISECONDS);
 
         // was call remote API
         Mockito.verify(influxDBService, Mockito.only()).writePoints(
@@ -129,32 +128,61 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 .collect(Collectors.joining("\\n"));
 
         Assertions.assertThat(pointsBody()).isEqualTo(expectedContent);
+
+        // there is no exception
+        verifier.verify();
     }
 
     /**
      * @see Flowable#timeout(long, TimeUnit)
      */
     @Test
-    void jitterWithoutEmittingNotThrowExceptionByTimeout() {
-
-        TestScheduler scheduler = new TestScheduler();
+    void jitterJitterInterval() {
 
         // after 5 actions or 10 seconds + 5 seconds jitter interval
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
                 .actions(5)
                 .flushInterval(10_000)
                 .jitterInterval(5_000)
-                .batchingScheduler(scheduler)
                 .build();
 
         setUp(batchOptions);
 
-        // publish measurement after 30 seconds
-        Flowable<H2OFeetMeasurement> just = Flowable.just(createMeasurement(1)).timeout(30, TimeUnit.SECONDS);
-        influxDB.writeMeasurements(just);
+        // publish measurement
+        influxDBReactive.writeMeasurement(createMeasurement(150));
 
-        // move time to feature by 20 seconds (flush and jitter intervals elapsed)
-        scheduler.advanceTimeBy(16, TimeUnit.SECONDS);
+        // move time to feature by 10 seconds - flush interval elapsed
+        batchScheduler.advanceTimeBy(10, TimeUnit.SECONDS);
+
+        // without call remote api
+        Mockito.verify(influxDBService, Mockito.never()).writePoints(
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any());
+
+        // move time to feature by 5 seconds - jitter interval elapsed
+        jitterScheduler.advanceTimeBy(5, TimeUnit.SECONDS);
+
+        // was call remote API
+        Mockito.verify(influxDBService, Mockito.only()).writePoints(
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any());
+
+        // check content
+        Assertions.assertThat(requestBody.getAllValues().size()).isEqualTo(1);
+
+        Assertions
+                .assertThat(pointsBody())
+                .isEqualTo("h2o_feet,location=coyote_creek level\\ description=\"feet 150\",water_level=150.0 1440046950");
 
         // there is no exception
         verifier.verify();
@@ -167,7 +195,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled().actions(5).build();
         setUp(batchOptions);
 
-        influxDB.writeMeasurement(createMeasurement(1));
+        influxDBReactive.writeMeasurement(createMeasurement(1));
 
         // only 1 action
         Mockito.verify(influxDBService, Mockito.never()).writePoints(
@@ -180,7 +208,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 Mockito.any());
 
         // close InfluxDBReactive
-        influxDB.close();
+        influxDBReactive.close();
 
         // was call remote API
         Mockito.verify(influxDBService, Mockito.only()).writePoints(
@@ -198,6 +226,9 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
         Assertions
                 .assertThat(pointsBody())
                 .isEqualTo("h2o_feet,location=coyote_creek level\\ description=\"feet 1\",water_level=1.0 1440046801");
+
+        // there is no exception
+        verifier.verify();
     }
 
     @Nonnull

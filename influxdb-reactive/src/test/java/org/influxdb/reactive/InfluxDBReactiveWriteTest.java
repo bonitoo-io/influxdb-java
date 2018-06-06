@@ -39,7 +39,7 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 .build();
 
         // response
-        Maybe<Point> pointMaybe = influxDB.writePoint(point);
+        Maybe<Point> pointMaybe = influxDBReactive.writePoint(point);
         pointMaybe.test()
                 .assertSubscribed()
                 .assertValue(point);
@@ -49,7 +49,10 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
         String actual = pointsBody();
 
-        org.assertj.core.api.Assertions.assertThat(actual).isEqualTo(expected);
+        assertThat(actual).isEqualTo(expected);
+
+        // there is no exception
+        verifier.verify();
     }
 
     @Test
@@ -74,7 +77,7 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         points.add(point2);
 
         // response
-        Flowable<Point> pointsFlowable = influxDB.writePoints(points);
+        Flowable<Point> pointsFlowable = influxDBReactive.writePoints(points);
         pointsFlowable.test()
                 .assertSubscribed()
                 .assertValueAt(0, point1)
@@ -90,6 +93,9 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
         actual = pointsBody(1);
         assertThat(actual).isEqualTo(expected);
+
+        // there is no exception
+        verifier.verify();
     }
 
     @Test
@@ -117,7 +123,7 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 .build();
 
         // response
-        Flowable<Point> pointsFlowable = influxDB.writePoints(Flowable.just(point1, point2, point3));
+        Flowable<Point> pointsFlowable = influxDBReactive.writePoints(Flowable.just(point1, point2, point3));
         pointsFlowable.test()
                 .assertSubscribed()
                 .assertValueAt(0, point1)
@@ -139,6 +145,9 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
         actual = pointsBody(2);
         assertThat(actual).isEqualTo(expected);
+
+        // there is no exception
+        verifier.verify();
     }
 
     @Test
@@ -148,7 +157,7 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 "coyote_creek", 2.927, "below 3 feet", 1440046800L);
 
         // response
-        Maybe<H2OFeetMeasurement> measurementMaybe = influxDB.writeMeasurement(measurement);
+        Maybe<H2OFeetMeasurement> measurementMaybe = influxDBReactive.writeMeasurement(measurement);
         measurementMaybe.test()
                 .assertSubscribed()
                 .assertValue(measurement);
@@ -159,6 +168,9 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         String actual = pointsBody();
 
         assertThat(actual).isEqualTo(expected);
+
+        // there is no exception
+        verifier.verify();
     }
 
     @Test
@@ -175,7 +187,7 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         measurements.add(measurement2);
 
         // response
-        Flowable<H2OFeetMeasurement> measurementsFlowable = influxDB.writeMeasurements(measurements);
+        Flowable<H2OFeetMeasurement> measurementsFlowable = influxDBReactive.writeMeasurements(measurements);
         measurementsFlowable.test()
                 .assertSubscribed()
                 .assertValueAt(0, measurement1)
@@ -191,6 +203,9 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
         actual = pointsBody(1);
         assertThat(actual).isEqualTo(expected);
+
+        // there is no exception
+        verifier.verify();
     }
 
     @Test
@@ -206,7 +221,7 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 "coyote_creek", 5.927, "over 5 feet", 1440052800L);
 
         // response
-        Flowable<H2OFeetMeasurement> measurementsFlowable = influxDB
+        Flowable<H2OFeetMeasurement> measurementsFlowable = influxDBReactive
                 .writeMeasurements(Flowable.just(measurement1, measurement2, measurement3));
 
         measurementsFlowable.test()
@@ -230,6 +245,8 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
                 "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
         actual = pointsBody(2);
         assertThat(actual).isEqualTo(expected);
-    }
 
+        // there is no exception
+        verifier.verify();
+    }
 }

@@ -1,7 +1,5 @@
 package org.influxdb.reactive;
 
-import io.reactivex.schedulers.Schedulers;
-import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -11,22 +9,13 @@ import org.junit.jupiter.api.Test;
 class BatchOptionsReactiveTest {
 
     @Test
-    void defaultScheduler() {
+    void defaults() {
 
         BatchOptionsReactive batchOptions = BatchOptionsReactive.builder().build();
 
-        Assertions.assertThat(batchOptions.getBatchingScheduler()).isEqualTo(Schedulers.computation());
-    }
-
-    @Test
-    void configureScheduler() {
-
-        TestScheduler scheduler = new TestScheduler();
-
-        BatchOptionsReactive batchOptions = BatchOptionsReactive.builder()
-                .batchingScheduler(scheduler)
-                .build();
-
-        Assertions.assertThat(batchOptions.getBatchingScheduler()).isEqualTo(scheduler);
+        Assertions.assertThat(batchOptions.getActions()).isEqualTo(1000);
+        Assertions.assertThat(batchOptions.getBufferLimit()).isEqualTo(10000);
+        Assertions.assertThat(batchOptions.getFlushInterval()).isEqualTo(1000);
+        Assertions.assertThat(batchOptions.getJitterInterval()).isEqualTo(0);
     }
 }

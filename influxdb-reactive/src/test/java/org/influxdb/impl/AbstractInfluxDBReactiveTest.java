@@ -1,6 +1,7 @@
 package org.influxdb.impl;
 
 import io.reactivex.Single;
+import io.reactivex.schedulers.TestScheduler;
 import okhttp3.RequestBody;
 import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
@@ -20,9 +21,12 @@ import java.util.Objects;
  */
 public abstract class AbstractInfluxDBReactiveTest {
 
-    protected InfluxDBReactive influxDB;
+    protected InfluxDBReactive influxDBReactive;
     protected InfluxDBReactiveListenerVerifier verifier;
     protected InfluxDBServiceReactive influxDBService;
+
+    protected TestScheduler batchScheduler;
+    protected TestScheduler jitterScheduler;
 
     protected ArgumentCaptor<RequestBody> requestBody;
 
@@ -38,8 +42,12 @@ public abstract class AbstractInfluxDBReactiveTest {
                 .build();
 
         influxDBService = Mockito.mock(InfluxDBServiceReactive.class);
+
         verifier = new InfluxDBReactiveListenerVerifier();
-        influxDB = new InfluxDBReactiveImpl(options, batchOptions, influxDBService, verifier);
+        batchScheduler = new TestScheduler();
+        jitterScheduler = new TestScheduler();
+
+        influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions, batchScheduler, jitterScheduler, influxDBService, verifier);
 
         requestBody = ArgumentCaptor.forClass(RequestBody.class);
 
@@ -55,7 +63,7 @@ public abstract class AbstractInfluxDBReactiveTest {
 
     @AfterEach
     void cleanUp() {
-        influxDB.close();
+        influxDBReactive.close();
     }
 
     @Nonnull

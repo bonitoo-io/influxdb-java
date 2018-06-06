@@ -7,6 +7,7 @@ import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.processors.PublishProcessor;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBOptions;
@@ -49,12 +50,15 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                                 @Nonnull final BatchOptionsReactive defaults) {
 
-        this(options, defaults, null, throwable -> {
+        //TODO default listener
+        this(options, defaults, Schedulers.computation(), Schedulers.trampoline(), null, throwable -> {
         });
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                          @Nonnull final BatchOptionsReactive batchOptions,
+                         @Nonnull final Scheduler batchScheduler,
+                         @Nonnull final Scheduler jitterScheduler,
                          @Nullable final InfluxDBServiceReactive influxDBService,
                          @Nonnull final InfluxDBReactiveListener listener) {
 
@@ -65,31 +69,26 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         this.processor = PublishProcessor.create();
         this.listener = listener;
 
-        Scheduler scheduler = batchOptions.getBatchingScheduler();
 
-        //
-        // Batching
-        //
-        Flowable<Flowable<Point>> window = this.processor.window(
-                batchOptions.getFlushInterval(),
-                TimeUnit.MILLISECONDS,
-                scheduler,
-                batchOptions.getActions(),
-                true);
-
-        //
-        // Jitter interval
-        //
-        if (batchOptions.getJitterInterval() != 0) {
-            window = window.timeout((Function<Flowable<Point>, Flowable<Long>>) it -> {
-
-                int timeout = (int) (Math.random() * batchOptions.getJitterInterval());
-
-                return Flowable.timer(timeout, TimeUnit.MILLISECONDS, scheduler);
-            }, Flowable.empty());
-        }
-
-        window
+        this.processor
+                //
+                // Batching
+                //
+                .window(batchOptions.getFlushInterval(), TimeUnit.MILLISECONDS, batchScheduler,
+                        batchOptions.getActions(),
+                        false)
+                //
+                // Jitter interval
+                //
+                .compose(source -> {
+                    int jitterInterval = batchOptions.getJitterInterval();
+                    if (jitterInterval > 0) {
+                        int delay = (int) (Math.random() * jitterInterval);
+                        return source.delay(delay, TimeUnit.MILLISECONDS, jitterScheduler);
+                    } else {
+                        return source;
+                    }
+                })
                 .doOnError(this.listener::doOnError)
                 .subscribe(new WritePointsConsumer());
     }
