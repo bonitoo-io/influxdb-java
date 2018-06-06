@@ -137,7 +137,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
      * @see Flowable#timeout(long, TimeUnit)
      */
     @Test
-    void jitterJitterInterval() {
+    void jitterInterval() {
 
         // after 5 actions or 10 seconds + 5 seconds jitter interval
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
