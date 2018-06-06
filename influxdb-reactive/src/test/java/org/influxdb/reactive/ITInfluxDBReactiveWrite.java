@@ -2,6 +2,7 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.TestScheduler;
+import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
@@ -11,6 +12,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +27,8 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void write() {
 
+        setUp(BatchOptionsReactive.DISABLED);
+
         H2OFeetMeasurement measurement1 = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046801L);
 
@@ -33,6 +37,8 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
 
         // write
         influxDBReactive.writeMeasurements(Flowable.just(measurement1, measurement2));
+
+        verifier.waitForResponse(2L);
 
         // get from DB
         List<H2OFeetMeasurement> measurements = getMeasurements();
@@ -49,10 +55,14 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         assertThat(measurements.get(1).getLevel()).isEqualTo(1.927);
         assertThat(measurements.get(1).getDescription()).isEqualTo("below 2 feet");
         assertThat(measurements.get(1).getTime().toEpochMilli()).isEqualTo(1440049802L);
+
+        verifier.verify();
     }
 
     @Test
-    void publishPattern() {
+    void publishPattern() throws InterruptedException {
+
+        setUp(BatchOptionsReactive.DISABLED);
 
         TestScheduler scheduler = new TestScheduler();
 
@@ -61,7 +71,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
                 .map(time -> {
 
                     double h2oLevel = time.doubleValue();
-                    long timestamp = System.currentTimeMillis();
+                    long timestamp = System.currentTimeMillis() + time;
 
                     return new H2OFeetMeasurement(
                             "coyote_creek", h2oLevel, "from ocean sensor", timestamp);
@@ -73,6 +83,8 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         // 50 seconds to feature
         scheduler.advanceTimeBy(50, TimeUnit.SECONDS);
 
+        verifier.waitForResponse(5L);
+
         // get from DB
         List<H2OFeetMeasurement> measurements = getMeasurements();
         assertThat(measurements.size()).isEqualTo(5);
@@ -82,6 +94,86 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         assertThat(measurements.get(2).getLevel()).isEqualTo(2D);
         assertThat(measurements.get(3).getLevel()).isEqualTo(3D);
         assertThat(measurements.get(4).getLevel()).isEqualTo(4D);
+
+        verifier.verify();
+    }
+
+    @Test
+    void batchingOrder() throws InterruptedException {
+
+        // after 5 actions or 10 seconds + 5 seconds jitter interval
+        BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
+                .actions(2)
+                .flushInterval(10_000)
+                .jitterInterval(5_000)
+                .build();
+
+        setUp(batchOptions);
+
+        H2OFeetMeasurement measurement1 = new H2OFeetMeasurement(
+                "coyote_creek1", 0.927, "below 1 feet", null);
+
+        H2OFeetMeasurement measurement2 = new H2OFeetMeasurement(
+                "coyote_creek2", 1.927, "below 2 feet", null);
+
+        H2OFeetMeasurement measurement3 = new H2OFeetMeasurement(
+                "coyote_creek3", 2.927, "below 3 feet", null);
+
+        H2OFeetMeasurement measurement4 = new H2OFeetMeasurement(
+                "coyote_creek4", 3.927, "below 4 feet", null);
+
+        List<H2OFeetMeasurement> measurements1 = new ArrayList<>();
+        measurements1.add(measurement1);
+        measurements1.add(measurement2);
+
+        List<H2OFeetMeasurement> measurements2 = new ArrayList<>();
+        measurements2.add(measurement3);
+        measurements2.add(measurement4);
+
+        // publish measurement
+        influxDBReactive.writeMeasurements(measurements1);
+        influxDBReactive.writeMeasurements(measurements2);
+
+        verifier.waitForResponse(2L);
+
+        // get from DB
+        List<H2OFeetMeasurement> measurements = getMeasurements();
+        assertThat(measurements.size()).isEqualTo(4);
+
+        // measurement 1
+        H2OFeetMeasurement measurement1DB = measurements.get(0);
+        assertThat(measurement1DB.getLocation()).isEqualTo("coyote_creek1");
+        assertThat(measurement1DB.getLevel()).isEqualTo(0.927);
+        assertThat(measurement1DB.getDescription()).isEqualTo("below 1 feet");
+        assertThat(measurement1DB.getTime().toEpochMilli()).isNotNull();
+
+        // measurement 2
+        H2OFeetMeasurement measurement2DB = measurements.get(1);
+        assertThat(measurement2DB.getLocation()).isEqualTo("coyote_creek2");
+        assertThat(measurement2DB.getLevel()).isEqualTo(1.927);
+        assertThat(measurement2DB.getDescription()).isEqualTo("below 2 feet");
+        assertThat(measurement2DB.getTime().toEpochMilli()).isNotNull();
+
+        // measurement 3
+        H2OFeetMeasurement measurement3DB = measurements.get(2);
+        assertThat(measurement3DB.getLocation()).isEqualTo("coyote_creek3");
+        assertThat(measurement3DB.getLevel()).isEqualTo(2.927);
+        assertThat(measurement3DB.getDescription()).isEqualTo("below 3 feet");
+        assertThat(measurement3DB.getTime().toEpochMilli()).isNotNull();
+
+        // measurement 4
+        H2OFeetMeasurement measurement4DB = measurements.get(3);
+        assertThat(measurement4DB.getLocation()).isEqualTo("coyote_creek4");
+        assertThat(measurement4DB.getLevel()).isEqualTo(3.927);
+        assertThat(measurement4DB.getDescription()).isEqualTo("below 4 feet");
+        assertThat(measurement4DB.getTime().toEpochMilli()).isNotNull();
+
+        // same order as writes => timestamp in order
+        Assertions.assertThat(measurement1DB.getTime()).isBeforeOrEqualTo(measurement2DB.getTime());
+        Assertions.assertThat(measurement2DB.getTime()).isBefore(measurement3DB.getTime());
+        Assertions.assertThat(measurement3DB.getTime()).isBeforeOrEqualTo(measurement4DB.getTime());
+
+        verifier.verify();
     }
 
     @Nonnull

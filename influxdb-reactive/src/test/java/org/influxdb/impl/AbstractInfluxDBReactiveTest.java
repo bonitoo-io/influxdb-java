@@ -1,6 +1,7 @@
 package org.influxdb.impl;
 
 import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.schedulers.TestScheduler;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -47,7 +48,9 @@ public abstract class AbstractInfluxDBReactiveTest {
         batchScheduler = new TestScheduler();
         jitterScheduler = new TestScheduler();
 
-        influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions, batchScheduler, jitterScheduler, influxDBService, verifier);
+        influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions,
+                Schedulers.trampoline(), batchScheduler, jitterScheduler,
+                influxDBService, verifier);
 
         requestBody = ArgumentCaptor.forClass(RequestBody.class);
 

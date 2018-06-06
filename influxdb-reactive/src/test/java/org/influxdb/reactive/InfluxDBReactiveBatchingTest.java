@@ -67,7 +67,7 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                         "h2o_feet,location=coyote_creek level\\ description=\"feet 3\",water_level=3.0 1440046803",
                         "h2o_feet,location=coyote_creek level\\ description=\"feet 4\",water_level=4.0 1440046804",
                         "h2o_feet,location=coyote_creek level\\ description=\"feet 5\",water_level=5.0 1440046805")
-                .collect(Collectors.joining("\\n"));
+                .collect(Collectors.joining("\n"));
 
         Assertions.assertThat(pointsBody()).isEqualTo(expectedContent);
 
@@ -78,9 +78,9 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
     @Test
     void flushByDuration() {
 
-        // after 5 actions or 1000 seconds
+        // after 10 actions or 1000 seconds
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
-                .actions(5)
+                .actions(10)
                 .flushInterval(1_000_000)
                 .build();
 
@@ -93,6 +93,9 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 createMeasurement(4));
 
         influxDBReactive.writeMeasurements(measurements);
+
+        // the fifth measurement
+        influxDBReactive.writeMeasurement(createMeasurement(5));
 
         // without call remote api
         Mockito.verify(influxDBService, Mockito.never()).writePoints(
@@ -124,8 +127,9 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
                 ("h2o_feet,location=coyote_creek level\\ description=\"feet 1\",water_level=1.0 1440046801",
                         "h2o_feet,location=coyote_creek level\\ description=\"feet 2\",water_level=2.0 1440046802",
                         "h2o_feet,location=coyote_creek level\\ description=\"feet 3\",water_level=3.0 1440046803",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 4\",water_level=4.0 1440046804")
-                .collect(Collectors.joining("\\n"));
+                        "h2o_feet,location=coyote_creek level\\ description=\"feet 4\",water_level=4.0 1440046804",
+                        "h2o_feet,location=coyote_creek level\\ description=\"feet 5\",water_level=5.0 1440046805")
+                .collect(Collectors.joining("\n"));
 
         Assertions.assertThat(pointsBody()).isEqualTo(expectedContent);
 
@@ -180,9 +184,12 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
         // check content
         Assertions.assertThat(requestBody.getAllValues().size()).isEqualTo(1);
 
+        String expected =
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 150\",water_level=150.0 1440046950";
+
         Assertions
                 .assertThat(pointsBody())
-                .isEqualTo("h2o_feet,location=coyote_creek level\\ description=\"feet 150\",water_level=150.0 1440046950");
+                .isEqualTo(expected);
 
         // there is no exception
         verifier.verify();

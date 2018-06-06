@@ -53,12 +53,24 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                                 @Nonnull final BatchOptionsReactive defaults) {
 
-        this(options, defaults, Schedulers.computation(), Schedulers.trampoline(), null,
-                new InfluxDBReactiveListenerDefault());
+        this(options, defaults, new InfluxDBReactiveListenerDefault());
+    }
+
+
+    InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
+                         @Nonnull final BatchOptionsReactive batchOptions,
+                         @Nonnull final InfluxDBReactiveListener listener) {
+        this(options, batchOptions,
+                Schedulers.newThread(),
+                Schedulers.computation(),
+                Schedulers.trampoline(),
+                null,
+                listener);
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                          @Nonnull final BatchOptionsReactive batchOptions,
+                         @Nonnull final Scheduler processorScheduler,
                          @Nonnull final Scheduler batchScheduler,
                          @Nonnull final Scheduler jitterScheduler,
                          @Nullable final InfluxDBServiceReactive influxDBService,
@@ -73,6 +85,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
 
         this.processor
+                .observeOn(processorScheduler)
                 //
                 // Batching
                 //
@@ -214,7 +227,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                     .filter(points -> !points.isEmpty())
                     .map(points -> {
 
-                        String body = points.stream().collect(Collectors.joining("\\n"));
+                        String body = points.stream().collect(Collectors.joining("\n"));
 
                         return RequestBody.create(options.getMediaType(), body);
                     })
@@ -235,7 +248,9 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                 requestBody);
 
                         //TODO notify success, fail
-                        responseSingle.subscribe();
+                        responseSingle.subscribe(
+                                listener::doOnResponse,
+                                listener::doOnError);
                     });
         }
     }

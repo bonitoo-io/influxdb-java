@@ -1,17 +1,16 @@
 package org.influxdb.impl;
 
-import io.reactivex.schedulers.TestScheduler;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
+import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
+import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
-import static org.influxdb.reactive.BatchOptionsReactive.DISABLED;
 
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 09:14)
@@ -21,10 +20,13 @@ public abstract class AbstractITInfluxDBReactiveTest {
     private static final String DATABASE_NAME = "reactive_database";
 
     protected InfluxDB influxDBCore;
-    protected InfluxDBReactive influxDBReactive;
 
-    @BeforeEach
-    void setUp() {
+    protected InfluxDBReactive influxDBReactive;
+    protected InfluxDBReactiveListenerVerifier verifier;
+
+    protected void setUp(@Nonnull final BatchOptionsReactive batchOptions) {
+
+        Objects.requireNonNull(batchOptions, "BatchOptionsReactive is required");
 
         String influxdbIP = System.getenv().getOrDefault("INFLUXDB_IP", "127.0.0.1");
         String influxdbPort = System.getenv().getOrDefault("INFLUXDB_PORT_API", "8086");
@@ -40,15 +42,9 @@ public abstract class AbstractITInfluxDBReactiveTest {
         influxDBCore = InfluxDBFactory.connect(options);
         influxDBCore.query(new Query("CREATE DATABASE " + DATABASE_NAME, null));
 
-        InfluxDBReactiveListenerVerifier verifier = new InfluxDBReactiveListenerVerifier();
-        TestScheduler batchScheduler = new TestScheduler();
-        TestScheduler jitterScheduler = new TestScheduler();
+        verifier = new InfluxDBReactiveListenerVerifier();
 
-        influxDBReactive = new InfluxDBReactiveImpl(
-                options, DISABLED,
-                batchScheduler, jitterScheduler,
-                null,
-                verifier);
+        influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions, verifier);
     }
 
     @AfterEach

@@ -3,6 +3,7 @@ package org.influxdb.reactive;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -28,11 +29,11 @@ public class H2OFeetMeasurement {
     public H2OFeetMeasurement() {
     }
 
-    public H2OFeetMeasurement(String location, Double level, String description, Long time) {
+    public H2OFeetMeasurement(String location, Double level, String description, @Nullable final Long time) {
         this.location = location;
         this.level = level;
         this.description = description;
-        this.time = Instant.ofEpochMilli(time);
+        this.time = time != null ? Instant.ofEpochMilli(time) : null;
     }
 
     public String getLocation() {
@@ -66,5 +67,16 @@ public class H2OFeetMeasurement {
     public int hashCode() {
 
         return Objects.hash(location, level, description, time);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("org.influxdb.reactive.H2OFeetMeasurement{");
+        sb.append("location='").append(location).append('\'');
+        sb.append(", level=").append(level);
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", time=").append(time);
+        sb.append('}');
+        return sb.toString();
     }
 }
