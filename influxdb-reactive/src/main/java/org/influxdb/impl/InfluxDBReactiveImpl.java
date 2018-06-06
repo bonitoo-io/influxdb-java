@@ -1,6 +1,7 @@
 package org.influxdb.impl;
 
 import io.reactivex.Flowable;
+import io.reactivex.FlowableTransformer;
 import io.reactivex.Maybe;
 import io.reactivex.Scheduler;
 import io.reactivex.Single;
@@ -39,6 +40,8 @@ import java.util.stream.Collectors;
  */
 public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReactive> implements InfluxDBReactive {
 
+    private static final Logger LOG = Logger.getLogger(InfluxDBReactiveImpl.class.getName());
+
     private final InfluxDBOptions options;
     private final PublishProcessor<Point> processor;
     private final InfluxDBReactiveListener listener;
@@ -74,21 +77,15 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 //
                 // Batching
                 //
-                .window(batchOptions.getFlushInterval(), TimeUnit.MILLISECONDS, batchScheduler,
+                .window(batchOptions.getFlushInterval(),
+                        TimeUnit.MILLISECONDS,
+                        batchScheduler,
                         batchOptions.getActions(),
-                        false)
+                        true)
                 //
                 // Jitter interval
                 //
-                .compose(source -> {
-                    int jitterInterval = batchOptions.getJitterInterval();
-                    if (jitterInterval > 0) {
-                        int delay = (int) (Math.random() * jitterInterval);
-                        return source.delay(delay, TimeUnit.MILLISECONDS, jitterScheduler);
-                    } else {
-                        return source;
-                    }
-                })
+                .compose(applyJitter(jitterScheduler, batchOptions.getJitterInterval()))
                 .doOnError(this.listener::doOnError)
                 .subscribe(new WritePointsConsumer());
     }
@@ -175,6 +172,36 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     @Override
     public void close() {
         processor.onComplete();
+    }
+
+    @Nonnull
+    private FlowableTransformer<Flowable<Point>, Flowable<Point>> applyJitter(@Nonnull final Scheduler jitterScheduler,
+                                                                              @Nonnull final Integer jitterInterval) {
+
+        Objects.requireNonNull(jitterScheduler, "Jitter scheduler is required");
+        Objects.requireNonNull(jitterInterval, "Jitter interval is required");
+
+        return source -> {
+
+            //
+            // source without jitter
+            //
+            if (jitterInterval <= 0) {
+                return source;
+            }
+
+            //
+            // Add jitter => dynamic delay
+            //
+            return source.delay((Function<Flowable<Point>, Flowable<Long>>) pointFlowable -> {
+
+                int delay = (int) (Math.random() * jitterInterval);
+
+                LOG.log(Level.FINEST, "Generated Jitter dynamic delay: {0}", delay);
+
+                return Flowable.timer(delay, TimeUnit.MILLISECONDS, jitterScheduler);
+            });
+        };
     }
 
     private class WritePointsConsumer implements Consumer<Flowable<Point>> {
