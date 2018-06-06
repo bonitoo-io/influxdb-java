@@ -53,9 +53,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                                 @Nonnull final BatchOptionsReactive defaults) {
 
-        //TODO default listener
-        this(options, defaults, Schedulers.computation(), Schedulers.trampoline(), null, throwable -> {
-        });
+        this(options, defaults, Schedulers.computation(), Schedulers.trampoline(), null,
+                new InfluxDBReactiveListenerDefault());
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,

@@ -13,6 +13,12 @@ import javax.annotation.Nonnull;
 
 /**
  * Proof-of-concept API.
+ * <p>
+ * Not Implemented:
+ * <ul>
+ *     <li>Partial writes = writeMeasurements(good,good,wrong,good)...</li>
+ *     <li>UDP</li>
+ * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)
  * @since 3.0.0

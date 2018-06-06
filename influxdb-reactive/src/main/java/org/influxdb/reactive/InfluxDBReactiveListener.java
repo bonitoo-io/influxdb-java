@@ -3,7 +3,7 @@ package org.influxdb.reactive;
 import javax.annotation.Nonnull;
 
 /**
- * This listener allow interact with events on {@link org.influxdb.impl.InfluxDBServiceReactive}.
+ * This listener allow interact with events on {@link org.influxdb.reactive.InfluxDBReactive}.
  *
  * @author Jakub Bednar (bednar@github) (05/06/2018 15:42)
  * @since 3.0.0
