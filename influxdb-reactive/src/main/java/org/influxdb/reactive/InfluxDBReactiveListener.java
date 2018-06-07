@@ -1,6 +1,6 @@
 package org.influxdb.reactive;
 
-import retrofit2.Response;
+import org.influxdb.InfluxDBException;
 
 import javax.annotation.Nonnull;
 
@@ -13,11 +13,17 @@ import javax.annotation.Nonnull;
 public interface InfluxDBReactiveListener {
 
     /**
-     * The method is called when arrived the response from InfluxDB.
+     * The method is called when arrived the success response from InfluxDB.
      *
-     * @param response the InfluxDB response
      */
-    void doOnResponse(@Nonnull final Response<String> response);
+    void doOnSuccessResponse();
+
+    /**
+     * The method is called when arrived the error response from InfluxDB.
+     *
+     * @param throwable propagated InfluxDB exception
+     */
+    void doOnErrorResponse(@Nonnull final InfluxDBException throwable);
 
     /**
      * The method is called when occurs a unhandled exception.

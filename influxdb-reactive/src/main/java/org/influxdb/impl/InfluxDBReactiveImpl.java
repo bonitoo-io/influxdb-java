@@ -4,13 +4,13 @@ import io.reactivex.Flowable;
 import io.reactivex.FlowableTransformer;
 import io.reactivex.Maybe;
 import io.reactivex.Scheduler;
-import io.reactivex.Single;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
-import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBException;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
@@ -21,6 +21,7 @@ import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveListener;
 import org.reactivestreams.Publisher;
+import retrofit2.HttpException;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -42,8 +43,9 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
     private static final Logger LOG = Logger.getLogger(InfluxDBReactiveImpl.class.getName());
 
-    private final InfluxDBOptions options;
     private final PublishProcessor<Point> processor;
+
+    private final InfluxDBOptions options;
     private final InfluxDBReactiveListener listener;
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
@@ -79,11 +81,9 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         super(InfluxDBServiceReactive.class, options, influxDBService, null);
 
         this.options = options;
-
-        this.processor = PublishProcessor.create();
         this.listener = listener;
 
-
+        this.processor = PublishProcessor.create();
         this.processor
                 .observeOn(processorScheduler)
                 //
@@ -233,26 +233,75 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                     })
                     .subscribe(requestBody -> {
 
+                        Action success = listener::doOnSuccessResponse;
+
+                        Consumer<Throwable> fail = throwable -> {
+
+                            if (throwable instanceof HttpException) {
+
+                                InfluxDBException influxDBException =
+                                        buildInfluxDBException((HttpException) throwable);
+
+                                listener.doOnErrorResponse(influxDBException);
+                                return;
+                            }
+
+                            listener.doOnError(throwable);
+                        };
+
+                        //
+                        // Parameters
+                        //
                         String username = options.getUsername();
                         String password = options.getPassword();
                         String database = options.getDatabase();
-                        InfluxDB.ConsistencyLevel consistencyLevel = options.getConsistencyLevel();
+
                         String retentionPolicy = options.getRetentionPolicy();
+                        String precision = TimeUtil.toTimePrecision(options.getPrecision());
+                        String consistencyLevel = options.getConsistencyLevel().value();
 
-                        Single<Response<String>> responseSingle = influxDBService.writePoints(
-                                username, password, database,
-                                retentionPolicy,
-                                TimeUtil.toTimePrecision(options.getPrecision()),
-                                consistencyLevel.value(),
-                                //TODO body as flowable points
-                                requestBody);
-
-                        //TODO notify success, fail
-                        responseSingle.subscribe(
-                                listener::doOnResponse,
-                                listener::doOnError);
+                        influxDBService
+                                .writePoints(
+                                        username, password, database,
+                                        retentionPolicy, precision, consistencyLevel,
+                                        requestBody)
+                                .retryWhen(retryCapabilities())
+                                .subscribe(success, fail);
                     });
         }
+    }
+
+    @Nonnull
+    private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities() {
+
+        return errors -> errors.flatMap(throwable -> {
+
+            if (throwable instanceof HttpException) {
+
+                InfluxDBException influxDBException =
+                        buildInfluxDBException((HttpException) throwable);
+
+                boolean retryWorth = influxDBException.isRetryWorth();
+                // TODO retry
+            }
+
+            // only notify
+            return Flowable.error(throwable);
+        });
+    }
+
+    @Nonnull
+    private InfluxDBException buildInfluxDBException(@Nonnull final HttpException throwable) {
+        Objects.requireNonNull(throwable, "Throwable is required");
+
+        Response<?> response = ((HttpException) throwable).response();
+
+        String errorMessage = response.headers().get("X-Influxdb-Error");
+        if (errorMessage != null) {
+            return InfluxDBException.buildExceptionFromErrorMessage(errorMessage);
+        }
+
+        return new InfluxDBException(throwable);
     }
 
     /**

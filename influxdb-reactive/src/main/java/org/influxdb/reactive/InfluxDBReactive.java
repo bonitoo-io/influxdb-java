@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
  * <ul>
  *     <li>Partial writes = writeMeasurements(good,good,wrong,good)...</li>
  *     <li>UDP</li>
+ *     <li>Body as Flowable</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)

@@ -1,7 +1,7 @@
 package org.influxdb.impl;
 
+import org.influxdb.InfluxDBException;
 import org.influxdb.reactive.InfluxDBReactiveListener;
-import retrofit2.Response;
 
 import javax.annotation.Nonnull;
 import java.util.logging.Level;
@@ -18,9 +18,15 @@ public class InfluxDBReactiveListenerDefault implements InfluxDBReactiveListener
     private static final Logger LOG = Logger.getLogger(InfluxDBReactiveListenerDefault.class.getName());
 
     @Override
-    public void doOnResponse(@Nonnull final Response<String> response) {
+    public void doOnSuccessResponse() {
 
-        LOG.log(Level.FINEST, "Response from InfluxDB: {0}", response.isSuccessful());
+        LOG.log(Level.FINEST, "Success response from InfluxDB");
+    }
+
+    @Override
+    public void doOnErrorResponse(@Nonnull final InfluxDBException throwable) {
+
+        LOG.log(Level.SEVERE, "Error response from InfluxDB: ", throwable);
     }
 
     @Override

@@ -1,8 +1,7 @@
 package org.influxdb.impl;
 
-import io.reactivex.Single;
+import io.reactivex.Completable;
 import okhttp3.RequestBody;
-import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
@@ -34,11 +33,11 @@ public interface InfluxDBServiceReactive {
      */
     @POST("/write")
     @Nonnull
-    Single<Response<String>> writePoints(@Query(InfluxDBService.U) String username,
-                                         @Query(InfluxDBService.P) String password,
-                                         @Query(InfluxDBService.DB) String database,
-                                         @Query(InfluxDBService.RP) String retentionPolicy,
-                                         @Query(InfluxDBService.PRECISION) String precision,
-                                         @Query(InfluxDBService.CONSISTENCY) String consistency,
-                                         @Body RequestBody points);
+    Completable writePoints(@Query(InfluxDBService.U) String username,
+                            @Query(InfluxDBService.P) String password,
+                            @Query(InfluxDBService.DB) String database,
+                            @Query(InfluxDBService.RP) String retentionPolicy,
+                            @Query(InfluxDBService.PRECISION) String precision,
+                            @Query(InfluxDBService.CONSISTENCY) String consistency,
+                            @Body RequestBody points);
 }

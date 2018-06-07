@@ -1,7 +1,7 @@
 package org.influxdb.impl;
 
 import org.assertj.core.api.Assertions;
-import retrofit2.Response;
+import org.influxdb.InfluxDBException;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -22,9 +22,19 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
     private List<Throwable> throwables = new ArrayList<>();
 
     @Override
-    public void doOnResponse(@Nonnull Response<String> response) {
+    public void doOnSuccessResponse() {
 
-        super.doOnResponse(response);
+        super.doOnSuccessResponse();
+
+        responses.add(1);
+    }
+
+    @Override
+    public void doOnErrorResponse(@Nonnull final InfluxDBException throwable) {
+
+        super.doOnErrorResponse(throwable);
+
+        throwables.add(throwable);
 
         responses.add(1);
     }
@@ -45,6 +55,12 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
                 .isEqualTo(0);
     }
 
+    public void verifyErrors(final int expected)
+    {
+        Assertions.assertThat(throwables.size())
+                .isEqualTo(expected);
+    }
+
     public void waitForResponse(@Nonnull final Long responseCount)
     {
         Objects.requireNonNull(responseCount, "Response count is required");
@@ -54,7 +70,7 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
         long start = System.currentTimeMillis();
         while (responseCount > responses.longValue())
         {
-            if (System.currentTimeMillis() - start > 10_000)
+            if (System.currentTimeMillis() - start > 10_0000)
             {
                 throw new RuntimeException("Response did not arrived in 10 seconds.");
             }

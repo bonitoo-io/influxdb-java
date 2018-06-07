@@ -1,6 +1,6 @@
 package org.influxdb.impl;
 
-import io.reactivex.Single;
+import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.schedulers.TestScheduler;
 import okhttp3.RequestBody;
@@ -11,7 +11,6 @@ import org.influxdb.reactive.InfluxDBReactive;
 import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import retrofit2.Response;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -54,7 +53,7 @@ public abstract class AbstractInfluxDBReactiveTest {
 
         requestBody = ArgumentCaptor.forClass(RequestBody.class);
 
-        Mockito.doAnswer(invocation -> Single.just(Response.success(null))).when(influxDBService).writePoints(
+        Mockito.doAnswer(invocation -> Completable.never()).when(influxDBService).writePoints(
                 Mockito.eq("admin"),
                 Mockito.eq("password"),
                 Mockito.eq("weather"),

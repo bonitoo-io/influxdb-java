@@ -3,6 +3,7 @@ package org.influxdb.reactive;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
+import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
@@ -13,7 +14,9 @@ import org.junit.runner.RunWith;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,7 +63,25 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     }
 
     @Test
-    void publishPattern() throws InterruptedException {
+    void writeFail() {
+
+        setUp(BatchOptionsReactive.DISABLED);
+
+        Map<String, Object> fieldsToAdd = new HashMap<>();
+        fieldsToAdd.put("level", null);
+
+        Point point = Point.measurement("coyote_creek").fields(fieldsToAdd).build();
+
+        // write
+        influxDBReactive.writePoint(point);
+
+        verifier.waitForResponse(1L);
+
+        verifier.verifyErrors(1);
+    }
+
+    @Test
+    void publishPattern() {
 
         setUp(BatchOptionsReactive.DISABLED);
 
@@ -99,7 +120,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     }
 
     @Test
-    void batchingOrder() throws InterruptedException {
+    void batchingOrder() {
 
         // after 5 actions or 10 seconds + 5 seconds jitter interval
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
