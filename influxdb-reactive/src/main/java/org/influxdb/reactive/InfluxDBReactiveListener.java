@@ -1,5 +1,6 @@
 package org.influxdb.reactive;
 
+import io.reactivex.disposables.Disposable;
 import org.influxdb.InfluxDBException;
 
 import javax.annotation.Nonnull;
@@ -13,20 +14,33 @@ import javax.annotation.Nonnull;
 public interface InfluxDBReactiveListener {
 
     /**
-     * The method is called when arrived the success response from InfluxDB.
+     * The method is triggered when is Writer subscribed.
      *
+     * @param writeDisposable writer disposable
+     */
+    void doOnSubscribeWriter(@Nonnull final Disposable writeDisposable);
+
+    /**
+     * The method is triggered when is backpressure applied.
+     *
+     * @see io.reactivex.Flowable#onBackpressureBuffer
+     */
+    void doOnBackpressure();
+
+    /**
+     * The method is triggered when arrived the success response from InfluxDB.
      */
     void doOnSuccessResponse();
 
     /**
-     * The method is called when arrived the error response from InfluxDB.
+     * The method is triggered when arrived the error response from InfluxDB.
      *
      * @param throwable propagated InfluxDB exception
      */
     void doOnErrorResponse(@Nonnull final InfluxDBException throwable);
 
     /**
-     * The method is called when occurs a unhandled exception.
+     * The method is triggered when occurs a unhandled exception.
      *
      * @param throwable cause
      */

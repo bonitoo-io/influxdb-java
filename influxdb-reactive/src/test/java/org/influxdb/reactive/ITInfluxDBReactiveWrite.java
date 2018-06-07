@@ -120,7 +120,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     }
 
     @Test
-    void batchingOrder() {
+    void batchingOrderForJitter() {
 
         // after 5 actions or 10 seconds + 5 seconds jitter interval
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
@@ -195,6 +195,35 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         Assertions.assertThat(measurement3DB.getTime()).isBeforeOrEqualTo(measurement4DB.getTime());
 
         verifier.verify();
+    }
+
+    @Test
+    void backpressure() {
+
+        setUp(BatchOptionsReactive.builder().build());
+
+        Flowable<Point> map = Flowable
+                .range(0, 20_000).map(index ->
+                        Point.measurement("h2o_feet")
+                                .tag("location", "coyote_creek" + index)
+                                .addField("water_level", index)
+                                .addField("level description", index + " feet")
+                                .time(index, TimeUnit.NANOSECONDS)
+                                .build());
+
+        influxDBReactive.writePoints(map);
+        influxDBReactive.close();
+
+        // was backpressure
+        Long backpressureCount = verifier
+                .verifyBackpressure();
+
+        // wait for response
+        verifier.waitForWriteDisposed();
+
+        // measurements + backpressure = 20 000
+        List<H2OFeetMeasurement> measurements = getMeasurements();
+        Assertions.assertThat(backpressureCount + measurements.size()).isEqualTo(20_000);
     }
 
     @Nonnull

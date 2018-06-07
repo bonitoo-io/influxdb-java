@@ -1,5 +1,6 @@
 package org.influxdb.impl;
 
+import io.reactivex.disposables.Disposable;
 import org.influxdb.InfluxDBException;
 import org.influxdb.reactive.InfluxDBReactiveListener;
 
@@ -18,20 +19,27 @@ public class InfluxDBReactiveListenerDefault implements InfluxDBReactiveListener
     private static final Logger LOG = Logger.getLogger(InfluxDBReactiveListenerDefault.class.getName());
 
     @Override
-    public void doOnSuccessResponse() {
+    public void doOnSubscribeWriter(@Nonnull final Disposable writeDisposable) {
+        LOG.log(Level.FINEST, "Subscribed writer");
+    }
 
+    @Override
+    public void doOnSuccessResponse() {
         LOG.log(Level.FINEST, "Success response from InfluxDB");
     }
 
     @Override
     public void doOnErrorResponse(@Nonnull final InfluxDBException throwable) {
-
         LOG.log(Level.SEVERE, "Error response from InfluxDB: ", throwable);
     }
 
     @Override
     public void doOnError(@Nonnull final Throwable throwable) {
-
         LOG.log(Level.SEVERE, "Unexpected error", throwable);
+    }
+
+    @Override
+    public void doOnBackpressure() {
+        LOG.log(Level.WARNING, "Backpressure applied, try increase BatchOptionsReactive.bufferLimit");
     }
 }

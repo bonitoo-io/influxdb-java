@@ -1,9 +1,11 @@
 package org.influxdb.impl;
 
+import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableTransformer;
 import io.reactivex.Maybe;
 import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
@@ -84,7 +86,14 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         this.listener = listener;
 
         this.processor = PublishProcessor.create();
-        this.processor
+        Disposable writeDisposable = this.processor
+                //
+                // Backpressure
+                //
+                .onBackpressureBuffer(
+                        batchOptions.getBufferLimit(),
+                        listener::doOnBackpressure,
+                        BackpressureOverflowStrategy.DROP_OLDEST)
                 .observeOn(processorScheduler)
                 //
                 // Batching
@@ -100,6 +109,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 .compose(applyJitter(jitterScheduler, batchOptions.getJitterInterval()))
                 .doOnError(this.listener::doOnError)
                 .subscribe(new WritePointsConsumer());
+
+        this.listener.doOnSubscribeWriter(writeDisposable);
     }
 
     @Override
