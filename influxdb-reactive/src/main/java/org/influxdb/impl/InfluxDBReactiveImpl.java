@@ -1,6 +1,5 @@
 package org.influxdb.impl;
 
-import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableTransformer;
 import io.reactivex.Maybe;
@@ -92,7 +91,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 .onBackpressureBuffer(
                         batchOptions.getBufferLimit(),
                         listener::doOnBackpressure,
-                        BackpressureOverflowStrategy.DROP_OLDEST)
+                        batchOptions.getBackpressureStrategy())
                 .observeOn(processorScheduler)
                 //
                 // Batching

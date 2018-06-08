@@ -1,6 +1,8 @@
 package org.influxdb.reactive;
 
+import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.exceptions.MissingBackpressureException;
 import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
@@ -224,6 +226,40 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         // measurements + backpressure = 20 000
         List<H2OFeetMeasurement> measurements = getMeasurements();
         Assertions.assertThat(backpressureCount + measurements.size()).isEqualTo(20_000);
+
+        verifier.verifySuccess();
+    }
+
+    @Test
+    void backpressureErrorStrategy() {
+
+        BatchOptionsReactive build = BatchOptionsReactive
+                .builder()
+                .backpressureStrategy(BackpressureOverflowStrategy.ERROR)
+                .build();
+
+        setUp(build);
+
+        Flowable<Point> map = Flowable
+                .range(0, 20_000).map(index ->
+                        Point.measurement("h2o_feet")
+                                .tag("location", "coyote_creek" + index)
+                                .addField("water_level", index)
+                                .addField("level description", index + " feet")
+                                .time(index, TimeUnit.NANOSECONDS)
+                                .build());
+
+        influxDBReactive.writePoints(map);
+        influxDBReactive.close();
+
+        // wait for response
+        verifier.waitForWriteDisposed();
+        verifier.verifyError(0, MissingBackpressureException.class);
+
+        // writer action limit than backpressure
+        List<H2OFeetMeasurement> measurements = getMeasurements();
+        Assertions.assertThat(measurements.size()).isEqualTo(1_000);
+
     }
 
     @Test
@@ -249,6 +285,8 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         // measurements + backpressure = 20 000
         List<H2OFeetMeasurement> measurements = getMeasurements();
         Assertions.assertThat(measurements.size()).isEqualTo(20_000);
+
+        verifier.verifySuccess();
     }
 
     @Nonnull

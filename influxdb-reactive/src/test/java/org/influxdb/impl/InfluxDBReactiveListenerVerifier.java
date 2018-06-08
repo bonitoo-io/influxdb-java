@@ -69,6 +69,14 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
                 .isEqualTo(0);
     }
 
+    public void verifyError(final int index, @Nonnull final Class<? extends Throwable> typeOfException) {
+
+        Assertions
+                .assertThat(throwables.get(index))
+                .isInstanceOf(typeOfException);
+    }
+
+
     public void verifyErrorResponse(final int expected) {
         Assertions.assertThat(errorResponses.longValue())
                 .isEqualTo(expected);

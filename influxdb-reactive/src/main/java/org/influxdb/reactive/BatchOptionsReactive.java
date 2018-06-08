@@ -1,5 +1,6 @@
 package org.influxdb.reactive;
 
+import io.reactivex.BackpressureOverflowStrategy;
 import org.influxdb.BatchOptions;
 import org.influxdb.impl.Preconditions;
 
@@ -30,11 +31,12 @@ public final class BatchOptionsReactive {
      */
     public static final BatchOptionsReactive DISABLED = BatchOptionsReactive.disabled().build();
 
-    private int actions;
-    private int flushInterval;
-    private int jitterInterval;
-    private int retryInterval;
-    private int bufferLimit;
+    private final int actions;
+    private final int flushInterval;
+    private final int jitterInterval;
+    private final int retryInterval;
+    private final int bufferLimit;
+    private final BackpressureOverflowStrategy backpressureStrategy;
 
     /**
      * @return actions the number of actions to collect
@@ -82,6 +84,16 @@ public final class BatchOptionsReactive {
         return bufferLimit;
     }
 
+    /**
+     * @return the strategy to deal with buffer overflow when using onBackpressureBuffer
+     * @see BatchOptionsReactive.Builder#backpressureStrategy(BackpressureOverflowStrategy)
+     * @since 3.0.0
+     */
+    @Nonnull
+    public BackpressureOverflowStrategy getBackpressureStrategy() {
+        return backpressureStrategy;
+    }
+
     private BatchOptionsReactive(@Nonnull final Builder builder) {
 
         Objects.requireNonNull(builder, "BatchOptionsReactive.Builder is required");
@@ -91,6 +103,7 @@ public final class BatchOptionsReactive {
         jitterInterval = builder.jitterInterval;
         retryInterval = builder.retryInterval;
         bufferLimit = builder.bufferLimit;
+        backpressureStrategy = builder.backpressureStrategy;
     }
 
     /**
@@ -128,6 +141,7 @@ public final class BatchOptionsReactive {
         private int jitterInterval = DEFAULT_JITTER_INTERVAL_DURATION;
         private int retryInterval = DEFAULT_BATCH_INTERVAL_DURATION;
         private int bufferLimit = DEFAULT_BUFFER_LIMIT;
+        private BackpressureOverflowStrategy backpressureStrategy = BackpressureOverflowStrategy.DROP_OLDEST;
 
         /**
          * Set the number of actions to collect.
@@ -202,6 +216,21 @@ public final class BatchOptionsReactive {
         public Builder bufferLimit(final int bufferLimit) {
             Preconditions.checkNotNegativeNumber(bufferLimit, "bufferLimit");
             this.bufferLimit = bufferLimit;
+            return this;
+        }
+
+        /**
+         * Set the strategy to deal with buffer overflow when using onBackpressureBuffer.
+         *
+         * @param backpressureStrategy the strategy to deal with buffer overflow when using onBackpressureBuffer.
+         *                             Default {@link BackpressureOverflowStrategy#DROP_OLDEST};
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder backpressureStrategy(@Nonnull final BackpressureOverflowStrategy backpressureStrategy) {
+            Objects.requireNonNull(backpressureStrategy, "Backpressure Overflow Strategy is required");
+            this.backpressureStrategy = backpressureStrategy;
             return this;
         }
 
