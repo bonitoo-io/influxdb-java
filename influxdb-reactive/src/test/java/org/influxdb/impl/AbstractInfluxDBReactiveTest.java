@@ -1,5 +1,6 @@
 package org.influxdb.impl;
 
+import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.schedulers.TestScheduler;
 import okhttp3.mockwebserver.MockWebServer;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.AfterEach;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 07:04)
@@ -21,12 +23,20 @@ public abstract class AbstractInfluxDBReactiveTest {
     protected InfluxDBReactive influxDBReactive;
     protected InfluxDBReactiveListenerVerifier verifier;
 
-    protected TestScheduler batchScheduler;
-    protected TestScheduler jitterScheduler;
+    protected Scheduler batchScheduler;
+    protected Scheduler jitterScheduler;
+    protected Scheduler retryScheduler;
 
     protected MockWebServer influxDBServer;
 
     protected void setUp(@Nonnull final BatchOptionsReactive batchOptions) {
+        setUp(batchOptions, new TestScheduler(), new TestScheduler(), new TestScheduler());
+    }
+
+    protected void setUp(@Nonnull final BatchOptionsReactive batchOptions,
+                         @Nonnull final Scheduler batchScheduler,
+                         @Nonnull final Scheduler jitterScheduler,
+                         @Nonnull final Scheduler retryScheduler) {
 
         Objects.requireNonNull(batchOptions, "BatchOptionsReactive is required");
 
@@ -45,13 +55,19 @@ public abstract class AbstractInfluxDBReactiveTest {
                 .build();
 
         verifier = new InfluxDBReactiveListenerVerifier();
-        batchScheduler = new TestScheduler();
-        jitterScheduler = new TestScheduler();
+
+        this.batchScheduler = batchScheduler;
+        this.jitterScheduler = jitterScheduler;
+        this.retryScheduler = retryScheduler;
 
         influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions,
-                Schedulers.trampoline(), batchScheduler, jitterScheduler,
-                null, verifier);
+                Schedulers.trampoline(), this.batchScheduler, this.jitterScheduler,
+                this.retryScheduler, null, verifier);
 
+    }
+
+    protected void advanceTimeBy(int i, @Nonnull final Scheduler scheduler) {
+        ((TestScheduler) scheduler).advanceTimeBy(i, TimeUnit.SECONDS);
     }
 
     @AfterEach

@@ -41,7 +41,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         // write
         influxDBReactive.writeMeasurements(Flowable.just(measurement1, measurement2));
 
-        verifier.waitForResponse(2L);
+        verifier.waitForResponse(2);
 
         // get from DB
         List<H2OFeetMeasurement> measurements = getMeasurements();
@@ -75,7 +75,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         // write
         influxDBReactive.writePoint(point);
 
-        verifier.waitForResponse(1L);
+        verifier.waitForResponse(1);
 
         verifier.verifyErrorResponse(1);
     }
@@ -104,7 +104,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         // 50 seconds to feature
         scheduler.advanceTimeBy(50, TimeUnit.SECONDS);
 
-        verifier.waitForResponse(5L);
+        verifier.waitForResponse(5);
 
         // get from DB
         List<H2OFeetMeasurement> measurements = getMeasurements();
@@ -155,7 +155,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         influxDBReactive.writeMeasurements(measurements1);
         influxDBReactive.writeMeasurements(measurements2);
 
-        verifier.waitForResponse(2L);
+        verifier.waitForResponse(2);
 
         // get from DB
         List<H2OFeetMeasurement> measurements = getMeasurements();
@@ -224,6 +224,31 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         // measurements + backpressure = 20 000
         List<H2OFeetMeasurement> measurements = getMeasurements();
         Assertions.assertThat(backpressureCount + measurements.size()).isEqualTo(20_000);
+    }
+
+    @Test
+    void withoutBackpressure() {
+
+        setUp(BatchOptionsReactive.builder().bufferLimit(20_000).build());
+
+        Flowable<Point> map = Flowable
+                .range(0, 20_000).map(index ->
+                        Point.measurement("h2o_feet")
+                                .tag("location", "coyote_creek" + index)
+                                .addField("water_level", index)
+                                .addField("level description", index + " feet")
+                                .time(index, TimeUnit.NANOSECONDS)
+                                .build());
+
+        influxDBReactive.writePoints(map);
+        influxDBReactive.close();
+
+        // wait for response
+        verifier.waitForWriteDisposed();
+
+        // measurements + backpressure = 20 000
+        List<H2OFeetMeasurement> measurements = getMeasurements();
+        Assertions.assertThat(measurements.size()).isEqualTo(20_000);
     }
 
     @Nonnull

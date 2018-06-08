@@ -90,8 +90,8 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
         Assertions.assertThat(influxDBServer.getRequestCount())
                 .isEqualTo(0);
 
-        // 1_000_000 milliseconds to feature
-        batchScheduler.advanceTimeBy(1_000_000, TimeUnit.MILLISECONDS);
+        // 1_000 seconds to feature
+        advanceTimeBy(1_000, batchScheduler);
 
         // was call remote API
         Assertions.assertThat(influxDBServer.getRequestCount())
@@ -133,14 +133,14 @@ class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
         influxDBReactive.writeMeasurement(createMeasurement(150));
 
         // move time to feature by 10 seconds - flush interval elapsed
-        batchScheduler.advanceTimeBy(10, TimeUnit.SECONDS);
+        advanceTimeBy(10, batchScheduler);
 
         // without call remote api
         Assertions.assertThat(influxDBServer.getRequestCount())
                 .isEqualTo(0);
 
         // move time to feature by 5 seconds - jitter interval elapsed
-        jitterScheduler.advanceTimeBy(5, TimeUnit.SECONDS);
+        advanceTimeBy(5, jitterScheduler);
 
         // was call remote API
         Assertions.assertThat(influxDBServer.getRequestCount())

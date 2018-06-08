@@ -33,6 +33,7 @@ public final class BatchOptionsReactive {
     private int actions;
     private int flushInterval;
     private int jitterInterval;
+    private int retryInterval;
     private int bufferLimit;
 
     /**
@@ -62,6 +63,16 @@ public final class BatchOptionsReactive {
         return jitterInterval;
     }
 
+
+    /**
+     * @return the time to wait before retry unsuccessful write (milliseconds)
+     * @see BatchOptionsReactive.Builder#retryInterval(int)
+     * @since 3.0.0
+     */
+    public int getRetryInterval() {
+        return retryInterval;
+    }
+
     /**
      * @return Maximum number of points stored in the retry buffer.
      * @see BatchOptionsReactive.Builder#bufferLimit(int)
@@ -78,6 +89,7 @@ public final class BatchOptionsReactive {
         actions = builder.actions;
         flushInterval = builder.flushInterval;
         jitterInterval = builder.jitterInterval;
+        retryInterval = builder.retryInterval;
         bufferLimit = builder.bufferLimit;
     }
 
@@ -114,6 +126,7 @@ public final class BatchOptionsReactive {
         private int actions = DEFAULT_BATCH_ACTIONS_LIMIT;
         private int flushInterval = DEFAULT_BATCH_INTERVAL_DURATION;
         private int jitterInterval = DEFAULT_JITTER_INTERVAL_DURATION;
+        private int retryInterval = DEFAULT_BATCH_INTERVAL_DURATION;
         private int bufferLimit = DEFAULT_BUFFER_LIMIT;
 
         /**
@@ -157,6 +170,20 @@ public final class BatchOptionsReactive {
         public Builder jitterInterval(final int jitterInterval) {
             Preconditions.checkNotNegativeNumber(jitterInterval, "jitterInterval");
             this.jitterInterval = jitterInterval;
+            return this;
+        }
+
+        /**
+         * Set the the time to wait before retry unsuccessful write (milliseconds).
+         *
+         * @param retryInterval the time to wait before retry unsuccessful write
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder retryInterval(final int retryInterval) {
+            Preconditions.checkPositiveNumber(retryInterval, "retryInterval");
+            this.retryInterval = retryInterval;
             return this;
         }
 

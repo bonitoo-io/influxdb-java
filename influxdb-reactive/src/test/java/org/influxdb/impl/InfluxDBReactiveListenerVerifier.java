@@ -7,7 +7,6 @@ import org.influxdb.InfluxDBException;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,8 +92,7 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
         return backpressures.longValue();
     }
 
-    public void waitForResponse(@Nonnull final Long responseCount) {
-        Objects.requireNonNull(responseCount, "Response count is required");
+    public void waitForResponse(final int responseCount) {
 
         LOG.log(Level.FINEST, "Wait for responses: {0}", responseCount);
 

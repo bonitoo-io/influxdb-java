@@ -47,6 +47,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     private final PublishProcessor<Point> processor;
 
     private final InfluxDBOptions options;
+    private final BatchOptionsReactive batchOptions;
     private final InfluxDBReactiveListener listener;
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
@@ -61,14 +62,11 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
-                         @Nonnull final BatchOptionsReactive batchOptions,
-                         @Nonnull final InfluxDBReactiveListener listener) {
-        this(options, batchOptions,
-                Schedulers.newThread(),
-                Schedulers.computation(),
-                Schedulers.trampoline(),
-                null,
-                listener);
+                                @Nonnull final BatchOptionsReactive batchOptions,
+                                @Nonnull final InfluxDBReactiveListener listener) {
+
+        this(options, batchOptions, Schedulers.newThread(), Schedulers.computation(), Schedulers.trampoline(),
+                Schedulers.trampoline(), null, listener);
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
@@ -76,12 +74,14 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                          @Nonnull final Scheduler processorScheduler,
                          @Nonnull final Scheduler batchScheduler,
                          @Nonnull final Scheduler jitterScheduler,
+                         @Nonnull final Scheduler retryScheduler,
                          @Nullable final InfluxDBServiceReactive influxDBService,
                          @Nonnull final InfluxDBReactiveListener listener) {
 
         super(InfluxDBServiceReactive.class, options, influxDBService, null);
 
         this.options = options;
+        this.batchOptions = batchOptions;
         this.listener = listener;
 
         this.processor = PublishProcessor.create();
@@ -105,9 +105,9 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 //
                 // Jitter interval
                 //
-                .compose(applyJitter(jitterScheduler, batchOptions.getJitterInterval()))
+                .compose(applyJitter(jitterScheduler))
                 .doOnError(this.listener::doOnError)
-                .subscribe(new WritePointsConsumer());
+                .subscribe(new WritePointsConsumer(retryScheduler));
 
         this.listener.doOnSubscribeWriter(writeDisposable);
     }
@@ -197,18 +197,16 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     }
 
     @Nonnull
-    private FlowableTransformer<Flowable<Point>, Flowable<Point>> applyJitter(@Nonnull final Scheduler jitterScheduler,
-                                                                              @Nonnull final Integer jitterInterval) {
+    private FlowableTransformer<Flowable<Point>, Flowable<Point>> applyJitter(@Nonnull final Scheduler scheduler) {
 
-        Objects.requireNonNull(jitterScheduler, "Jitter scheduler is required");
-        Objects.requireNonNull(jitterInterval, "Jitter interval is required");
+        Objects.requireNonNull(scheduler, "Jitter scheduler is required");
 
         return source -> {
 
             //
             // source without jitter
             //
-            if (jitterInterval <= 0) {
+            if (batchOptions.getJitterInterval() <= 0) {
                 return source;
             }
 
@@ -217,16 +215,25 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             //
             return source.delay((Function<Flowable<Point>, Flowable<Long>>) pointFlowable -> {
 
-                int delay = (int) (Math.random() * jitterInterval);
+                int delay = jitterDelay();
 
                 LOG.log(Level.FINEST, "Generated Jitter dynamic delay: {0}", delay);
 
-                return Flowable.timer(delay, TimeUnit.MILLISECONDS, jitterScheduler);
+                return Flowable.timer(delay, TimeUnit.MILLISECONDS, scheduler);
             });
         };
     }
 
-    private class WritePointsConsumer implements Consumer<Flowable<Point>> {
+    private final class WritePointsConsumer implements Consumer<Flowable<Point>> {
+
+        private final Scheduler retryScheduler;
+
+        private WritePointsConsumer(@Nonnull final Scheduler retryScheduler) {
+
+            Objects.requireNonNull(retryScheduler, "RetryScheduler is required");
+
+            this.retryScheduler = retryScheduler;
+        }
 
         @Override
         public void accept(final Flowable<Point> flowablePoints) {
@@ -274,7 +281,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                         username, password, database,
                                         retentionPolicy, precision, consistencyLevel,
                                         requestBody)
-                                .retryWhen(retryCapabilities())
+                                .retryWhen(retryCapabilities(retryScheduler))
                                 .subscribe(success, fail);
                     });
         }
@@ -284,10 +291,13 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
      * The retry handler that tries to retry a write if it failed previously and
      * the reason of the failure is not permanent.
      *
+     * @param retryScheduler for scheduling retry write
      * @return the retry handler
      */
     @Nonnull
-    private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities() {
+    private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities(@Nonnull final Scheduler retryScheduler) {
+
+        Objects.requireNonNull(retryScheduler, "RetryScheduler is required");
 
         return errors -> errors.flatMap(throwable -> {
 
@@ -303,8 +313,9 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
                     listener.doOnErrorResponse(influxDBException);
 
-                    // notify RxJava to retry
-                    return Flowable.just("");
+                    int retryInterval = batchOptions.getRetryInterval() + jitterDelay();
+
+                    return Flowable.just("notify").delay(retryInterval, TimeUnit.MILLISECONDS, retryScheduler);
                 }
             }
 
@@ -326,6 +337,11 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         }
 
         return new InfluxDBException(throwable);
+    }
+
+    private int jitterDelay() {
+
+        return (int) (Math.random() * batchOptions.getJitterInterval());
     }
 
     /**
