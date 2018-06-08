@@ -2,6 +2,8 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import okhttp3.mockwebserver.MockResponse;
+import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,12 +26,13 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
     @BeforeEach
     void setUp() {
-
         super.setUp(BatchOptionsReactive.DISABLED);
     }
 
     @Test
     void writePoint() {
+
+        influxDBServer.enqueue(new MockResponse());
 
         Point point = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
@@ -51,12 +54,19 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
         assertThat(actual).isEqualTo(expected);
 
+        // One request
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(1);
+
         // there is no exception
-        verifier.verify();
+        verifier.verifySuccess();
     }
 
     @Test
     void writePointsIterable() {
+
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
 
         Point point1 = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
@@ -86,20 +96,28 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         // written points
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(0);
+        String actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
-        actual = pointsBody(1);
+        actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
+        // Two requests
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(2);
+
         // there is no exception
-        verifier.verify();
+        verifier.verifySuccess();
     }
 
     @Test
     void writePointsPublisher() {
+
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
 
         Point point1 = Point.measurement("h2o_feet")
                 .tag("location", "coyote_creek")
@@ -133,25 +151,31 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         // written points
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(0);
+        String actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
-        actual = pointsBody(1);
+        actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
-        actual = pointsBody(2);
+        actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
+        // Three requests
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(3);
+
         // there is no exception
-        verifier.verify();
+        verifier.verifySuccess();
     }
 
     @Test
     void writeMeasurement() {
+
+        influxDBServer.enqueue(new MockResponse());
 
         H2OFeetMeasurement measurement = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046800L);
@@ -169,12 +193,19 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
         assertThat(actual).isEqualTo(expected);
 
+        // One request
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(1);
+
         // there is no exception
-        verifier.verify();
+        verifier.verifySuccess();
     }
 
     @Test
     void writeMeasurementsIterable() {
+
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
 
         H2OFeetMeasurement measurement1 = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046800L);
@@ -196,20 +227,28 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         // written measurements
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(0);
+        String actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
-        actual = pointsBody(1);
+        actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
+        // Two requests
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(2);
+
         // there is no exception
-        verifier.verify();
+        verifier.verifySuccess();
     }
 
     @Test
     void writeMeasurementsPublisher() {
+
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
 
         H2OFeetMeasurement measurement1 = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046800L);
@@ -233,20 +272,24 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         // written measurements
         String expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
-        String actual = pointsBody(0);
+        String actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
-        actual = pointsBody(1);
+        actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
-        actual = pointsBody(2);
+        actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
+        // Three requests
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(3);
+
         // there is no exception
-        verifier.verify();
+        verifier.verifySuccess();
     }
 }

@@ -1,16 +1,13 @@
 package org.influxdb.impl;
 
-import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.schedulers.TestScheduler;
-import okhttp3.RequestBody;
+import okhttp3.mockwebserver.MockWebServer;
 import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.junit.jupiter.api.AfterEach;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -23,25 +20,29 @@ public abstract class AbstractInfluxDBReactiveTest {
 
     protected InfluxDBReactive influxDBReactive;
     protected InfluxDBReactiveListenerVerifier verifier;
-    protected InfluxDBServiceReactive influxDBService;
 
     protected TestScheduler batchScheduler;
     protected TestScheduler jitterScheduler;
 
-    protected ArgumentCaptor<RequestBody> requestBody;
+    protected MockWebServer influxDBServer;
 
     protected void setUp(@Nonnull final BatchOptionsReactive batchOptions) {
 
         Objects.requireNonNull(batchOptions, "BatchOptionsReactive is required");
 
+        influxDBServer = new MockWebServer();
+        try {
+            influxDBServer.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         InfluxDBOptions options = InfluxDBOptions.builder()
-                .url("http://influxdb:8086")
+                .url(influxDBServer.url("/").url().toString())
                 .username("admin")
                 .password("password")
                 .database("weather")
                 .build();
-
-        influxDBService = Mockito.mock(InfluxDBServiceReactive.class);
 
         verifier = new InfluxDBReactiveListenerVerifier();
         batchScheduler = new TestScheduler();
@@ -49,41 +50,26 @@ public abstract class AbstractInfluxDBReactiveTest {
 
         influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions,
                 Schedulers.trampoline(), batchScheduler, jitterScheduler,
-                influxDBService, verifier);
+                null, verifier);
 
-        requestBody = ArgumentCaptor.forClass(RequestBody.class);
-
-        Mockito.doAnswer(invocation -> Completable.never()).when(influxDBService).writePoints(
-                Mockito.eq("admin"),
-                Mockito.eq("password"),
-                Mockito.eq("weather"),
-                Mockito.eq("autogen"),
-                Mockito.any(),
-                Mockito.eq("one"),
-                requestBody.capture());
     }
 
     @AfterEach
-    void cleanUp() {
+    void cleanUp() throws IOException {
         influxDBReactive.close();
+        influxDBServer.shutdown();
     }
 
     @Nonnull
     protected String pointsBody() {
-        return pointsBody(0);
-    }
 
-    @Nonnull
-    protected String pointsBody(@Nonnull final Integer captureValueIndex) {
-
-        Objects.requireNonNull(captureValueIndex, "CaptureValueIndex is required");
-
-        Buffer sink = new Buffer();
+        Buffer sink;
         try {
-            requestBody.getAllValues().get(captureValueIndex).writeTo(sink);
-        } catch (IOException e) {
+            sink = influxDBServer.takeRequest().getBody();
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
         return sink.readUtf8();
     }
 }

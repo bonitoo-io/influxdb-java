@@ -59,7 +59,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         assertThat(measurements.get(1).getDescription()).isEqualTo("below 2 feet");
         assertThat(measurements.get(1).getTime().toEpochMilli()).isEqualTo(1440049802L);
 
-        verifier.verify();
+        verifier.verifySuccess();
     }
 
     @Test
@@ -77,7 +77,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
 
         verifier.waitForResponse(1L);
 
-        verifier.verifyErrors(1);
+        verifier.verifyErrorResponse(1);
     }
 
     @Test
@@ -116,7 +116,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         assertThat(measurements.get(3).getLevel()).isEqualTo(3D);
         assertThat(measurements.get(4).getLevel()).isEqualTo(4D);
 
-        verifier.verify();
+        verifier.verifySuccess();
     }
 
     @Test
@@ -194,7 +194,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         Assertions.assertThat(measurement2DB.getTime()).isBefore(measurement3DB.getTime());
         Assertions.assertThat(measurement3DB.getTime()).isBeforeOrEqualTo(measurement4DB.getTime());
 
-        verifier.verify();
+        verifier.verifySuccess();
     }
 
     @Test

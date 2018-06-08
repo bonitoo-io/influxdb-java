@@ -24,7 +24,6 @@ import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveListener;
 import org.reactivestreams.Publisher;
 import retrofit2.HttpException;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
@@ -254,12 +253,11 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                         buildInfluxDBException((HttpException) throwable);
 
                                 listener.doOnErrorResponse(influxDBException);
-                                return;
+                            } else {
+
+                                listener.doOnError(throwable);
                             }
-
-                            listener.doOnError(throwable);
                         };
-
                         //
                         // Parameters
                         //
@@ -282,6 +280,12 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         }
     }
 
+    /**
+     * The retry handler that tries to retry a write if it failed previously and
+     * the reason of the failure is not permanent.
+     *
+     * @return the retry handler
+     */
     @Nonnull
     private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities() {
 
@@ -292,22 +296,31 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 InfluxDBException influxDBException =
                         buildInfluxDBException((HttpException) throwable);
 
-                boolean retryWorth = influxDBException.isRetryWorth();
-                // TODO retry
+                //
+                // Retry request
+                //
+                if (influxDBException.isRetryWorth()) {
+
+                    listener.doOnErrorResponse(influxDBException);
+
+                    // notify RxJava to retry
+                    return Flowable.just("");
+                }
             }
 
-            // only notify
+            //
+            // This type of throwable is not able to retry
+            //
             return Flowable.error(throwable);
         });
     }
 
     @Nonnull
     private InfluxDBException buildInfluxDBException(@Nonnull final HttpException throwable) {
+
         Objects.requireNonNull(throwable, "Throwable is required");
 
-        Response<?> response = ((HttpException) throwable).response();
-
-        String errorMessage = response.headers().get("X-Influxdb-Error");
+        String errorMessage = throwable.response().headers().get("X-Influxdb-Error");
         if (errorMessage != null) {
             return InfluxDBException.buildExceptionFromErrorMessage(errorMessage);
         }

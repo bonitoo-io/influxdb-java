@@ -22,7 +22,8 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
     private Disposable writeDisposable;
 
     private LongAdder backpressures = new LongAdder();
-    private LongAdder responses = new LongAdder();
+    private LongAdder successResponses = new LongAdder();
+    private LongAdder errorResponses = new LongAdder();
     private List<Throwable> throwables = new ArrayList<>();
 
     @Override
@@ -36,7 +37,7 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
     public void doOnSuccessResponse() {
         super.doOnSuccessResponse();
 
-        responses.add(1);
+        successResponses.add(1);
     }
 
     @Override
@@ -45,7 +46,7 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
 
         throwables.add(throwable);
 
-        responses.add(1);
+        errorResponses.add(1);
     }
 
     @Override
@@ -62,15 +63,20 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
         backpressures.add(1);
     }
 
-    public void verify() {
+    public void verifySuccess() {
         Assertions
                 .assertThat(throwables.size())
                 .withFailMessage("Unexpected exceptions: %s", throwables)
                 .isEqualTo(0);
     }
 
-    public void verifyErrors(final int expected) {
-        Assertions.assertThat(throwables.size())
+    public void verifyErrorResponse(final int expected) {
+        Assertions.assertThat(errorResponses.longValue())
+                .isEqualTo(expected);
+    }
+
+    public void verifySuccessResponse(final int expected) {
+        Assertions.assertThat(successResponses.longValue())
                 .isEqualTo(expected);
     }
 
@@ -93,7 +99,7 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
         LOG.log(Level.FINEST, "Wait for responses: {0}", responseCount);
 
         long start = System.currentTimeMillis();
-        while (responseCount > responses.longValue()) {
+        while (responseCount > (successResponses.longValue() + errorResponses.longValue())) {
             if (System.currentTimeMillis() - start > 10_000) {
                 throw new RuntimeException("Response did not arrived in 10 seconds.");
             }
