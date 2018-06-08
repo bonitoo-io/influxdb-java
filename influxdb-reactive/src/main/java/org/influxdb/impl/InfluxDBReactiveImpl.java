@@ -60,7 +60,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     }
 
 
-    InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
+    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                          @Nonnull final BatchOptionsReactive batchOptions,
                          @Nonnull final InfluxDBReactiveListener listener) {
         this(options, batchOptions,
