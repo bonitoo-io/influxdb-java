@@ -3,6 +3,7 @@ package org.influxdb.impl;
 import io.reactivex.disposables.Disposable;
 import org.assertj.core.api.Assertions;
 import org.influxdb.InfluxDBException;
+import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;

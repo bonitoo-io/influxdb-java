@@ -21,6 +21,7 @@ import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveListener;
+import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
 import org.reactivestreams.Publisher;
 import retrofit2.HttpException;
 import retrofit2.Retrofit;
@@ -237,10 +238,32 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         @Override
         public void accept(final Flowable<Point> flowablePoints) {
 
+            Action success = listener::doOnSuccessResponse;
+
+            Consumer<Throwable> fail = throwable -> {
+
+                if (throwable instanceof HttpException) {
+
+                    InfluxDBException influxDBException =
+                            buildInfluxDBException((HttpException) throwable);
+
+                    listener.doOnErrorResponse(influxDBException);
+                } else {
+
+                    listener.doOnError(throwable);
+                }
+            };
+
             flowablePoints
+                    //
+                    // Point => InfluxDB Line Protocol
+                    //
                     .map(Point::lineProtocol)
                     .toList()
                     .filter(points -> !points.isEmpty())
+                    //
+                    // InfluxDB Line Protocol => to Request Body
+                    //
                     .map(points -> {
 
                         String body = points.stream().collect(Collectors.joining("\n"));
@@ -249,21 +272,6 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                     })
                     .subscribe(requestBody -> {
 
-                        Action success = listener::doOnSuccessResponse;
-
-                        Consumer<Throwable> fail = throwable -> {
-
-                            if (throwable instanceof HttpException) {
-
-                                InfluxDBException influxDBException =
-                                        buildInfluxDBException((HttpException) throwable);
-
-                                listener.doOnErrorResponse(influxDBException);
-                            } else {
-
-                                listener.doOnError(throwable);
-                            }
-                        };
                         //
                         // Parameters
                         //
@@ -275,11 +283,13 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                         String precision = TimeUtil.toTimePrecision(options.getPrecision());
                         String consistencyLevel = options.getConsistencyLevel().value();
 
-                        influxDBService
-                                .writePoints(
-                                        username, password, database,
-                                        retentionPolicy, precision, consistencyLevel,
-                                        requestBody)
+                        influxDBService.writePoints(
+                                username, password, database,
+                                retentionPolicy, precision, consistencyLevel,
+                                requestBody)
+                                //
+                                // Retry strategy
+                                //
                                 .retryWhen(retryCapabilities(retryScheduler))
                                 .subscribe(success, fail);
                     });

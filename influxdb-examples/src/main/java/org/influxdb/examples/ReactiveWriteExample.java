@@ -5,7 +5,7 @@ import io.reactivex.Flowable;
 import java.util.concurrent.TimeUnit;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
-import org.influxdb.impl.InfluxDBReactiveListenerDefault;
+import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.slf4j.Logger;

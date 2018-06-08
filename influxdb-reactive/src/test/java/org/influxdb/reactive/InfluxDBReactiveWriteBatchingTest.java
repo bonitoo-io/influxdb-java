@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * @author Jakub Bednar (bednar@github) (05/06/2018 07:04)
  */
 @RunWith(JUnitPlatform.class)
-class InfluxDBReactiveBatchingTest extends AbstractInfluxDBReactiveTest {
+class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
 
     @Test
     void flushByActions() {

@@ -18,7 +18,7 @@ import java.util.List;
  * @author Jakub Bednar (07/06/2018 23:15)
  */
 @RunWith(JUnitPlatform.class)
-class InfluxDBReactiveRetryCapableTest extends AbstractInfluxDBReactiveTest {
+class InfluxDBReactiveWriteRetryCapableTest extends AbstractInfluxDBReactiveTest {
 
     @Test
     void writeAfterRetryException() {

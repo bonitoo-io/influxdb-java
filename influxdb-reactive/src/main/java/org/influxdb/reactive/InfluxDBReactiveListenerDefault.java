@@ -1,8 +1,7 @@
-package org.influxdb.impl;
+package org.influxdb.reactive;
 
 import io.reactivex.disposables.Disposable;
 import org.influxdb.InfluxDBException;
-import org.influxdb.reactive.InfluxDBReactiveListener;
 
 import javax.annotation.Nonnull;
 import java.util.logging.Level;
