@@ -11,6 +11,7 @@ import okhttp3.logging.HttpLoggingInterceptor.Level;
 import okio.BufferedSource;
 import org.influxdb.BatchOptions;
 import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBEventListener;
 import org.influxdb.InfluxDBException;
 import org.influxdb.InfluxDBIOException;
 import org.influxdb.InfluxDBOptions;
@@ -42,7 +43,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.LongAdder;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -61,9 +61,6 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
     private final TimeUnit precision = TimeUnit.NANOSECONDS;
     private BatchProcessor batchProcessor;
     private final AtomicBoolean batchEnabled = new AtomicBoolean(false);
-    private final LongAdder writeCount = new LongAdder();
-    private final LongAdder unBatchedCount = new LongAdder();
-    private final LongAdder batchedCount = new LongAdder();
     private volatile DatagramSocket datagramSocket;
     private String database;
     private String retentionPolicy = "autogen";
@@ -331,9 +328,9 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
                     .retentionPolicy(retentionPolicy).build();
             batchPoints.point(point);
             this.write(batchPoints);
-            this.unBatchedCount.increment();
+            listeners.forEach(l->l.onUnBatched());
         }
-        this.writeCount.increment();
+        listeners.forEach(l -> l.onWrite());
     }
 
     /**
@@ -346,14 +343,14 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
             this.batchProcessor.put(batchEntry);
         } else {
             this.write(udpPort, point.lineProtocol());
-            this.unBatchedCount.increment();
+            listeners.forEach(l->l.onUnBatched());
         }
-        this.writeCount.increment();
+        listeners.forEach(l -> l.onWrite());
     }
 
     @Override
     public void write(final BatchPoints batchPoints) {
-        this.batchedCount.add(batchPoints.getPoints().size());
+
         RequestBody lineProtocol = RequestBody.create(mediaType, batchPoints.lineProtocol());
         execute(this.influxDBService.writePoints(
                 this.username,
@@ -363,6 +360,9 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
                 TimeUtil.toTimePrecision(batchPoints.getPrecision()),
                 batchPoints.getConsistency().value(),
                 lineProtocol));
+        if (batchEnabled.get()) {
+            listeners.forEach(l -> l.onBatchedWrite(batchPoints));
+        }
     }
 
 
@@ -377,6 +377,8 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
                 TimeUtil.toTimePrecision(precision),
                 consistency.value(),
                 RequestBody.create(mediaType, records)));
+
+        listeners.forEach(l -> l.onWrite());
     }
 
     @Override
@@ -652,6 +654,7 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
             if (datagramSocket != null && !datagramSocket.isClosed()) {
                 datagramSocket.close();
             }
+            listeners.forEach(InfluxDBEventListener::onDestroy);
         }
     }
 

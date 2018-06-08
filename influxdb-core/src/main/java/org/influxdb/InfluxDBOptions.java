@@ -7,6 +7,9 @@ import org.influxdb.impl.Preconditions;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +37,7 @@ public final class InfluxDBOptions {
     private MediaType mediaType;
 
     private OkHttpClient.Builder okHttpClient;
+    private List<InfluxDBEventListener> listeners;
 
     private InfluxDBOptions(@Nonnull final Builder builder) {
 
@@ -53,6 +57,7 @@ public final class InfluxDBOptions {
         mediaType = builder.mediaType;
 
         okHttpClient = builder.okHttpClient;
+        listeners =  Collections.unmodifiableList(builder.listeners);
     }
 
     /**
@@ -155,6 +160,16 @@ public final class InfluxDBOptions {
     }
 
     /**
+     * Returns list of listeners registered by this client.
+     * @since 3.0.0
+     * @return unmodifiable list of listeners
+     */
+    @Nonnull
+    public List<InfluxDBEventListener> getListeners() {
+        return listeners;
+    }
+
+    /**
      * Creates a builder instance.
      *
      * @return a builder
@@ -164,7 +179,6 @@ public final class InfluxDBOptions {
     public static Builder builder() {
         return new Builder();
     }
-
     /**
      * A builder for {@code InfluxDBOptions}.
      *
@@ -186,6 +200,7 @@ public final class InfluxDBOptions {
         private MediaType mediaType = MediaType.parse("text/plain; charset=utf-8");
 
         private OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
+        private List<InfluxDBEventListener> listeners = new ArrayList<>();
 
         /**
          * Set the url to connect to InfluxDB.
@@ -319,6 +334,14 @@ public final class InfluxDBOptions {
         public Builder okHttpClient(@Nonnull final OkHttpClient.Builder okHttpClient) {
             Objects.requireNonNull(okHttpClient, "OkHttpClient.Builder is required");
             this.okHttpClient = okHttpClient;
+            return this;
+        }
+
+        /**
+         * Adds custom listener to listen events from InfluxDB client.
+         */
+        public Builder addListener(@Nonnull final  InfluxDBEventListener eventListener) {
+            this.listeners.add(eventListener);
             return this;
         }
 

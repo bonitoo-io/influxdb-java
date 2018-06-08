@@ -62,24 +62,30 @@ public class TestUtils {
     InfluxDB influxDB = InfluxDBFactory.connect(
             "http://" + TestUtils.getInfluxIP() + ":" + TestUtils.getInfluxPORT(true),
             "admin", "admin", clientToUse);
-    boolean influxDBstarted = false;
-    do {
-      Pong response;
-      try {
-        response = influxDB.ping();
-        if (response.isGood()) {
-          influxDBstarted = true;
-        }
-      } catch (Exception e) {
-        // NOOP intentional
-        e.printStackTrace();
-      }
-      Thread.sleep(100L);
-    } while (!influxDBstarted);
+
+    waitInfluxDBStarted(influxDB);
+
     influxDB.setLogLevel(InfluxDB.LogLevel.NONE);
     System.out.println("##################################################################################");
     System.out.println("#  Connected to InfluxDB Version: " + influxDB.version() + " #");
     System.out.println("##################################################################################");
     return influxDB;
   }
+
+	public static void waitInfluxDBStarted(InfluxDB influxDB) throws InterruptedException {
+		boolean influxDBstarted = false;
+		do {
+		  Pong response;
+		  try {
+			response = influxDB.ping();
+			if (response.isGood()) {
+			  influxDBstarted = true;
+			}
+		  } catch (Exception e) {
+			// NOOP intentional
+			e.printStackTrace();
+		  }
+		  Thread.sleep(100L);
+		} while (!influxDBstarted);
+	}
 }

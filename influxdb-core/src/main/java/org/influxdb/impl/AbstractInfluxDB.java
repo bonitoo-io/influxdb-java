@@ -2,16 +2,18 @@ package org.influxdb.impl;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBEventListener;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.QueryResult;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Objects;
 
 /**
  * @author Jakub Bednar (bednar@github) (04/06/2018 09:45)
@@ -24,8 +26,11 @@ public abstract class AbstractInfluxDB<T> {
 
     final GzipRequestInterceptor gzipRequestInterceptor;
 
+    private OkHttpClient okHttpClient;
     InfluxDB.LogLevel logLevel = InfluxDB.LogLevel.NONE;
     JsonAdapter<QueryResult> adapter;
+    List<InfluxDBEventListener> listeners;
+
 
     AbstractInfluxDB(@Nonnull final Class<T> influxDBServiceClass,
                      @Nonnull final InfluxDBOptions options,
@@ -37,17 +42,28 @@ public abstract class AbstractInfluxDB<T> {
         this.loggingInterceptor = new HttpLoggingInterceptor();
         this.loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
         this.gzipRequestInterceptor = new GzipRequestInterceptor();
+        this.listeners = options.getListeners();
+
+        OkHttpClient.Builder okBuilder = options.getOkHttpClient()
+                .addInterceptor(loggingInterceptor)
+                .addInterceptor(gzipRequestInterceptor);
+
+        if (!this.listeners.isEmpty()) {
+            okBuilder.addInterceptor(new MonitorRequestInterceptor(this.listeners));
+        }
+
+        this.okHttpClient = okBuilder.build();
+
 
         Retrofit.Builder builder = new Retrofit.Builder()
                 .baseUrl(options.getUrl())
-                .client(options.getOkHttpClient()
-                        .addInterceptor(loggingInterceptor)
-                        .addInterceptor(gzipRequestInterceptor).build())
+                .client(okHttpClient)
                 .addConverterFactory(MoshiConverterFactory.create());
 
         configure(builder);
 
         Retrofit retrofit = builder.build();
+
 
         if (service == null) {
             this.influxDBService = retrofit.create(influxDBServiceClass);
@@ -61,6 +77,9 @@ public abstract class AbstractInfluxDB<T> {
         } else {
             this.adapter = adapter;
         }
+
+        //register listeners
+        listeners.forEach(l -> l.onCreate(okHttpClient, options));
 
     }
 
