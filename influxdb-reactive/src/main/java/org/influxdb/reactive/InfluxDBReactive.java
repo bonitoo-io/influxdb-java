@@ -81,22 +81,6 @@ public interface InfluxDBReactive {
     /**
      * Execute a query against a default database.
      *
-     * @param query the query to execute.
-     * @return {@link Maybe} emitting a List of Series which matched the query or {@link Maybe#empty()} if none found.
-     */
-    Maybe<QueryResult> query(@Nonnull final Query query);
-
-    /**
-     * Execute a query against a default database.
-     *
-     * @param query the query to execute. Uses the first emitted element to perform the find-query.
-     * @return {@link Maybe} emitting a List of Series which matched the query or {@link Maybe#empty()} if none found.
-     */
-    Maybe<QueryResult> query(@Nonnull final Publisher<Query> query);
-
-    /**
-     * Execute a query against a default database.
-     *
      * @param query           the query to execute.
      * @param measurementType The type of the measurement (POJO)
      * @param <M>             The type of the measurement (POJO)
@@ -115,6 +99,22 @@ public interface InfluxDBReactive {
      * found.
      */
     <M> Flowable<M> query(@Nonnull final Publisher<Query> query, @Nonnull final Class<M> measurementType);
+
+    /**
+     * Execute a query against a default database.
+     *
+     * @param query the query to execute.
+     * @return {@link Maybe} emitting a List of Series which matched the query or {@link Maybe#empty()} if none found.
+     */
+    Maybe<QueryResult> query(@Nonnull final Query query);
+
+    /**
+     * Execute a query against a default database.
+     *
+     * @param query the query to execute. Uses the first emitted element to perform the find-query.
+     * @return {@link Maybe} emitting a List of Series which matched the query or {@link Maybe#empty()} if none found.
+     */
+    Maybe<QueryResult> query(@Nonnull final Publisher<Query> query);
 
     /**
      * Close thread for asynchronous batch writes.

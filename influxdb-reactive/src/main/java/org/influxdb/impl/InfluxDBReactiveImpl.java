@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -49,6 +50,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     private final InfluxDBOptions options;
     private final BatchOptionsReactive batchOptions;
     private final InfluxDBReactiveListener listener;
+    private final InfluxDBResultMapper resultMapper;
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
         this(options, BatchOptionsReactive.DEFAULTS);
@@ -83,6 +85,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         this.options = options;
         this.batchOptions = batchOptions;
         this.listener = listener;
+
+        this.resultMapper = new InfluxDBResultMapper();
 
         this.processor = PublishProcessor.create();
         Disposable writeDisposable = this.processor
@@ -172,22 +176,39 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     }
 
     @Override
-    public Maybe<QueryResult> query(@Nonnull final Query query) {
-        throw new IllegalStateException("Not implemented");
-    }
-
-    @Override
-    public Maybe<QueryResult> query(@Nonnull final Publisher<Query> query) {
-        throw new IllegalStateException("Not implemented");
-    }
-
-    @Override
     public <M> Flowable<M> query(@Nonnull final Query query, @Nonnull final Class<M> measurementType) {
-        throw new IllegalStateException("Not implemented");
+
+        Objects.requireNonNull(query, "Query is required");
+        Objects.requireNonNull(measurementType, "Measurement type is required");
+
+        return query(Flowable.just(query), measurementType);
     }
 
     @Override
     public <M> Flowable<M> query(@Nonnull final Publisher<Query> query, @Nonnull final Class<M> measurementType) {
+
+        Objects.requireNonNull(query, "Query publisher is required");
+        Objects.requireNonNull(measurementType, "Measurement type is required");
+
+        return query(query)
+                .map(queryResult -> resultMapper.toPOJO(queryResult, measurementType))
+                .toFlowable()
+                .flatMap((Function<List<M>, Publisher<M>>) Flowable::fromIterable);
+    }
+
+    @Override
+    public Maybe<QueryResult> query(@Nonnull final Query query) {
+
+        Objects.requireNonNull(query, "Query is required");
+
+        return query(Flowable.just(query));
+    }
+
+    @Override
+    public Maybe<QueryResult> query(@Nonnull final Publisher<Query> query) {
+
+        Objects.requireNonNull(query, "Query publisher is required");
+
         throw new IllegalStateException("Not implemented");
     }
 

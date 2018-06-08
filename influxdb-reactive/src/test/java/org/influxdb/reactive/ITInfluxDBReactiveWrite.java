@@ -255,11 +255,6 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         // wait for response
         verifier.waitForWriteDisposed();
         verifier.verifyError(0, MissingBackpressureException.class);
-
-        // writer action limit than backpressure
-        List<H2OFeetMeasurement> measurements = getMeasurements();
-        Assertions.assertThat(measurements.size()).isEqualTo(1_000);
-
     }
 
     @Test
