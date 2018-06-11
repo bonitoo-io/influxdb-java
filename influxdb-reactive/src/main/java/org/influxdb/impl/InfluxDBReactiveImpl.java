@@ -275,8 +275,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             String rawQuery = query.getCommandWithUrlEncoded();
 
             String params = "";
-            if (query instanceof BoundParameterQuery)
-            {
+            if (query instanceof BoundParameterQuery) {
                 params = ((BoundParameterQuery) query).getParameterJsonWithUrlEncoded();
             }
             return influxDBService
