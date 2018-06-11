@@ -19,6 +19,7 @@ import org.influxdb.InfluxDBException;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
+import org.influxdb.dto.BoundParameterQuery;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
@@ -273,8 +274,13 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             int chunkSize = queryOptions.getChunkSize();
             String rawQuery = query.getCommandWithUrlEncoded();
 
+            String params = "";
+            if (query instanceof BoundParameterQuery)
+            {
+                params = ((BoundParameterQuery) query).getParameterJsonWithUrlEncoded();
+            }
             return influxDBService
-                    .query(username, password, database, precision, chunkSize, rawQuery, "")
+                    .query(username, password, database, precision, chunkSize, rawQuery, params)
                     .flatMap(
                             // success response
                             this::chunkReader,

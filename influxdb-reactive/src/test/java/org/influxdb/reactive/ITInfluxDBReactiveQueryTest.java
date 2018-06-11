@@ -4,6 +4,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.functions.Predicate;
 import org.assertj.core.api.Assertions;
+import org.influxdb.dto.BoundParameterQuery;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -115,9 +116,22 @@ class ITInfluxDBReactiveQueryTest extends AbstractITInfluxDBReactiveTest {
     }
 
     @Test
-    @Disabled
     void supportBoundQuery() {
-        Assertions.fail("");
+
+        BoundParameterQuery query = BoundParameterQuery.QueryBuilder
+                .newQuery("select * from h2o_feet where location = $location")
+                .forDatabase(DATABASE_NAME)
+                .bind("location", "coyote_creek")
+                .create();
+
+        Single<Long> coyoteCreekRecords = influxDBReactive.query(query, H2OFeetMeasurement.class)
+                .count();
+
+        coyoteCreekRecords
+                .test()
+                .assertValue(500L);
+
+        verifier.verifyResponseMapperCalls(1);
     }
 
     @Nonnull
