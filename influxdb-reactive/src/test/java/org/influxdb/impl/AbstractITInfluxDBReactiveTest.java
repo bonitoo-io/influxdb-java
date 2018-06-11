@@ -1,9 +1,8 @@
 package org.influxdb.impl;
 
-import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBFactory;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
+import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.junit.jupiter.api.AfterEach;
@@ -11,15 +10,17 @@ import org.junit.jupiter.api.AfterEach;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 09:14)
  */
 public abstract class AbstractITInfluxDBReactiveTest {
 
-    protected static final String DATABASE_NAME = "reactive_database";
+    private static final Logger LOG = Logger.getLogger(AbstractITInfluxDBReactiveTest.class.getName());
 
-    protected InfluxDB influxDBCore;
+    protected static final String DATABASE_NAME = "reactive_database";
 
     protected InfluxDBReactive influxDBReactive;
     protected InfluxDBReactiveListenerVerifier verifier;
@@ -39,18 +40,27 @@ public abstract class AbstractITInfluxDBReactiveTest {
                 .precision(TimeUnit.MILLISECONDS)
                 .build();
 
-        influxDBCore = InfluxDBFactory.connect(options);
-        influxDBCore.query(new Query("CREATE DATABASE " + DATABASE_NAME, null));
 
         verifier = new InfluxDBReactiveListenerVerifier();
-
         influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions, verifier);
+
+        simpleQuery("CREATE DATABASE " + DATABASE_NAME);
+
+        verifier.reset();
     }
 
     @AfterEach
     void cleanUp() {
+        simpleQuery("DROP DATABASE " + DATABASE_NAME);
+
         influxDBReactive.close();
-        influxDBCore.query(new Query("DROP DATABASE " + DATABASE_NAME, null));
-        influxDBCore.close();
+    }
+
+    private void simpleQuery(@Nonnull final String simpleQuery) {
+
+        Objects.requireNonNull(simpleQuery, "SimpleQuery is required");
+        QueryResult result = influxDBReactive.query(new Query(simpleQuery, null)).blockingSingle();
+
+        LOG.log(Level.FINEST, "Simple query: {0} result: {1}", new Object[]{simpleQuery, result});
     }
 }

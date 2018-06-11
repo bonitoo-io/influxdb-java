@@ -138,4 +138,13 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
             }
         }
     }
+
+    void reset() {
+
+        backpressures.reset();
+        successResponses.reset();
+        errorResponses.reset();
+        responseMapperCallCount.reset();
+        throwables.clear();
+    }
 }

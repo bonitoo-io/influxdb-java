@@ -7,9 +7,7 @@ import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
-import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
-import org.influxdb.impl.InfluxDBResultMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -287,9 +285,8 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Nonnull
     private List<H2OFeetMeasurement> getMeasurements() {
 
-        QueryResult queryResult = influxDBCore
-                .query(new Query("select * from h2o_feet", "reactive_database"));
+        Query reactive_database = new Query("select * from h2o_feet", DATABASE_NAME);
 
-        return new InfluxDBResultMapper().toPOJO(queryResult, H2OFeetMeasurement.class);
+        return influxDBReactive.query(reactive_database, H2OFeetMeasurement.class).toList().blockingGet();
     }
 }
