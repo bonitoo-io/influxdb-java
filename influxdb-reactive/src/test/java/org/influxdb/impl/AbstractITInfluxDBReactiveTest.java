@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractITInfluxDBReactiveTest {
 
-    private static final String DATABASE_NAME = "reactive_database";
+    protected static final String DATABASE_NAME = "reactive_database";
 
     protected InfluxDB influxDBCore;
 

@@ -1,9 +1,9 @@
 package org.influxdb.impl;
 
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import okhttp3.RequestBody;
-import org.influxdb.dto.QueryResult;
+import okhttp3.ResponseBody;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -48,11 +48,11 @@ public interface InfluxDBServiceReactive {
     @Streaming
     @GET("/query?chunked=true")
     @Nonnull
-    Flowable<QueryResult> query(@Query(InfluxDBService.U) String username,
-                                @Query(InfluxDBService.P) String password,
-                                @Query(InfluxDBService.DB) String db,
-                                @Query(InfluxDBService.EPOCH) String epoch,
-                                @Query(InfluxDBService.CHUNK_SIZE) int chunkSize,
-                                @Query(value = InfluxDBService.Q, encoded = true) String query,
-                                @Query(value = InfluxDBService.PARAMS, encoded = true) String params);
+    Observable<ResponseBody> query(@Query(InfluxDBService.U) String username,
+                                   @Query(InfluxDBService.P) String password,
+                                   @Query(InfluxDBService.DB) String db,
+                                   @Query(InfluxDBService.EPOCH) String epoch,
+                                   @Query(InfluxDBService.CHUNK_SIZE) int chunkSize,
+                                   @Query(value = InfluxDBService.Q, encoded = true) String query,
+                                   @Query(value = InfluxDBService.PARAMS, encoded = true) String params);
 }

@@ -3,6 +3,7 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.Single;
 import io.reactivex.annotations.Experimental;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
@@ -16,9 +17,12 @@ import javax.annotation.Nonnull;
  * <p>
  * Not Implemented:
  * <ul>
- *     <li>Partial writes = writeMeasurements(good,good,wrong,good)...</li>
- *     <li>UDP</li>
- *     <li>Body as Flowable</li>
+ * <li>Partial writes = writeMeasurements(good,good,wrong,good)...</li>
+ * <li>UDP</li>
+ * <li>Body as Flowable</li>
+ * <li>Factory</li>
+ * <li>Use flat in write</li>
+ * <li>InfluxDBReactiveListener - add suitable parameters</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)
@@ -84,10 +88,24 @@ public interface InfluxDBReactive {
      * @param query           the query to execute.
      * @param measurementType The type of the measurement (POJO)
      * @param <M>             The type of the measurement (POJO)
-     * @return {@link Flowable} emitting a List of Series which matched the query or {@link Flowable#empty()} if none
-     * found.
+     * @return {@link Flowable} emitting a List of Series mapped to {@code measurementType} which are matched the query
+     * or {@link Flowable#empty()} if none found.
      */
     <M> Flowable<M> query(@Nonnull final Query query, @Nonnull final Class<M> measurementType);
+
+    /**
+     * Execute a query against a default database.
+     *
+     * @param query           the query to execute.
+     * @param measurementType The type of the measurement (POJO)
+     * @param <M>             The type of the measurement (POJO)
+     * @param queryOptions    the configuration of the query
+     * @return {@link Flowable} emitting a List of Series mapped to {@code measurementType} which are matched the query
+     * or {@link Flowable#empty()} if none found.
+     */
+    <M> Flowable<M> query(@Nonnull final Query query,
+                          @Nonnull final Class<M> measurementType,
+                          @Nonnull final QueryOptions queryOptions);
 
     /**
      * Execute a query against a default database.
@@ -95,26 +113,62 @@ public interface InfluxDBReactive {
      * @param query           the query to execute. Uses the first emitted element to perform the find-query.
      * @param measurementType The type of the measurement (POJO)
      * @param <M>             The type of the measurement (POJO)
-     * @return {@link Flowable} emitting a List of Series which matched the query or {@link Maybe#empty()} if none
-     * found.
+     * @return {@link Flowable} emitting a List of Series mapped to {@code measurementType} which are matched the query
+     * or {@link Flowable#empty()} if none found.
      */
     <M> Flowable<M> query(@Nonnull final Publisher<Query> query, @Nonnull final Class<M> measurementType);
 
     /**
      * Execute a query against a default database.
      *
-     * @param query the query to execute.
-     * @return {@link Maybe} emitting a List of Series which matched the query or {@link Maybe#empty()} if none found.
+     * @param query           the query to execute. Uses the first emitted element to perform the find-query.
+     * @param measurementType The type of the measurement (POJO)
+     * @param <M>             The type of the measurement (POJO)
+     * @param queryOptions    the configuration of the query
+     * @return {@link Flowable} emitting a List of Series mapped to {@code measurementType} which are matched the query
+     * or {@link Flowable#empty()} if none found.
      */
-    Maybe<QueryResult> query(@Nonnull final Query query);
+    <M> Flowable<M> query(@Nonnull final Publisher<Query> query,
+                          @Nonnull final Class<M> measurementType,
+                          @Nonnull final QueryOptions queryOptions);
 
     /**
      * Execute a query against a default database.
      *
-     * @param query the query to execute. Uses the first emitted element to perform the find-query.
-     * @return {@link Maybe} emitting a List of Series which matched the query or {@link Maybe#empty()} if none found.
+     * @param query the query to execute.
+     * @return {@link Single} emitting a List of Series which matched the query or
+     * {@link Flowable#empty()} if none found.
      */
-    Maybe<QueryResult> query(@Nonnull final Publisher<Query> query);
+    Flowable<QueryResult> query(@Nonnull final Query query);
+
+    /**
+     * Execute a query against a default database.
+     *
+     * @param query        the query to execute.
+     * @param queryOptions the configuration of the query
+     * @return {@link Single} emitting a List of Series which matched the query or
+     * {@link Flowable#empty()} if none found.
+     */
+    Flowable<QueryResult> query(@Nonnull final Query query, @Nonnull final QueryOptions queryOptions);
+
+    /**
+     * Execute a query against a default database.
+     *
+     * @param queryStream the query to execute. Uses the first emitted element to perform the find-query.
+     * @return {@link Single} emitting a List of Series which matched the query or
+     * {@link Flowable#empty()} if none found.
+     */
+    Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream);
+
+    /**
+     * Execute a query against a default database.
+     *
+     * @param queryStream  the query to execute. Uses the first emitted element to perform the find-query.
+     * @param queryOptions the configuration of the query
+     * @return {@link Single} emitting a List of Series which matched the query or
+     * {@link Flowable#empty()} if none found.
+     */
+    Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream, @Nonnull final QueryOptions queryOptions);
 
     /**
      * Close thread for asynchronous batch writes.

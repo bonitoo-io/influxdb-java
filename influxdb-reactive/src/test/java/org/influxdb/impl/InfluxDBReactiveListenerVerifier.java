@@ -24,6 +24,7 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
     private LongAdder backpressures = new LongAdder();
     private LongAdder successResponses = new LongAdder();
     private LongAdder errorResponses = new LongAdder();
+    private LongAdder responseMapperCallCount = new LongAdder();
     private List<Throwable> throwables = new ArrayList<>();
 
     @Override
@@ -63,6 +64,13 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
         backpressures.add(1);
     }
 
+    @Override
+    public void doOnQueryResult() {
+        super.doOnQueryResult();
+
+        responseMapperCallCount.add(1);
+    }
+
     public void verifySuccess() {
         Assertions
                 .assertThat(throwables.size())
@@ -85,6 +93,11 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
 
     public void verifySuccessResponse(final int expected) {
         Assertions.assertThat(successResponses.longValue())
+                .isEqualTo(expected);
+    }
+
+    public void verifyResponseMapperCalls(final int expected) {
+        Assertions.assertThat(responseMapperCallCount.longValue())
                 .isEqualTo(expected);
     }
 

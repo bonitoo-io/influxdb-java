@@ -39,7 +39,7 @@ public final class BatchOptionsReactive {
     private final BackpressureOverflowStrategy backpressureStrategy;
 
     /**
-     * @return actions the number of actions to collect
+     * @return the number of actions to collect
      * @see BatchOptionsReactive.Builder#actions(int)
      * @since 3.0.0
      */
@@ -48,7 +48,7 @@ public final class BatchOptionsReactive {
     }
 
     /**
-     * @return flushInterval the time to wait at most (milliseconds)
+     * @return the time to wait at most (milliseconds)
      * @see BatchOptionsReactive.Builder#flushInterval(int) (int)
      * @since 3.0.0
      */

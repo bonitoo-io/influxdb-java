@@ -1,8 +1,10 @@
 package org.influxdb.impl;
 
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableTransformer;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
@@ -11,6 +13,8 @@ import io.reactivex.functions.Function;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import okio.BufferedSource;
 import org.influxdb.InfluxDBException;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.annotation.Column;
@@ -22,6 +26,7 @@ import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveListener;
 import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
+import org.influxdb.reactive.QueryOptions;
 import org.reactivestreams.Publisher;
 import retrofit2.HttpException;
 import retrofit2.Retrofit;
@@ -29,6 +34,9 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
@@ -181,7 +189,19 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(query, "Query is required");
         Objects.requireNonNull(measurementType, "Measurement type is required");
 
-        return query(Flowable.just(query), measurementType);
+        return query(query, measurementType, QueryOptions.DEFAULTS);
+    }
+
+    @Override
+    public <M> Flowable<M> query(@Nonnull final Query query,
+                                 @Nonnull final Class<M> measurementType,
+                                 @Nonnull final QueryOptions queryOptions) {
+
+        Objects.requireNonNull(query, "Query is required");
+        Objects.requireNonNull(measurementType, "Measurement type is required");
+        Objects.requireNonNull(queryOptions, "QueryOptions is required");
+
+        return query(Flowable.just(query), measurementType, queryOptions);
     }
 
     @Override
@@ -190,26 +210,80 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(query, "Query publisher is required");
         Objects.requireNonNull(measurementType, "Measurement type is required");
 
-        return query(query)
+        return query(query, measurementType, QueryOptions.DEFAULTS);
+    }
+
+    @Override
+    public <M> Flowable<M> query(@Nonnull final Publisher<Query> query,
+                                 @Nonnull final Class<M> measurementType,
+                                 @Nonnull final QueryOptions queryOptions) {
+
+        Objects.requireNonNull(query, "Query publisher is required");
+        Objects.requireNonNull(measurementType, "Measurement type is required");
+        Objects.requireNonNull(queryOptions, "QueryOptions is required");
+
+        return query(query, queryOptions)
                 .map(queryResult -> resultMapper.toPOJO(queryResult, measurementType))
-                .toFlowable()
                 .flatMap((Function<List<M>, Publisher<M>>) Flowable::fromIterable);
     }
 
     @Override
-    public Maybe<QueryResult> query(@Nonnull final Query query) {
+    public Flowable<QueryResult> query(@Nonnull final Query query) {
 
         Objects.requireNonNull(query, "Query is required");
 
-        return query(Flowable.just(query));
+        return query(query, QueryOptions.DEFAULTS);
     }
 
     @Override
-    public Maybe<QueryResult> query(@Nonnull final Publisher<Query> query) {
+    public Flowable<QueryResult> query(@Nonnull final Query query, @Nonnull final QueryOptions queryOptions) {
 
-        Objects.requireNonNull(query, "Query publisher is required");
+        Objects.requireNonNull(query, "Query is required");
+        Objects.requireNonNull(queryOptions, "QueryOptions is required");
 
-        throw new IllegalStateException("Not implemented");
+        return query(Flowable.just(query), queryOptions);
+    }
+
+    @Override
+    public Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream) {
+
+        Objects.requireNonNull(queryStream, "Query publisher is required");
+
+        return query(queryStream, QueryOptions.DEFAULTS);
+    }
+
+    @Override
+    public Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream,
+                                       @Nonnull final QueryOptions queryOptions) {
+
+        Objects.requireNonNull(queryStream, "Query publisher is required");
+        Objects.requireNonNull(queryOptions, "QueryOptions is required");
+
+        return Flowable.fromPublisher(queryStream).flatMap((Function<Query, Publisher<QueryResult>>) query -> {
+
+            //
+            // Parameters
+            //
+            String username = options.getUsername();
+            String password = options.getPassword();
+            String database = options.getDatabase();
+
+            String precision = TimeUtil.toTimePrecision(options.getPrecision());
+
+            int chunkSize = queryOptions.getChunkSize();
+            String rawQuery = query.getCommandWithUrlEncoded();
+
+            return influxDBService
+                    .query(username, password, database, precision, chunkSize, rawQuery, "")
+                    .flatMap(
+                            // success response
+                            this::chunkReader,
+                            // error response
+                            throwable -> Observable.error(buildInfluxDBException(throwable)),
+                            // end of response
+                            Observable::empty)
+                    .toFlowable(BackpressureStrategy.BUFFER);
+        });
     }
 
     @Override
@@ -265,8 +339,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
                 if (throwable instanceof HttpException) {
 
-                    InfluxDBException influxDBException =
-                            buildInfluxDBException((HttpException) throwable);
+                    InfluxDBException influxDBException = buildInfluxDBException(throwable);
 
                     listener.doOnErrorResponse(influxDBException);
                 } else {
@@ -333,8 +406,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
             if (throwable instanceof HttpException) {
 
-                InfluxDBException influxDBException =
-                        buildInfluxDBException((HttpException) throwable);
+                InfluxDBException influxDBException = buildInfluxDBException(throwable);
 
                 //
                 // Retry request
@@ -357,13 +429,16 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     }
 
     @Nonnull
-    private InfluxDBException buildInfluxDBException(@Nonnull final HttpException throwable) {
+    private InfluxDBException buildInfluxDBException(@Nonnull final Throwable throwable) {
 
         Objects.requireNonNull(throwable, "Throwable is required");
 
-        String errorMessage = throwable.response().headers().get("X-Influxdb-Error");
-        if (errorMessage != null) {
-            return InfluxDBException.buildExceptionFromErrorMessage(errorMessage);
+        if (throwable instanceof HttpException) {
+
+            String errorMessage = ((HttpException) throwable).response().headers().get("X-Influxdb-Error");
+            if (errorMessage != null) {
+                return InfluxDBException.buildExceptionFromErrorMessage(errorMessage);
+            }
         }
 
         return new InfluxDBException(throwable);
@@ -373,6 +448,49 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         return (int) (Math.random() * batchOptions.getJitterInterval());
     }
+
+    @Nonnull
+    private Observable<QueryResult> chunkReader(@Nonnull final ResponseBody body) {
+
+        Objects.requireNonNull(body, "ResponseBody is required");
+
+        return Observable.create(subscriber -> {
+
+            boolean isCompleted = false;
+            try {
+                BufferedSource source = body.source();
+
+                //
+                // Subscriber is not disposed && source has data => parse
+                //
+                while (!subscriber.isDisposed() && !source.exhausted()) {
+
+                    QueryResult queryResult = InfluxDBReactiveImpl.this.adapter.fromJson(source);
+                    subscriber.onNext(queryResult);
+                    listener.doOnQueryResult();
+                }
+            } catch (IOException e) {
+
+                //
+                // Socket close by remote server or end of data
+                //
+                if (e.getMessage().equals("Socket closed") || e instanceof EOFException) {
+                    isCompleted = true;
+                    subscriber.onComplete();
+                } else {
+                    throw new UncheckedIOException(e);
+                }
+            }
+
+            //if response end we get here
+            if (!isCompleted) {
+                subscriber.onComplete();
+            }
+
+            body.close();
+        });
+    }
+
 
     /**
      * Just a proof of concept.

@@ -41,4 +41,9 @@ public class InfluxDBReactiveListenerDefault implements InfluxDBReactiveListener
     public void doOnBackpressure() {
         LOG.log(Level.WARNING, "Backpressure applied, try increase BatchOptionsReactive.bufferLimit");
     }
+
+    @Override
+    public void doOnQueryResult() {
+        LOG.log(Level.FINEST, "Result mapped to QueryResult");
+    }
 }

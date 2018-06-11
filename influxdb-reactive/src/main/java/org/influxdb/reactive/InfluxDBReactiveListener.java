@@ -45,4 +45,9 @@ public interface InfluxDBReactiveListener {
      * @param throwable cause
      */
     void doOnError(@Nonnull final Throwable throwable);
+
+    /**
+     * The method is triggered when is parsed streamed response to query result.
+     */
+    void doOnQueryResult();
 }
