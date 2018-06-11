@@ -19,6 +19,8 @@ import org.influxdb.reactive.InfluxDBReactiveListener;
 
 public class Utils {
 
+    public static String EXAMPLE_DATABASE = "influxdb_example";
+
     public static OperatingSystemMXBean getOperatingSystemMBean() {
         try {
             ObjectName objectName = ObjectName.getInstance("java.lang:type=OperatingSystem");
@@ -30,8 +32,8 @@ public class Utils {
 
     }
 
-    public static void createDatabase(InfluxDBOptions options, String test) {
-        InfluxDBFactory.connect(options).query(new Query("CREATE DATABASE " + test, null));
+    public static void createDatabase(InfluxDBOptions options, String databaseName) {
+        InfluxDBFactory.connect(options).query(new Query("CREATE DATABASE " + databaseName, null));
     }
 
     public static String getHostName() {
@@ -59,13 +61,13 @@ public class Utils {
 
         InfluxDBOptions options = InfluxDBOptions.builder().
                 url("http://localhost:8086").
-                database("test").
+                database(EXAMPLE_DATABASE).
                 username("admin").
                 password("admin").build();
 
         InfluxDBReactiveImpl influxDBReactive = new InfluxDBReactiveImpl(options, batchOptionsReactive, listener);
 
-        Utils.createDatabase(options, "test");
+        Utils.createDatabase(options, EXAMPLE_DATABASE);
 
         return influxDBReactive;
 

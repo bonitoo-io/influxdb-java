@@ -296,6 +296,10 @@ influxDB.enableBatch(BatchOptions.DEFAULTS.jitterDuration(500);
 ### Other Usages:
 For additional usage examples have a look at [InfluxDBTest.java](https://github.com/influxdb/influxdb-java/blob/master/src/test/java/org/influxdb/InfluxDBTest.java "InfluxDBTest.java")
 
+### InfluxDB ractive client (since 3.0 version)
+
+
+
 ## Version
 
 The latest version for maven dependence:
@@ -303,9 +307,49 @@ The latest version for maven dependence:
 <dependency>
   <groupId>org.influxdb</groupId>
   <artifactId>influxdb-java</artifactId>
-  <version>2.10</version>
+  <version>3.0</version>
 </dependency>
 ```
+
+Starting with version 3.0 is influxdb-java split into following modules:
+
+* influxdb-core - core client library backward compatible with 2.X
+* influxdb-reactive - reactive client library based on RxJava
+* influxdb-jmx - jmx monitoring of client performance, connection pool, number of calls
+* influxdb-examples - collection of examples and demos
+
+You can also add dependency `influxdb-java` to your project using BOM  "Bill Of Materials".     
+
+```xml
+  
+<dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.influxdb</groupId>
+        <artifactId>influxdb-java-bom</artifactId>
+        <version>3.0-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>org.influxdb</groupId>
+        <artifactId>influxdb-java</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.influxdb</groupId>
+        <artifactId>influxdb-jmx</artifactId>
+    </dependency>
+        <groupId>org.influxdb</groupId>
+        <artifactId>influxdb-reactive</artifactId>
+    </dependency>
+</dependencies>
+        
+```
+  
 Or when using with gradle:
 ```groovy
 compile 'org.influxdb:influxdb-java:2.10'
