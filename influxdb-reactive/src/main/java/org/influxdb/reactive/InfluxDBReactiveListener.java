@@ -6,7 +6,7 @@ import org.influxdb.InfluxDBException;
 import javax.annotation.Nonnull;
 
 /**
- * This listener allow interact with events on {@link org.influxdb.reactive.InfluxDBReactive}.
+ * This listener that allow interact with {@link org.influxdb.reactive.InfluxDBReactive} events.
  *
  * @author Jakub Bednar (bednar@github) (05/06/2018 15:42)
  * @since 3.0.0

@@ -12,6 +12,7 @@ import org.influxdb.InfluxDBFactory;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.InfluxDBReactiveImpl;
+import org.influxdb.reactive.InfluxDBReactiveFactory;
 import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
@@ -65,7 +66,8 @@ public class Utils {
                 username("admin").
                 password("admin").build();
 
-        InfluxDBReactiveImpl influxDBReactive = new InfluxDBReactiveImpl(options, batchOptionsReactive, listener);
+        InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory
+                .connect(options, batchOptionsReactive, listener);
 
         Utils.createDatabase(options, EXAMPLE_DATABASE);
 

@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
  * <li>Factory</li>
  * <li>Use flat in write</li>
  * <li>InfluxDBReactiveListener - add suitable parameters</li>
+ * <li>Better success/error handling</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)

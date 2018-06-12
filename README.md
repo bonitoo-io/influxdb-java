@@ -298,7 +298,66 @@ For additional usage examples have a look at [InfluxDBTest.java](https://github.
 
 ## InfluxDB reactive client (version 3.0+ required)
 
+The reactive client library is based on the [RxJava](https://github.com/ReactiveX/RxJava). 
+It's support all configurations from the core library packaged to reactive API and also a lot of improvements:
+- configurable backpressure
+- easily writing/reading POJOs
+- streamed queries 
+   
+### Factory
 
+The `InfluxDBReactiveFactory` creates the reactive instance of a InfluxDB client. 
+The `InfluxDBReactive` client can be configured by three parameters:
+- `InfluxDBOptions` -  the configuration of connection to the InfluxDB
+- `BatchOptionsReactive` - the configuration of batching
+- `InfluxDBReactiveListener` - the listener that allow interact with client events
+
+```java
+// Connection configuration
+InfluxDBOptions options = InfluxDBOptions.builder()
+    .url("http://172.17.0.2:8086")
+    .username("root")
+    .password("root")
+    .database("reactive_measurements")
+    .build();
+
+// Batching configuration
+BatchOptionsReactive batchOptions = BatchOptionsReactive.builder()
+    .actions(1_000)
+    .flushInterval(10_000)
+    .retryInterval(1_000)
+    .bufferLimit(10_000)
+    .build();
+
+// Event listener
+InfluxDBReactiveListener listener = new InfluxDBReactiveListenerDefault();
+
+// Reactive client
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, batchOptionsReactive, listener);
+influxDBReactive.writeMeasurements(...);
+
+```    
+
+The `InfluxDBReactive` client can be also created with default configuration by:
+```java
+// Connection configuration
+InfluxDBOptions options = InfluxDBOptions.builder()
+    .url("http://172.17.0.2:8086")
+    .username("root")
+    .password("root")
+    .database("reactive_measurements")
+    .build();
+
+// Reactive client
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options);
+influxDBReactive.writeMeasurements(...);
+```    
+    
+
+### Query
+...
+### Writes
+...
 
 ## Version
 
