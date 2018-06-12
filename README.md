@@ -299,7 +299,7 @@ For additional usage examples have a look at [InfluxDBTest.java](https://github.
 ## InfluxDB reactive client (version 3.0+ required)
 
 The reactive client library is based on the [RxJava](https://github.com/ReactiveX/RxJava). 
-It's support all configurations from the core library packaged to reactive API and also a lot of improvements:
+It's support all configurations from the core library packaged to the reactive API and also a lot of improvements:
 - configurable backpressure
 - easily writing/reading POJOs
 - streamed queries 
@@ -334,8 +334,10 @@ InfluxDBReactiveListener listener = new InfluxDBReactiveListenerDefault();
 
 // Reactive client
 InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, batchOptionsReactive, listener);
-influxDBReactive.writeMeasurements(...);
 
+...
+
+influxDBReactive.close();
 ```    
 
 The `InfluxDBReactive` client can be also created with default configuration by:
@@ -350,14 +352,18 @@ InfluxDBOptions options = InfluxDBOptions.builder()
 
 // Reactive client
 InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options);
-influxDBReactive.writeMeasurements(...);
-```    
-    
 
-### Query
 ...
+
+influxDBReactive.close();
+```    
 ### Writes
 ...
+
+### Query
+The queries uses the [InfluxDB chunking](https://docs.influxdata.com/influxdb/latest/guides/querying_data/#chunking) 
+for streaming response to the consumer. The default `chunk_size` is preconfigured to 10,000 points 
+(or series) and can be configured for every query by `QueryOptions`.
 
 ## Version
 
