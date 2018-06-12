@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 public class BackpressureWriteExample {
 
-    private static Logger LOG = LoggerFactory.getLogger(ReactiveWriteExample.class);
-
     public static void main(String[] args) {
 
         String databaseName = "backpressure_example";
@@ -23,8 +21,7 @@ public class BackpressureWriteExample {
                 .database("backpressure_example")
                 .url("http://localhost:8086").build();
 
-        LOG.info("------------------------------");
-        LOG.info("Simulate back pressure");
+        System.out.println("Simulate back pressure");
 
         BatchOptionsReactive batchOptionsReactive = BatchOptionsReactive.builder()
                 .actions(100)
@@ -33,23 +30,20 @@ public class BackpressureWriteExample {
 
         BackPressureGenerator generator = new BackPressureGenerator();
 
-
         InfluxDBReactive client = InfluxDBReactiveFactory.connect(options, batchOptionsReactive,
                 new InfluxDBReactiveListenerDefault() {
                     @Override
                     public void doOnBackpressure() {
-                        LOG.info("BackPressure - slow down generator!");
+                        System.out.println("BackPressure - slow down generator!");
                         generator.doOnBackpressure();
                     }
                 });
 
         client.query(new Query("CREATE DATABASE \"" + databaseName + "\"", null)).subscribe();
 
-
         generator.run(client);
 
         client.close();
-
     }
 
     static class BackPressureGenerator {
@@ -62,7 +56,7 @@ public class BackpressureWriteExample {
             for (int i = 0; i < 10000; i++) {
                 if (tooFastEmmiting) {
                     try {
-                        LOG.info("Slowing down generator by 1s. - " + i);
+                        System.out.println("Slowing down generator by 1s. - " + i);
                         Thread.sleep(backPressureSleepDuration);
                         tooFastEmmiting = false;
                     } catch (InterruptedException e) {
