@@ -1,42 +1,55 @@
 package org.influxdb.examples;
 
 import io.reactivex.Flowable;
-import io.reactivex.Single;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.influxdb.annotation.Measurement;
+import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.reactive.InfluxDBReactive;
+import org.influxdb.reactive.InfluxDBReactiveFactory;
 
 public class ReactiveQueryExample {
 
+    public static void main(String[] args) throws Exception {
 
-    public static void main(String[] args) {
-
+        String databaseName = "influxdb_example";
         //create client
-        InfluxDBReactive client = Utils.createInfluxDBReactive();
+        InfluxDBOptions options = InfluxDBOptions.builder()
+                .username("admin")
+                .password("admin")
+                .database(databaseName)
+                .url("http://localhost:8086").build();
+
+        InfluxDBReactive client = InfluxDBReactiveFactory.connect(options);
+
+        //cleanup / drop measurement
+        client.query(new Query("DROP MEASUREMENT host", databaseName)).subscribe();
 
         //write bean into influxDB
         ServerMeasurement serverMeasurement = ServerMeasurement.getCurrentMeasurement();
         client.writeMeasurement(serverMeasurement);
 
-
-        //write some testing measurement for 5 sec...
+        //write 10 measurements with 250ms delay...
         Flowable<ServerMeasurement> serverInfos =
-                Flowable.interval(250, TimeUnit.MILLISECONDS).map(i -> {
-                    ServerMeasurement currentServerMeasurement = ServerMeasurement.getCurrentMeasurement();
-                    System.out.println(currentServerMeasurement);
-                    return currentServerMeasurement;
-                });
+                Flowable.range(0, 10)
+                        .delay(250, TimeUnit.MILLISECONDS, Schedulers.trampoline())
+                        .map(i -> {
+                            ServerMeasurement currentServerMeasurement = ServerMeasurement.getCurrentMeasurement();
+                            System.out.println(currentServerMeasurement);
+                            return currentServerMeasurement;
+                        });
 
+        // write measurement flowable
         client.writeMeasurements(serverInfos);
 
-        Utils.sleep(3000);
+        Thread.sleep(3000);
+        System.out.println("--------- result ---------");
 
-        Flowable<ServerMeasurement> result = client.query(new Query("SELECT * FROM host", Utils.EXAMPLE_DATABASE), ServerMeasurement.class);
+        Flowable<ServerMeasurement> result = client.query(new Query("SELECT * FROM host", databaseName),
+                ServerMeasurement.class);
+
         result.subscribe(System.out::println);
+
     }
 
 }
