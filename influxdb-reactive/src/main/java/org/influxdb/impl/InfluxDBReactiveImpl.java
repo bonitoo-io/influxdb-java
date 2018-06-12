@@ -225,7 +225,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         return query(query, queryOptions)
                 .map(queryResult -> resultMapper.toPOJO(queryResult, measurementType))
-                .flatMap((Function<List<M>, Publisher<M>>) Flowable::fromIterable);
+                .concatMap((Function<List<M>, Flowable<M>>) Flowable::fromIterable);
     }
 
     @Override
@@ -260,7 +260,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(queryStream, "Query publisher is required");
         Objects.requireNonNull(queryOptions, "QueryOptions is required");
 
-        return Flowable.fromPublisher(queryStream).flatMap((Function<Query, Publisher<QueryResult>>) query -> {
+        return Flowable.fromPublisher(queryStream).concatMap((Function<Query, Publisher<QueryResult>>) query -> {
 
             //
             // Parameters

@@ -3,12 +3,12 @@ package org.influxdb.reactive;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.functions.Predicate;
+import io.reactivex.subscribers.TestSubscriber;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.BoundParameterQuery;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -59,6 +59,25 @@ class ITInfluxDBReactiveQueryTest extends AbstractITInfluxDBReactiveTest {
                 .assertValueAt(4, assertMeasurement(4));
 
         verifier.verifyResponseMapperCalls(5);
+    }
+
+    @Test
+    void order() {
+
+        Query query = new Query("select * from h2o_feet", DATABASE_NAME);
+        QueryOptions options = QueryOptions.builder().chunkSize(1).build();
+
+        Flowable<H2OFeetMeasurement> measurements = influxDBReactive.query(query, H2OFeetMeasurement.class, options);
+
+        TestSubscriber<H2OFeetMeasurement> testSubscriber = measurements
+                .test()
+                .assertValueCount(1000);
+
+        for (int i = 0; i < 1000; i++)
+        {
+            testSubscriber
+                    .assertValueAt(i, assertMeasurement(i));
+        }
     }
 
     @Test
