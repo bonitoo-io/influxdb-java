@@ -29,6 +29,6 @@ docker run -it --rm  \
       --workdir /usr/src/mymaven \
       --link=influxdb \
       --env INFLUXDB_IP=influxdb \
-        maven:${MAVEN_JAVA_VERSION} mvn clean install
+        maven:${MAVEN_JAVA_VERSION} mvn clean install; mvn clean install -f influxdb-examples/pom.xml
 
 docker kill influxdb || true

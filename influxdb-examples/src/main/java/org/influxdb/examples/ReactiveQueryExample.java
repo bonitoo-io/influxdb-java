@@ -2,6 +2,7 @@ package org.influxdb.examples;
 
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -35,14 +36,7 @@ public class ReactiveQueryExample {
         Utils.sleep(3000);
 
         Flowable<ServerMeasurement> result = client.query(new Query("SELECT * FROM host", Utils.EXAMPLE_DATABASE), ServerMeasurement.class);
-
-        Single<List<ServerMeasurement>> listSingle = result.toList();
-        List<ServerMeasurement> measurements = listSingle.blockingGet();
-
-        for (ServerMeasurement measurement : measurements) {
-            System.out.println(measurement);
-        }
-
+        result.subscribe(System.out::println);
     }
 
 }

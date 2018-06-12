@@ -294,9 +294,9 @@ influxDB.enableBatch(BatchOptions.DEFAULTS.jitterDuration(500);
 ```
 
 ### Other Usages:
-For additional usage examples have a look at [InfluxDBTest.java](https://github.com/influxdb/influxdb-java/blob/master/src/test/java/org/influxdb/InfluxDBTest.java "InfluxDBTest.java")
+For additional usage examples have a look at [InfluxDBTest.java](https://github.com/influxdb/influxdb-java/blob/master/src/test/java/org/influxdb/InfluxDBTest.java "InfluxDBTest.java") or [influxdb-examples](https://github.com/bonitoo-io/influxdb-java/tree/prototype-reactive/influxdb-examples/src/main/java/org/influxdb/examples) directory.
 
-### InfluxDB ractive client (since 3.0 version)
+## InfluxDB reactive client (version 3.0+ required)
 
 
 
@@ -313,24 +313,22 @@ The latest version for maven dependence:
 
 Starting with version 3.0 is influxdb-java split into following modules:
 
-* influxdb-core - core client library backward compatible with 2.X
+* influxdb-core - core client library backward compatible with 2.X (artifactId is `influxdb-java`)
 * influxdb-reactive - reactive client library based on RxJava
 * influxdb-jmx - jmx monitoring of client performance, connection pool, number of calls
-* influxdb-examples - collection of examples and demos
 
 You can also add dependency `influxdb-java` to your project using BOM  "Bill Of Materials".     
 
-```xml
-  
+```xml  
 <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.influxdb</groupId>
-        <artifactId>influxdb-java-bom</artifactId>
-        <version>3.0-SNAPSHOT</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+        <dependency>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java-bom</artifactId>
+            <version>3.0-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
     </dependencies>
 </dependencyManagement>
 
@@ -346,13 +344,20 @@ You can also add dependency `influxdb-java` to your project using BOM  "Bill Of 
         <groupId>org.influxdb</groupId>
         <artifactId>influxdb-reactive</artifactId>
     </dependency>
-</dependencies>
-        
+</dependencies>        
 ```
   
 Or when using with gradle:
 ```groovy
-compile 'org.influxdb:influxdb-java:2.10'
+dependencyManagement {
+    imports {
+        mavenBom 'org.influxdb:influxdb-java-bom:3.0-SNAPSHOT'
+    }
+}
+
+dependencies {
+    compile "org.influxdb:influxdb-java"
+}
 ```
 For version change history have a look at [ChangeLog](https://github.com/influxdata/influxdb-java/blob/master/CHANGELOG.md).
 
