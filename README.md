@@ -362,9 +362,21 @@ The BatchOptionsReactive can be also created with default configuration by:
 BatchOptions options = BatchOptions.DEFAULTS;
 ```
 #### Backpressure
-...
+The backpressure presents the problem of what to do with a growing backlog of unconsumed data points. 
+The key feature of backpressure is provides capability to avoid consuming the unexpected amount of system resources.  
+This situation is not common and can be caused by several problems: generating too much measurements in short interval,
+long term unavailability of the InfluxDB server, network issues. 
+
+The size of backlog is configured by 
+`BatchOptionsReactive.bufferLimit` and backpressure strategy by `BatchOptionsReactive.backpressureStrategy`.
+
+##### Strategy how react to backlog overflows
+- `DROP_OLDEST` - Drop the oldest data points from the backlog 
+- `DROP_LATEST` - Drop the latest data points from the backlog  
+- `ERROR` - Signal a exception and terminate the sequence. 
 
 #### Examples
+
 ##### Write POJO
 ```java
 CpuLoad cpuLoad = new CpuLoad();
