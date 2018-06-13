@@ -373,7 +373,21 @@ The size of backlog is configured by
 ##### Strategy how react to backlog overflows
 - `DROP_OLDEST` - Drop the oldest data points from the backlog 
 - `DROP_LATEST` - Drop the latest data points from the backlog  
-- `ERROR` - Signal a exception and terminate the sequence. 
+- `ERROR` - Signal a exception
+
+If is used the strategy `DROP_OLDEST` or `DROP_LATEST` there is a possibility to react on backpressure event and slowdown the producing new measurements:
+```java
+InfluxDBReactiveListenerDefault listener = new InfluxDBReactiveListenerDefault() {
+    @Override
+    public void doOnBackpressure() {
+
+        // slowdown producers
+        // ...
+    }
+};
+        
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, batchOptions, listener);
+```
 
 #### Examples
 
