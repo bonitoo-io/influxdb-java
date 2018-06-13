@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
  * <li>Partial writes = writeMeasurements(good,good,wrong,good)...</li>
  * <li>UDP</li>
  * <li>Ping</li>
+ * <li>Gzip</li>
  * <li>Version</li>
  * <li>Body as Flowable</li>
  * <li>Use flat in write</li>

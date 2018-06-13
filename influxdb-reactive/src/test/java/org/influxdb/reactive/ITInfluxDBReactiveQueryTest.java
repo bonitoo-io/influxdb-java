@@ -153,6 +153,19 @@ class ITInfluxDBReactiveQueryTest extends AbstractITInfluxDBReactiveTest {
         verifier.verifyResponseMapperCalls(1);
     }
 
+    @Test
+    void useDatabaseFromQuery() {
+
+        simpleQuery("CREATE DATABASE europe_reactive_database");
+
+        Query query = new Query("select * from h2o_feet", "europe_reactive_database");
+
+        Flowable<H2OFeetMeasurement> measurements = influxDBReactive.query(query, H2OFeetMeasurement.class);
+        measurements
+                .test()
+                .assertValueCount(0);
+    }
+
     @Nonnull
     private String getLocation(@Nonnull final Integer index) {
         String location;

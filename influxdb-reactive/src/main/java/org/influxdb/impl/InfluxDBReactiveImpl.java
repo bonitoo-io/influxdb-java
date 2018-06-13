@@ -267,7 +267,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             //
             String username = options.getUsername();
             String password = options.getPassword();
-            String database = options.getDatabase();
+            String database = query.getDatabase();
 
             String precision = TimeUtil.toTimePrecision(options.getPrecision());
 
@@ -293,6 +293,9 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
     @Override
     public void close() {
+
+        LOG.log(Level.INFO, "Flushing any cached metrics before shutdown.");
+
         processor.onComplete();
     }
 

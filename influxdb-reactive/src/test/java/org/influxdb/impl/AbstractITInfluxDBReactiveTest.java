@@ -56,7 +56,7 @@ public abstract class AbstractITInfluxDBReactiveTest {
         influxDBReactive.close();
     }
 
-    private void simpleQuery(@Nonnull final String simpleQuery) {
+    protected void simpleQuery(@Nonnull final String simpleQuery) {
 
         Objects.requireNonNull(simpleQuery, "SimpleQuery is required");
         QueryResult result = influxDBReactive.query(new Query(simpleQuery, null)).blockingSingle();
