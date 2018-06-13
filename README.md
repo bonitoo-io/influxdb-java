@@ -385,7 +385,7 @@ Query query = new Query("select * from cpu", "telegraf");
 Single<Double> sum = influxDBReactive.query(query, Cpu.class)
     .filter(cpu -> cpu.time.isAfter(last72hours))
     .map(cpu -> cpu.usageUser)
-    .reduce(0D, (a, b) -> a + b);
+    .reduce(0D, (usage1, usage2) -> usage1 + usage2);
 
 System.out.println("The CPU usage in last 72 hours: " + sum.blockingGet());
 ```
