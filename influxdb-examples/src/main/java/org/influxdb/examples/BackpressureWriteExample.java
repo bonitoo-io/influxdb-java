@@ -6,8 +6,6 @@ import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveFactory;
 import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BackpressureWriteExample {
 
