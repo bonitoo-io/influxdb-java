@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
  * <li>Use flat in write</li>
  * <li>InfluxDBReactiveListener - add suitable parameters</li>
  * <li>Better success/error handling</li>
+ * <li>Retry for wrong url</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)

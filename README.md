@@ -312,34 +312,6 @@ The `InfluxDBReactive` client can be configured by three parameters:
 - `BatchOptionsReactive` - the configuration of batching
 - `InfluxDBReactiveListener` - the listener that allow interact with client events
 
-```java
-// Connection configuration
-InfluxDBOptions options = InfluxDBOptions.builder()
-    .url("http://172.17.0.2:8086")
-    .username("root")
-    .password("root")
-    .database("reactive_measurements")
-    .build();
-
-// Batching configuration
-BatchOptionsReactive batchOptions = BatchOptionsReactive.builder()
-    .actions(1_000)
-    .flushInterval(10_000)
-    .retryInterval(1_000)
-    .bufferLimit(10_000)
-    .build();
-
-// Event listener
-InfluxDBReactiveListener listener = new InfluxDBReactiveListenerDefault();
-
-// Reactive client
-InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, batchOptionsReactive, listener);
-
-...
-
-influxDBReactive.close();
-```    
-
 The `InfluxDBReactive` client can be also created with default configuration by:
 ```java
 // Connection configuration
@@ -358,7 +330,63 @@ InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options);
 influxDBReactive.close();
 ```    
 ### Writes
+The writes are processed in batches which are configurable by `BatchOptionsReactive`. 
+It's use the same **Retry on error** strategy as non reactive client.
+
+#### Batching configuration
+- `actions` - the number of points before the batch is written
+- `flushInterval` - the number of milliseconds before the batch is written 
+- `jitterInterval` - the number of milliseconds to increase the batch flush interval by a random amount (see documentation above)
+- `retryInterval` - the number of milliseconds to retry unsuccessful write
+- `bufferLimit` - the maximum number of unwrittens stored points
+- `backpressureStrategy` - the strategy to deal with buffer overflow
+
+```java
+BatchOptionsReactive options = BatchOptionsReactive.builder()
+    .actions(5_000)
+    .flushInterval(10_000)
+    .jitterInterval(5_000)
+    .retryInterval(5_000)
+    .bufferLimit(100_000)
+    .backpressureStrategy(BackpressureOverflowStrategy.ERROR)
+    .build();
+```
+The BatchOptionsReactive can be also created with default configuration by:
+```java
+// actions = 1_000
+// flushInterval = 1_000
+// jitterInterval = 0
+// retryInterval = 1_000
+// bufferLimit = 10_000
+// backpressureStrategy = DROP_OLDEST
+BatchOptions options = BatchOptions.DEFAULTS;
+```
+#### Backpressure
 ...
+
+#### Examples
+##### Write POJO
+```java
+CpuLoad cpuLoad = new CpuLoad();
+cpuLoad.host = "server02";
+cpuLoad.value = 0.67D;
+
+influxDBReactive.writeMeasurement(cpuLoad);
+```
+##### Write measurements every 10 seconds
+```java
+Flowable<H2OFeetMeasurement> measurements = Flowable.interval(10, TimeUnit.SECONDS, Schedulers.trampoline())
+    .map(time -> {
+
+        double h2oLevel = getLevel();
+        String location = getLocation();
+        String description = getLocationDescription();
+                    
+        return new H2OFeetMeasurement(location, h2oLevel, description, Instant.now());
+    });
+        
+influxDBReactive.writeMeasurements(measurements);
+```
 
 ### Queries
 The queries uses the [InfluxDB chunking](https://docs.influxdata.com/influxdb/latest/guides/querying_data/#chunking) 
