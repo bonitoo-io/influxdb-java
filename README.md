@@ -401,6 +401,19 @@ Flowable<Disk> maximumDisksUsages = influxDBReactive.query(query, Disk.class)
 
 maximumDisksUsages.subscribe(disk -> System.out.println("Device: " + disk.device + " percent usage: " + disk.usedPercent));
 ```
+##### Group measurements by host
+```java
+Flowable<Cpu> cpu = influxDBReactive.query(new Query("select * from cpu", "telegraf"), Cpu.class);
+Flowable<Mem> mem = influxDBReactive.query(new Query("select * from mem", "telegraf"), Mem.class);
+
+Flowable.merge(cpu, mem)
+    .groupBy(it -> it instanceof Cpu ? ((Cpu) it).host : ((Mem) it).host)
+    .flatMap(group -> {
+                    
+        // Operate with grouped measurements
+        
+    });
+```
 
 ## Version
 
