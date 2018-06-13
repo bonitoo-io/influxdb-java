@@ -225,7 +225,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         return query(query, queryOptions)
                 .map(queryResult -> resultMapper.toPOJO(queryResult, measurementType))
-                .concatMap((Function<List<M>, Flowable<M>>) Flowable::fromIterable);
+                .concatMap(Flowable::fromIterable);
     }
 
     @Override

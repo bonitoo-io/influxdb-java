@@ -360,10 +360,47 @@ influxDBReactive.close();
 ### Writes
 ...
 
-### Query
+### Queries
 The queries uses the [InfluxDB chunking](https://docs.influxdata.com/influxdb/latest/guides/querying_data/#chunking) 
 for streaming response to the consumer. The default `chunk_size` is preconfigured to 10,000 points 
 (or series) and can be configured for every query by `QueryOptions`.
+
+#### The chunk size configuration
+```java
+QueryOptions options = QueryOptions.builder()
+    .chunkSize(20_000)
+    .build();
+
+Query query = new Query("select * from cpu", "telegraf");
+Flowable<CpuMeasurement> measurements = influxDBReactive.query(query, Cpu.class, options);
+...
+```
+#### Examples
+##### The CPU usage in last 72 hours
+```java
+Instant last72hours = Instant.now().minus(72, ChronoUnit.HOURS);
+
+Query query = new Query("select * from cpu", "telegraf");
+
+Single<Double> sum = influxDBReactive.query(query, Cpu.class)
+    .filter(cpu -> cpu.time.isAfter(last72hours))
+    .map(cpu -> cpu.usageUser)
+    .reduce(0D, (a, b) -> a + b);
+
+System.out.println("The CPU usage in last 72 hours: " + sum.blockingGet());
+```
+##### The maximum disks usages
+```java
+Query query = new Query("select * from disk", "telegraf");
+
+Flowable<Disk> maximumDisksUsages = influxDBReactive.query(query, Disk.class)
+    .groupBy(disk -> disk.device)
+    .flatMap(group -> group
+        .reduce((disk1, disk2) -> disk1.usedPercent.compareTo(disk2.usedPercent) > 0 ? disk1 : disk2)
+        .toFlowable());
+
+maximumDisksUsages.subscribe(disk -> System.out.println("Device: " + disk.device + " percent usage: " + disk.usedPercent));
+```
 
 ## Version
 
