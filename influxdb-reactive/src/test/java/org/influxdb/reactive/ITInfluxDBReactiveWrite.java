@@ -9,6 +9,7 @@ import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
 import org.influxdb.reactive.event.BackpressureEvent;
+import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;

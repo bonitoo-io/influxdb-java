@@ -11,6 +11,7 @@ import org.influxdb.dto.Pong;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.event.AbstractInfluxEvent;
+import org.influxdb.reactive.option.QueryOptions;
 import org.reactivestreams.Publisher;
 
 import javax.annotation.Nonnull;
@@ -20,10 +21,9 @@ import javax.annotation.Nonnull;
  * <p>
  * Not Implemented:
  * <ul>
- * <li>Partial writes = writeMeasurements(good,good,wrong,good)...</li>
+ * <li>Partial writes = writeMeasurements(good,good,wrong,good)... -
+ * https://docs.influxdata.com/influxdb/v1.5/guides/writing_data/#writing-multiple-points</li>
  * <li>UDP</li>
- * <li>Ping</li>
- * <li>Version</li>
  * <li>Body as Flowable</li>
  * <li>Use flat in write</li>
  * <li>Retry for wrong url</li>

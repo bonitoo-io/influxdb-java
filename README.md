@@ -529,7 +529,7 @@ influxDBReactive
         System.out.println("InfluxDB response time: " + responseTime + " version: " + version);
     });
 
-// shortcut to check only version
+// check only the version
 influxDBReactive
     .version()
     .subscribe(version -> System.out.println("InfluxDB version: " + version));

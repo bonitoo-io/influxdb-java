@@ -8,6 +8,8 @@ import org.assertj.core.api.Assertions;
 import org.influxdb.dto.BoundParameterQuery;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
+import org.influxdb.reactive.option.BatchOptionsReactive;
+import org.influxdb.reactive.option.QueryOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;

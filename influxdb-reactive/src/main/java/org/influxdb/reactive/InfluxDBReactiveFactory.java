@@ -2,6 +2,7 @@ package org.influxdb.reactive;
 
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.impl.InfluxDBReactiveImpl;
+import org.influxdb.reactive.option.BatchOptionsReactive;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;

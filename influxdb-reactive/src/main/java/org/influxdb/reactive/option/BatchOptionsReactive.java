@@ -1,4 +1,4 @@
-package org.influxdb.reactive;
+package org.influxdb.reactive.option;
 
 import io.reactivex.BackpressureOverflowStrategy;
 import org.influxdb.BatchOptions;

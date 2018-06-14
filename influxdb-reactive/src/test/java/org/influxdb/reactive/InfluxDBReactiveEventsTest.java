@@ -10,6 +10,7 @@ import org.influxdb.impl.AbstractInfluxDBReactiveTest;
 import org.influxdb.reactive.event.QueryParsedResponseEvent;
 import org.influxdb.reactive.event.WriteErrorEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
+import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
