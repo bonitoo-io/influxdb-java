@@ -6,6 +6,7 @@ import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.annotations.Experimental;
+import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
@@ -22,7 +23,6 @@ import javax.annotation.Nonnull;
  * <li>Partial writes = writeMeasurements(good,good,wrong,good)...</li>
  * <li>UDP</li>
  * <li>Ping</li>
- * <li>Gzip</li>
  * <li>Version</li>
  * <li>Body as Flowable</li>
  * <li>Use flat in write</li>
@@ -186,9 +186,30 @@ public interface InfluxDBReactive {
     <T extends AbstractInfluxEvent> Observable<T> listenEvents(@Nonnull Class<T> eventType);
 
     /**
+     * Enable Gzip compress for http request body.
+     * @return the InfluxDBReactive instance to be able to use it in a fluent manner.
+     */
+    @Nonnull
+    InfluxDBReactive enableGzip();
+
+    /**
+     * Disable Gzip compress for http request body.
+     * @return the InfluxDBReactive instance to be able to use it in a fluent manner.
+     */
+    @Nonnull
+    InfluxDBReactive disableGzip();
+
+    /**
+     * Returns whether Gzip compress for http request body is enabled.
+     * @return true if gzip is enabled.
+     */
+    boolean isGzipEnabled();
+
+    /**
      * Close thread for asynchronous batch writes.
      */
-    void close();
+    @Nonnull
+    InfluxDBReactive close();
 
     /**
      * @return {@link Boolean#TRUE} if all metrics are flushed

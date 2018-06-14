@@ -300,13 +300,35 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         return eventPublisher.ofType(eventType);
     }
 
+    @Nonnull
     @Override
-    public void close() {
+    public InfluxDBReactive enableGzip() {
+        this.gzipRequestInterceptor.enable();
+        return this;
+    }
+
+    @Nonnull
+    @Override
+    public InfluxDBReactive disableGzip() {
+        this.gzipRequestInterceptor.disable();
+        return this;
+    }
+
+    @Override
+    public boolean isGzipEnabled() {
+        return this.gzipRequestInterceptor.isEnabled();
+    }
+
+    @Override
+    @Nonnull
+    public InfluxDBReactive close() {
 
         LOG.log(Level.INFO, "Flushing any cached metrics before shutdown.");
 
         processor.onComplete();
         eventPublisher.onComplete();
+
+        return this;
     }
 
     @Override

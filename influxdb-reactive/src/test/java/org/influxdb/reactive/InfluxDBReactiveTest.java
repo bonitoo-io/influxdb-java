@@ -2,6 +2,7 @@ package org.influxdb.reactive;
 
 import org.assertj.core.api.Assertions;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -26,5 +27,20 @@ class InfluxDBReactiveTest extends AbstractInfluxDBReactiveTest {
         influxDBReactive.close();
 
         Assertions.assertThat(influxDBReactive.isClosed()).isEqualTo(true);
+    }
+
+    @Test
+    void gzip() {
+
+        // default disabled
+        Assertions.assertThat(influxDBReactive.isGzipEnabled()).isEqualTo(false);
+
+        // enable
+        influxDBReactive.enableGzip();
+        Assertions.assertThat(influxDBReactive.isGzipEnabled()).isEqualTo(true);
+
+        // disable
+        influxDBReactive.disableGzip();
+        Assertions.assertThat(influxDBReactive.isGzipEnabled()).isEqualTo(false);
     }
 }
