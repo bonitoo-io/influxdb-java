@@ -1,11 +1,12 @@
 package org.influxdb.examples;
 
+import io.reactivex.functions.Consumer;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveFactory;
-import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
+import org.influxdb.reactive.event.BackpressureEvent;
 
 public class BackpressureWriteExample {
 
@@ -28,14 +29,8 @@ public class BackpressureWriteExample {
 
         BackPressureGenerator generator = new BackPressureGenerator();
 
-        InfluxDBReactive client = InfluxDBReactiveFactory.connect(options, batchOptionsReactive,
-                new InfluxDBReactiveListenerDefault() {
-                    @Override
-                    public void doOnBackpressure() {
-                        System.out.println("BackPressure - slow down generator!");
-                        generator.doOnBackpressure();
-                    }
-                });
+        InfluxDBReactive client = InfluxDBReactiveFactory.connect(options, batchOptionsReactive);
+        client.listenEvents(BackpressureEvent.class).subscribe(generator) ;
 
         client.query(new Query("CREATE DATABASE \"" + databaseName + "\"", null)).subscribe();
 
@@ -44,7 +39,7 @@ public class BackpressureWriteExample {
         client.close();
     }
 
-    static class BackPressureGenerator {
+    static class BackPressureGenerator implements Consumer<BackpressureEvent> {
 
         boolean tooFastEmmiting = false;
         long backPressureSleepDuration = 100;
@@ -66,10 +61,12 @@ public class BackpressureWriteExample {
             }
         }
 
-        void doOnBackpressure() {
+        @Override
+        public void accept(BackpressureEvent backpressureEvent) {
+
+            System.out.println("BackPressure - slow down generator!");
             tooFastEmmiting = true;
         }
-
     }
 
 }

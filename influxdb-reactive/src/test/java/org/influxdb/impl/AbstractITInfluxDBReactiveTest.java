@@ -23,7 +23,7 @@ public abstract class AbstractITInfluxDBReactiveTest {
     protected static final String DATABASE_NAME = "reactive_database";
 
     protected InfluxDBReactive influxDBReactive;
-    protected InfluxDBReactiveListenerVerifier verifier;
+    protected InfluxDBReactiveVerifier verifier;
 
     protected void setUp(@Nonnull final BatchOptionsReactive batchOptions) {
 
@@ -41,8 +41,8 @@ public abstract class AbstractITInfluxDBReactiveTest {
                 .build();
 
 
-        verifier = new InfluxDBReactiveListenerVerifier();
-        influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions, verifier);
+        influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions);
+        verifier = new InfluxDBReactiveVerifier(influxDBReactive);
 
         simpleQuery("CREATE DATABASE " + DATABASE_NAME);
 

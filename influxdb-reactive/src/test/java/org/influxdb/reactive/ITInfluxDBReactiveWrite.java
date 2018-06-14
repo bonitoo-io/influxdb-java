@@ -2,12 +2,13 @@ package org.influxdb.reactive;
 
 import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.exceptions.MissingBackpressureException;
+import io.reactivex.observers.TestObserver;
 import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
+import org.influxdb.reactive.event.BackpressureEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -219,12 +220,41 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
                 .verifyBackpressure();
 
         // wait for response
-        verifier.waitForWriteDisposed();
+        verifier.waitForClose();
 
         // measurements + backpressure = 20 000
         List<H2OFeetMeasurement> measurements = getMeasurements();
         Assertions.assertThat(backpressureCount + measurements.size()).isEqualTo(20_000);
 
+        verifier.verifySuccess();
+    }
+
+    @Test
+    void backpressureEvent() {
+
+        setUp(BatchOptionsReactive.builder().build());
+
+        TestObserver<BackpressureEvent> listener = influxDBReactive
+                .listenEvents(BackpressureEvent.class)
+                .test();
+
+        Flowable<Point> map = Flowable
+                .range(0, 20_000).map(index ->
+                        Point.measurement("h2o_feet")
+                                .tag("location", "coyote_creek" + index)
+                                .addField("water_level", index)
+                                .addField("level description", index + " feet")
+                                .time(index, TimeUnit.NANOSECONDS)
+                                .build());
+
+        influxDBReactive.writePoints(map);
+        influxDBReactive.close();
+
+        // wait for response
+        verifier.waitForClose();
+
+        // was call backpressure event
+        Assertions.assertThat(listener.valueCount()).isGreaterThan(0);
         verifier.verifySuccess();
     }
 
@@ -251,8 +281,10 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         influxDBReactive.close();
 
         // wait for response
-        verifier.waitForWriteDisposed();
-        verifier.verifyError(0, MissingBackpressureException.class);
+        verifier.waitForClose();
+
+        Assertions.assertThat(getMeasurements().size()).isLessThan(20_000);
+        verifier.verifyNoBackpressure();
     }
 
     @Test
@@ -273,7 +305,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         influxDBReactive.close();
 
         // wait for response
-        verifier.waitForWriteDisposed();
+        verifier.waitForClose();
 
         // measurements + backpressure = 20 000
         List<H2OFeetMeasurement> measurements = getMeasurements();

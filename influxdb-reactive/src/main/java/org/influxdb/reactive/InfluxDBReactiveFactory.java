@@ -45,26 +45,6 @@ public final class InfluxDBReactiveFactory {
         Objects.requireNonNull(options, "InfluxDBOptions is required");
         Objects.requireNonNull(batchOptions, "BatchOptionsReactive is required");
 
-        return connect(options, batchOptions, new InfluxDBReactiveListenerDefault());
-    }
-
-    /**
-     * Create a instance of the InfluxDB reactive client.
-     *
-     * @param options      the connection configuration
-     * @param batchOptions the batch configuration
-     * @param listener     to listen events from InfluxDB client
-     * @return 3.0.0
-     */
-    @Nonnull
-    public static InfluxDBReactive connect(@Nonnull final InfluxDBOptions options,
-                                           @Nonnull final BatchOptionsReactive batchOptions,
-                                           @Nonnull final InfluxDBReactiveListener listener) {
-
-        Objects.requireNonNull(options, "InfluxDBOptions is required");
-        Objects.requireNonNull(batchOptions, "BatchOptionsReactive is required");
-        Objects.requireNonNull(listener, "InfluxDBReactiveListener is required");
-
-        return new InfluxDBReactiveImpl(options, batchOptions, listener);
+        return new InfluxDBReactiveImpl(options, batchOptions);
     }
 }

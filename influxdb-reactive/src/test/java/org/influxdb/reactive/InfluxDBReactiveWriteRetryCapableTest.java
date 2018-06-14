@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -131,10 +129,5 @@ class InfluxDBReactiveWriteRetryCapableTest extends AbstractInfluxDBReactiveTest
 
         // success 3
         Assertions.assertThat(pointsBody()).isEqualTo(measurement3Expected);
-    }
-
-    @Nonnull
-    private MockResponse createErrorResponse(@Nullable final String influxDBError) {
-        return new MockResponse().setResponseCode(400).addHeader("X-Influxdb-Error", influxDBError);
     }
 }

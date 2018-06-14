@@ -1,13 +1,17 @@
 package org.influxdb.impl;
 
-import io.reactivex.disposables.Disposable;
 import org.assertj.core.api.Assertions;
-import org.influxdb.InfluxDBException;
-import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
+import org.influxdb.reactive.InfluxDBReactive;
+import org.influxdb.reactive.event.BackpressureEvent;
+import org.influxdb.reactive.event.QueryParsedResponseEvent;
+import org.influxdb.reactive.event.UnhandledErrorEvent;
+import org.influxdb.reactive.event.WriteErrorEvent;
+import org.influxdb.reactive.event.WriteSuccessEvent;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,11 +19,9 @@ import java.util.logging.Logger;
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 15:46)
  */
-public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDefault {
+public class InfluxDBReactiveVerifier {
 
-    private static final Logger LOG = Logger.getLogger(InfluxDBReactiveListenerVerifier.class.getName());
-
-    private Disposable writeDisposable;
+    private static final Logger LOG = Logger.getLogger(InfluxDBReactiveVerifier.class.getName());
 
     private LongAdder backpressures = new LongAdder();
     private LongAdder successResponses = new LongAdder();
@@ -27,48 +29,40 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
     private LongAdder responseMapperCallCount = new LongAdder();
     private List<Throwable> throwables = new ArrayList<>();
 
-    @Override
-    public void doOnSubscribeWriter(@Nonnull Disposable writeDisposable) {
-        super.doOnSubscribeWriter(writeDisposable);
+    private InfluxDBReactive influxDBReactive;
 
-        this.writeDisposable = writeDisposable;
-    }
+    InfluxDBReactiveVerifier(@Nonnull final InfluxDBReactive influxDBReactive) {
 
-    @Override
-    public void doOnSuccessResponse() {
-        super.doOnSuccessResponse();
+        Objects.requireNonNull(influxDBReactive, "InfluxDBReactive is required");
 
-        successResponses.add(1);
-    }
+        // WriteSuccessEvent
+        influxDBReactive
+                .listenEvents(WriteSuccessEvent.class)
+                .subscribe(event -> successResponses.add(1));
 
-    @Override
-    public void doOnErrorResponse(@Nonnull final InfluxDBException throwable) {
-        super.doOnErrorResponse(throwable);
+        // WriteErrorEvent
+        influxDBReactive
+                .listenEvents(WriteErrorEvent.class)
+                .subscribe(event -> {
+                    throwables.add(event.getException());
+                    errorResponses.add(1);
+                });
 
-        throwables.add(throwable);
+        // UnhandledErrorEvent
+        influxDBReactive
+                .listenEvents(UnhandledErrorEvent.class)
+                .subscribe(event -> throwables.add(event.getThrowable()));
 
-        errorResponses.add(1);
-    }
+        // QueryParsedResponseEvent
+        influxDBReactive
+                .listenEvents(QueryParsedResponseEvent.class)
+                .subscribe(event -> responseMapperCallCount.add(1));
 
-    @Override
-    public void doOnError(@Nonnull Throwable throwable) {
-        super.doOnError(throwable);
+        // BackpressureEvent
+        influxDBReactive.listenEvents(BackpressureEvent.class)
+                .subscribe(event -> backpressures.add(1));
 
-        throwables.add(throwable);
-    }
-
-    @Override
-    public void doOnBackpressure() {
-        super.doOnBackpressure();
-
-        backpressures.add(1);
-    }
-
-    @Override
-    public void doOnQueryResult() {
-        super.doOnQueryResult();
-
-        responseMapperCallCount.add(1);
+        this.influxDBReactive = influxDBReactive;
     }
 
     public void verifySuccess() {
@@ -77,14 +71,6 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
                 .withFailMessage("Unexpected exceptions: %s", throwables)
                 .isEqualTo(0);
     }
-
-    public void verifyError(final int index, @Nonnull final Class<? extends Throwable> typeOfException) {
-
-        Assertions
-                .assertThat(throwables.get(index))
-                .isInstanceOf(typeOfException);
-    }
-
 
     public void verifyErrorResponse(final int expected) {
         Assertions.assertThat(errorResponses.longValue())
@@ -114,6 +100,13 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
         return backpressures.longValue();
     }
 
+    public void verifyNoBackpressure() {
+        Assertions
+                .assertThat(backpressures.longValue())
+                .withFailMessage("Backpressure was applied")
+                .isEqualTo(0);
+    }
+
     public void waitForResponse(final int responseCount) {
 
         LOG.log(Level.FINEST, "Wait for responses: {0}", responseCount);
@@ -128,11 +121,11 @@ public class InfluxDBReactiveListenerVerifier extends InfluxDBReactiveListenerDe
         LOG.log(Level.FINEST, "Responses arrived");
     }
 
-    public void waitForWriteDisposed() {
+    public void waitForClose() {
 
         long start = System.currentTimeMillis();
 
-        while (!writeDisposable.isDisposed()) {
+        while (!influxDBReactive.isClosed()) {
             if (System.currentTimeMillis() - start > 10_000) {
                 throw new RuntimeException("Writer did not disposed in 10 seconds.");
             }

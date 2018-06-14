@@ -307,12 +307,11 @@ It's support all configurations from the core library packaged to the reactive A
 ### Factory
 
 The `InfluxDBReactiveFactory` creates the reactive instance of a InfluxDB client. 
-The `InfluxDBReactive` client can be configured by three parameters:
+The `InfluxDBReactive` client can be configured by two parameters:
 - `InfluxDBOptions` -  the configuration of connection to the InfluxDB
 - `BatchOptionsReactive` - the configuration of batching
-- `InfluxDBReactiveListener` - the listener that allow interact with client events
 
-The `InfluxDBReactive` client can be also created with default configuration by:
+The `InfluxDBReactive` client can be also created with default batching configuration by:
 ```java
 // Connection configuration
 InfluxDBOptions options = InfluxDBOptions.builder()
@@ -328,7 +327,44 @@ InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options);
 ...
 
 influxDBReactive.close();
-```    
+```
+### Events
+The `InfluxDBReactive` produces events that allow user to be notified and react to this events:
+
+- `WriteSuccessEvent` - published when arrived the success response from InfluxDB server
+- `WriteErrorEvent` - published when arrived the error response from InfluxDB server
+- `QueryParsedResponseEvent` -  published when is parsed streamed response to query result
+- `BackpressureEvent` -  published when is backpressure applied
+- `UnhandledErrorEvent` -  published when occurs a unhandled exception
+
+#### Examples
+
+##### Handle the Success write
+```java
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options);
+
+influxDBReactive.listenEvents(WriteSuccessEvent.class).subscribe(event -> {
+
+    List<Point> points = event.getPoints();
+
+    // handle success
+    ...
+});
+```
+##### Handle the Error Write
+```java
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options);
+
+influxDBReactive.listenEvents(WriteErrorEvent.class).subscribe(event -> {
+            
+    InfluxDBException exception = event.getException();
+    List<Point> points = event.getPoints();
+
+    // handle error
+    ...
+});
+```
+    
 ### Writes
 The writes are processed in batches which are configurable by `BatchOptionsReactive`. 
 It's use the same **Retry on error** strategy as non reactive client.
@@ -342,7 +378,7 @@ It's use the same **Retry on error** strategy as non reactive client.
 - `backpressureStrategy` - the strategy to deal with buffer overflow
 
 ```java
-BatchOptionsReactive options = BatchOptionsReactive.builder()
+BatchOptionsReactive batchOptions = BatchOptionsReactive.builder()
     .actions(5_000)
     .flushInterval(10_000)
     .jitterInterval(5_000)
@@ -350,6 +386,13 @@ BatchOptionsReactive options = BatchOptionsReactive.builder()
     .bufferLimit(100_000)
     .backpressureStrategy(BackpressureOverflowStrategy.ERROR)
     .build();
+
+// Reactive client
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, batchOptions);
+
+...
+
+influxDBReactive.close();
 ```
 The BatchOptionsReactive can be also created with default configuration by:
 ```java
@@ -377,16 +420,12 @@ The size of backlog is configured by
 
 If is used the strategy `DROP_OLDEST` or `DROP_LATEST` there is a possibility to react on backpressure event and slowdown the producing new measurements:
 ```java
-InfluxDBReactiveListenerDefault listener = new InfluxDBReactiveListenerDefault() {
-    @Override
-    public void doOnBackpressure() {
-
-        // slowdown producers
-        // ...
-    }
-};
-        
-InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, batchOptions, listener);
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, batchOptions);
+influxDBReactive.listenEvents(BackpressureEvent.class).subscribe(event -> {
+    
+    // slowdown producers
+    ...
+});
 ```
 
 #### Examples
@@ -464,7 +503,7 @@ Flowable.merge(cpu, mem)
     .groupBy(it -> it instanceof Cpu ? ((Cpu) it).host : ((Mem) it).host)
     .flatMap(group -> {
                     
-        // Operate with grouped measurements
+        // Operate with grouped measurements by their tag host
         
     });
 ```

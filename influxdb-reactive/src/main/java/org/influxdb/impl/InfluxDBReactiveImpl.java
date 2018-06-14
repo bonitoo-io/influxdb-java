@@ -12,6 +12,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.PublishSubject;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import okio.BufferedSource;
@@ -25,9 +26,13 @@ import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
-import org.influxdb.reactive.InfluxDBReactiveListener;
-import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
 import org.influxdb.reactive.QueryOptions;
+import org.influxdb.reactive.event.AbstractInfluxEvent;
+import org.influxdb.reactive.event.BackpressureEvent;
+import org.influxdb.reactive.event.QueryParsedResponseEvent;
+import org.influxdb.reactive.event.UnhandledErrorEvent;
+import org.influxdb.reactive.event.WriteErrorEvent;
+import org.influxdb.reactive.event.WriteSuccessEvent;
 import org.reactivestreams.Publisher;
 import retrofit2.HttpException;
 import retrofit2.Retrofit;
@@ -40,6 +45,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -54,29 +60,23 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     private static final Logger LOG = Logger.getLogger(InfluxDBReactiveImpl.class.getName());
 
     private final PublishProcessor<Point> processor;
+    private final PublishSubject<Object> eventPublisher;
+    private final Disposable writeConsumer;
 
     private final InfluxDBOptions options;
     private final BatchOptionsReactive batchOptions;
-    private final InfluxDBReactiveListener listener;
     private final InfluxDBResultMapper resultMapper;
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
         this(options, BatchOptionsReactive.DEFAULTS);
     }
 
+
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                                 @Nonnull final BatchOptionsReactive batchOptions) {
 
-        this(options, batchOptions, new InfluxDBReactiveListenerDefault());
-    }
-
-
-    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
-                                @Nonnull final BatchOptionsReactive batchOptions,
-                                @Nonnull final InfluxDBReactiveListener listener) {
-
         this(options, batchOptions, Schedulers.newThread(), Schedulers.computation(), Schedulers.trampoline(),
-                Schedulers.trampoline(), null, listener);
+                Schedulers.trampoline(), null);
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
@@ -85,25 +85,26 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                          @Nonnull final Scheduler batchScheduler,
                          @Nonnull final Scheduler jitterScheduler,
                          @Nonnull final Scheduler retryScheduler,
-                         @Nullable final InfluxDBServiceReactive influxDBService,
-                         @Nonnull final InfluxDBReactiveListener listener) {
+                         @Nullable final InfluxDBServiceReactive influxDBService) {
 
         super(InfluxDBServiceReactive.class, options, influxDBService, null);
 
+
+        this.eventPublisher = PublishSubject.create();
+
         this.options = options;
         this.batchOptions = batchOptions;
-        this.listener = listener;
 
         this.resultMapper = new InfluxDBResultMapper();
 
         this.processor = PublishProcessor.create();
-        Disposable writeDisposable = this.processor
+        this.writeConsumer = this.processor
                 //
                 // Backpressure
                 //
                 .onBackpressureBuffer(
                         batchOptions.getBufferLimit(),
-                        listener::doOnBackpressure,
+                        () -> publish(new BackpressureEvent()),
                         batchOptions.getBackpressureStrategy())
                 .observeOn(processorScheduler)
                 //
@@ -118,10 +119,10 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 // Jitter interval
                 //
                 .compose(applyJitter(jitterScheduler))
-                .doOnError(this.listener::doOnError)
+                .doOnError(throwable -> publish(new UnhandledErrorEvent(throwable)))
                 .subscribe(new WritePointsConsumer(retryScheduler));
 
-        this.listener.doOnSubscribeWriter(writeDisposable);
+//        this.listener.doOnSubscribeWriter(writeDisposable);
     }
 
     @Override
@@ -178,7 +179,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(pointStream, "Point stream is required");
 
         Flowable<Point> emitting = Flowable.fromPublisher(pointStream);
-        emitting.subscribe(processor::onNext);
+        emitting.subscribe(processor::onNext, throwable -> publish(new UnhandledErrorEvent(throwable)));
 
         return emitting;
     }
@@ -291,11 +292,26 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     }
 
     @Override
+    @Nonnull
+    public <T extends AbstractInfluxEvent> Observable<T> listenEvents(@Nonnull final Class<T> eventType) {
+
+        Objects.requireNonNull(eventType, "EventType is required");
+
+        return eventPublisher.ofType(eventType);
+    }
+
+    @Override
     public void close() {
 
         LOG.log(Level.INFO, "Flushing any cached metrics before shutdown.");
 
         processor.onComplete();
+        eventPublisher.onComplete();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return writeConsumer.isDisposed();
     }
 
     @Nonnull
@@ -340,38 +356,40 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         @Override
         public void accept(final Flowable<Point> flowablePoints) {
 
-            Action success = listener::doOnSuccessResponse;
-
-            Consumer<Throwable> fail = throwable -> {
-
-                if (throwable instanceof HttpException) {
-
-                    InfluxDBException influxDBException = buildInfluxDBException(throwable);
-
-                    listener.doOnErrorResponse(influxDBException);
-                } else {
-
-                    listener.doOnError(throwable);
-                }
-            };
-
             flowablePoints
-                    //
-                    // Point => InfluxDB Line Protocol
-                    //
-                    .map(Point::lineProtocol)
                     .toList()
                     .filter(points -> !points.isEmpty())
-                    //
-                    // InfluxDB Line Protocol => to Request Body
-                    //
-                    .map(points -> {
+                    .subscribe(points -> {
 
-                        String body = points.stream().collect(Collectors.joining("\n"));
+                        //
+                        // Success action
+                        //
+                        Action success = () -> publish(new WriteSuccessEvent(points));
 
-                        return RequestBody.create(options.getMediaType(), body);
-                    })
-                    .subscribe(requestBody -> {
+                        //
+                        // Fail action
+                        //
+                        Consumer<Throwable> fail = throwable -> {
+
+                            // HttpException is handled in retryCapabilities
+                            if (throwable instanceof HttpException) {
+                                return;
+                            }
+
+                            publish(new UnhandledErrorEvent(throwable));
+                        };
+
+                        //
+                        // Point => InfluxDB Line Protocol
+                        //
+                        String body = points.stream()
+                                .map(Point::lineProtocol)
+                                .collect(Collectors.joining("\n"));
+
+                        //
+                        // InfluxDB Line Protocol => to Request Body
+                        //
+                        RequestBody requestBody = RequestBody.create(options.getMediaType(), body);
 
                         //
                         // Parameters
@@ -391,9 +409,10 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                 //
                                 // Retry strategy
                                 //
-                                .retryWhen(retryCapabilities(retryScheduler))
+                                .retryWhen(retryCapabilities(points, retryScheduler))
                                 .subscribe(success, fail);
-                    });
+
+                    }, throwable -> publish(new UnhandledErrorEvent(throwable)));
         }
     }
 
@@ -401,11 +420,13 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
      * The retry handler that tries to retry a write if it failed previously and
      * the reason of the failure is not permanent.
      *
+     * @param points         to write to InfluxDB
      * @param retryScheduler for scheduling retry write
      * @return the retry handler
      */
     @Nonnull
-    private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities(@Nonnull final Scheduler retryScheduler) {
+    private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities(@Nonnull final List<Point> points,
+                                                                          @Nonnull final Scheduler retryScheduler) {
 
         Objects.requireNonNull(retryScheduler, "RetryScheduler is required");
 
@@ -415,12 +436,12 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
                 InfluxDBException influxDBException = buildInfluxDBException(throwable);
 
+                publish(new WriteErrorEvent(points, influxDBException));
+
                 //
                 // Retry request
                 //
                 if (influxDBException.isRetryWorth()) {
-
-                    listener.doOnErrorResponse(influxDBException);
 
                     int retryInterval = batchOptions.getRetryInterval() + jitterDelay();
 
@@ -473,8 +494,11 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 while (!subscriber.isDisposed() && !source.exhausted()) {
 
                     QueryResult queryResult = InfluxDBReactiveImpl.this.adapter.fromJson(source);
-                    subscriber.onNext(queryResult);
-                    listener.doOnQueryResult();
+                    if (queryResult != null) {
+
+                        subscriber.onNext(queryResult);
+                        publish(new QueryParsedResponseEvent(source, queryResult));
+                    }
                 }
             } catch (IOException e) {
 
@@ -498,6 +522,12 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         });
     }
 
+    private <T extends AbstractInfluxEvent> void publish(@Nonnull final T event) {
+
+        Objects.requireNonNull(event, "Event is required");
+
+        eventPublisher.onNext(event);
+    }
 
     /**
      * Just a proof of concept.

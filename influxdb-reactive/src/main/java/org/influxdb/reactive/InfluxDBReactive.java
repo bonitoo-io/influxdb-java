@@ -3,11 +3,13 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.annotations.Experimental;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
+import org.influxdb.reactive.event.AbstractInfluxEvent;
 import org.reactivestreams.Publisher;
 
 import javax.annotation.Nonnull;
@@ -24,9 +26,8 @@ import javax.annotation.Nonnull;
  * <li>Version</li>
  * <li>Body as Flowable</li>
  * <li>Use flat in write</li>
- * <li>InfluxDBReactiveListener - add suitable parameters</li>
- * <li>Better success/error handling</li>
  * <li>Retry for wrong url</li>
+ * <li>Write options - db, retention, add to event</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)
@@ -175,7 +176,22 @@ public interface InfluxDBReactive {
     Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream, @Nonnull final QueryOptions queryOptions);
 
     /**
+     * Listen the events produced by {@link InfluxDBReactive}.
+     *
+     * @param eventType type of event to listen
+     * @param <T> type of event to listen
+     * @return lister for {@code eventType} events
+     */
+    @Nonnull
+    <T extends AbstractInfluxEvent> Observable<T> listenEvents(@Nonnull Class<T> eventType);
+
+    /**
      * Close thread for asynchronous batch writes.
      */
     void close();
+
+    /**
+     * @return {@link Boolean#TRUE} if all metrics are flushed
+     */
+    boolean isClosed();
 }

@@ -3,6 +3,7 @@ package org.influxdb.impl;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.schedulers.TestScheduler;
+import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
@@ -11,6 +12,7 @@ import org.influxdb.reactive.InfluxDBReactive;
 import org.junit.jupiter.api.AfterEach;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractInfluxDBReactiveTest {
 
     protected InfluxDBReactive influxDBReactive;
-    protected InfluxDBReactiveListenerVerifier verifier;
+    protected InfluxDBReactiveVerifier verifier;
 
     protected Scheduler batchScheduler;
     protected Scheduler jitterScheduler;
@@ -54,15 +56,15 @@ public abstract class AbstractInfluxDBReactiveTest {
                 .database("weather")
                 .build();
 
-        verifier = new InfluxDBReactiveListenerVerifier();
-
         this.batchScheduler = batchScheduler;
         this.jitterScheduler = jitterScheduler;
         this.retryScheduler = retryScheduler;
 
         influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions,
                 Schedulers.trampoline(), this.batchScheduler, this.jitterScheduler,
-                this.retryScheduler, null, verifier);
+                this.retryScheduler, null);
+
+        verifier = new InfluxDBReactiveVerifier(influxDBReactive);
 
     }
 
@@ -87,5 +89,10 @@ public abstract class AbstractInfluxDBReactiveTest {
         }
 
         return sink.readUtf8();
+    }
+
+    @Nonnull
+    protected MockResponse createErrorResponse(@Nullable final String influxDBError) {
+        return new MockResponse().setResponseCode(400).addHeader("X-Influxdb-Error", influxDBError);
     }
 }

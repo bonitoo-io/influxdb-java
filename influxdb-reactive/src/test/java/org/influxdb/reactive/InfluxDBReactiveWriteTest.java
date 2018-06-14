@@ -263,7 +263,8 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         Flowable<H2OFeetMeasurement> measurementsFlowable = influxDBReactive
                 .writeMeasurements(Flowable.just(measurement1, measurement2, measurement3));
 
-        measurementsFlowable.test()
+        measurementsFlowable
+                .test()
                 .assertSubscribed()
                 .assertValueAt(0, measurement1)
                 .assertValueAt(1, measurement2)

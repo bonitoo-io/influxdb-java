@@ -2,14 +2,16 @@ package org.influxdb.examples;
 
 import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
-import java.util.concurrent.TimeUnit;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.reactive.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveFactory;
-import org.influxdb.reactive.InfluxDBReactiveListenerDefault;
+import org.influxdb.reactive.event.BackpressureEvent;
+
+import java.util.concurrent.TimeUnit;
 
 public class BackpressureWriteExample2 {
 
@@ -21,7 +23,7 @@ public class BackpressureWriteExample2 {
                 .username("admin")
                 .password("admin")
                 .database(databaseName)
-                .url("http://localhost:18086").build();
+                .url("http://localhost:8086").build();
 
         BatchOptionsReactive batchOptionsReactive = BatchOptionsReactive.builder()
                 .actions(100)
@@ -33,13 +35,8 @@ public class BackpressureWriteExample2 {
         metricsGenerator.backPressureDelay = 1000;
         metricsGenerator.numberOfEvents = 10000;
 
-        InfluxDBReactive client = InfluxDBReactiveFactory.connect(options, batchOptionsReactive,
-                new InfluxDBReactiveListenerDefault() {
-                    @Override
-                    public void doOnBackpressure() {
-                        metricsGenerator.doOnBackpressure();
-                    }
-                });
+        InfluxDBReactive client = InfluxDBReactiveFactory.connect(options, batchOptionsReactive);
+        client.listenEvents(BackpressureEvent.class).subscribe(metricsGenerator);
 
         client.query(new Query("CREATE DATABASE \"" + databaseName + "\"", null)).blockingSubscribe();
         client.query(new Query("DROP MEASUREMENT \"host\"", databaseName)).blockingSubscribe();
@@ -48,7 +45,7 @@ public class BackpressureWriteExample2 {
         client.close();
     }
 
-    static class ServerMeasurementGenerator {
+    static class ServerMeasurementGenerator implements Consumer<BackpressureEvent> {
 
         int numberOfEvents;
         int backPressureDelay;
@@ -78,7 +75,9 @@ public class BackpressureWriteExample2 {
                     });
         }
 
-        void doOnBackpressure() {
+
+        @Override
+        public void accept(BackpressureEvent backpressureEvent) {
             delay = backPressureDelay;
         }
     }
