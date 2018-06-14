@@ -34,6 +34,7 @@ import org.influxdb.reactive.event.WriteErrorEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.option.QueryOptions;
+import org.influxdb.reactive.option.WriteOptions;
 import org.reactivestreams.Publisher;
 import retrofit2.HttpException;
 import retrofit2.Retrofit;
@@ -60,12 +61,13 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
     private static final Logger LOG = Logger.getLogger(InfluxDBReactiveImpl.class.getName());
 
-    private final PublishProcessor<Point> processor;
+    private final PublishProcessor<DataPoint> processor;
     private final PublishSubject<Object> eventPublisher;
     private final Disposable writeConsumer;
 
     private final InfluxDBOptions options;
     private final BatchOptionsReactive batchOptions;
+    private final WriteOptions defaultWriteOptions;
     private final InfluxDBResultMapper resultMapper;
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
@@ -90,11 +92,18 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         super(InfluxDBServiceReactive.class, options, influxDBService, null);
 
+        Preconditions.checkNonEmptyString(options.getDatabase(), "Default database");
 
         this.eventPublisher = PublishSubject.create();
 
         this.options = options;
         this.batchOptions = batchOptions;
+        this.defaultWriteOptions = WriteOptions.builder()
+                .database(options.getDatabase())
+                .consistencyLevel(options.getConsistencyLevel())
+                .retentionPolicy(options.getRetentionPolicy())
+                .precision(options.getPrecision())
+                .build();
 
         this.resultMapper = new InfluxDBResultMapper();
 
@@ -134,7 +143,16 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(measurement, "Measurement is required");
 
-        return writeMeasurements(Flowable.just(measurement)).firstElement();
+        return writeMeasurement(measurement, defaultWriteOptions);
+    }
+
+    @Override
+    public <M> Maybe<M> writeMeasurement(@Nonnull final M measurement, @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(measurement, "Measurement is required");
+        Objects.requireNonNull(options, "WriteOptions is required");
+
+        return writeMeasurements(Flowable.just(measurement), options).firstElement();
     }
 
     @Override
@@ -142,7 +160,17 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(measurements, "Measurements are required");
 
-        return writeMeasurements(Flowable.fromIterable(measurements));
+        return writeMeasurements(measurements, defaultWriteOptions);
+    }
+
+    @Override
+    public <M> Flowable<M> writeMeasurements(@Nonnull final Iterable<M> measurements,
+                                             @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(measurements, "Measurements are required");
+        Objects.requireNonNull(options, "WriteOptions is required");
+
+        return writeMeasurements(Flowable.fromIterable(measurements), options);
     }
 
     @Override
@@ -150,8 +178,18 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(measurementStream, "Measurement stream is required");
 
+        return writeMeasurements(measurementStream, defaultWriteOptions);
+    }
+
+    @Override
+    public <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> measurementStream,
+                                             @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(measurementStream, "Measurement stream is required");
+        Objects.requireNonNull(options, "WriteOptions is required");
+
         Flowable<M> emitting = Flowable.fromPublisher(measurementStream);
-        writePoints(emitting.map(new MeasurementToPoint<>()));
+        writePoints(emitting.map(new MeasurementToPoint<>()), options);
 
         return emitting;
     }
@@ -161,7 +199,16 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(point, "Point is required");
 
-        return writePoints(Flowable.just(point)).firstElement();
+        return writePoint(point, defaultWriteOptions);
+    }
+
+    @Override
+    public Maybe<Point> writePoint(@Nonnull final Point point, @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(point, "Point is required");
+        Objects.requireNonNull(options, "WriteOptions is required");
+
+        return writePoints(Flowable.just(point), options).firstElement();
     }
 
     @Override
@@ -169,7 +216,16 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(points, "Points are required");
 
-        return writePoints(Flowable.fromIterable(points));
+        return writePoints(points, defaultWriteOptions);
+    }
+
+    @Override
+    public Flowable<Point> writePoints(@Nonnull final Iterable<Point> points, @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(points, "Points are required");
+        Objects.requireNonNull(options, "WriteOptions is required");
+
+        return writePoints(Flowable.fromIterable(points), options);
     }
 
     @Override
@@ -177,8 +233,20 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(pointStream, "Point stream is required");
 
+        return writePoints(pointStream, defaultWriteOptions);
+    }
+
+    @Override
+    public Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream,
+                                       @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(pointStream, "Point stream is required");
+        Objects.requireNonNull(options, "WriteOptions is required");
+
         Flowable<Point> emitting = Flowable.fromPublisher(pointStream);
-        emitting.subscribe(processor::onNext, throwable -> publish(new UnhandledErrorEvent(throwable)));
+        emitting
+                .map(point -> new DataPoint(point, options))
+                .subscribe(processor::onNext, throwable -> publish(new UnhandledErrorEvent(throwable)));
 
         return emitting;
     }
@@ -236,12 +304,12 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     }
 
     @Override
-    public Flowable<QueryResult> query(@Nonnull final Query query, @Nonnull final QueryOptions queryOptions) {
+    public Flowable<QueryResult> query(@Nonnull final Query query, @Nonnull final QueryOptions options) {
 
         Objects.requireNonNull(query, "Query is required");
-        Objects.requireNonNull(queryOptions, "QueryOptions is required");
+        Objects.requireNonNull(options, "QueryOptions is required");
 
-        return query(Flowable.just(query), queryOptions);
+        return query(Flowable.just(query), options);
     }
 
     @Override
@@ -254,23 +322,23 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
     @Override
     public Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream,
-                                       @Nonnull final QueryOptions queryOptions) {
+                                       @Nonnull final QueryOptions options) {
 
         Objects.requireNonNull(queryStream, "Query publisher is required");
-        Objects.requireNonNull(queryOptions, "QueryOptions is required");
+        Objects.requireNonNull(options, "QueryOptions is required");
 
         return Flowable.fromPublisher(queryStream).concatMap((Function<Query, Publisher<QueryResult>>) query -> {
 
             //
             // Parameters
             //
-            String username = options.getUsername();
-            String password = options.getPassword();
+            String username = this.options.getUsername();
+            String password = this.options.getPassword();
             String database = query.getDatabase();
 
-            String precision = TimeUtil.toTimePrecision(options.getPrecision());
+            String precision = TimeUtil.toTimePrecision(this.options.getPrecision());
 
-            int chunkSize = queryOptions.getChunkSize();
+            int chunkSize = options.getChunkSize();
             String rawQuery = query.getCommandWithUrlEncoded();
 
             String params = "";
@@ -353,7 +421,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     }
 
     @Nonnull
-    private FlowableTransformer<Flowable<Point>, Flowable<Point>> applyJitter(@Nonnull final Scheduler scheduler) {
+    private FlowableTransformer<Flowable<DataPoint>, Flowable<DataPoint>> applyJitter(@Nonnull final Scheduler scheduler) {
 
         Objects.requireNonNull(scheduler, "Jitter scheduler is required");
 
@@ -369,7 +437,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             //
             // Add jitter => dynamic delay
             //
-            return source.delay((Function<Flowable<Point>, Flowable<Long>>) pointFlowable -> {
+            return source.delay((Function<Flowable<DataPoint>, Flowable<Long>>) pointFlowable -> {
 
                 int delay = jitterDelay();
 
@@ -380,7 +448,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         };
     }
 
-    private final class WritePointsConsumer implements Consumer<Flowable<Point>> {
+    private final class WritePointsConsumer implements Consumer<Flowable<DataPoint>> {
 
         private final Scheduler retryScheduler;
 
@@ -392,12 +460,17 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         }
 
         @Override
-        public void accept(final Flowable<Point> flowablePoints) {
+        public void accept(final Flowable<DataPoint> flowablePoints) {
 
             flowablePoints
                     .toList()
-                    .filter(points -> !points.isEmpty())
-                    .subscribe(points -> {
+                    .filter(dataPoints -> !dataPoints.isEmpty())
+                    .subscribe(dataPoints -> {
+
+                        List<Point> points = dataPoints
+                                .stream()
+                                .map(dp -> dp.point)
+                                .collect(Collectors.toList());
 
                         //
                         // Success action
@@ -420,8 +493,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                         //
                         // Point => InfluxDB Line Protocol
                         //
-                        String body = points.stream()
-                                .map(Point::lineProtocol)
+                        String body = dataPoints.stream()
+                                .map(DataPoint::lineProtocol)
                                 .collect(Collectors.joining("\n"));
 
                         //
@@ -565,6 +638,22 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(event, "Event is required");
 
         eventPublisher.onNext(event);
+    }
+
+    private class DataPoint {
+
+        private Point point;
+        private WriteOptions options;
+
+        private DataPoint(@Nonnull final Point point, @Nonnull final WriteOptions options) {
+            this.point = point;
+            this.options = options;
+        }
+
+        @Nonnull
+        private String lineProtocol() {
+            return point.lineProtocol();
+        }
     }
 
     private class SubscribeHandler implements Consumer<Disposable> {
