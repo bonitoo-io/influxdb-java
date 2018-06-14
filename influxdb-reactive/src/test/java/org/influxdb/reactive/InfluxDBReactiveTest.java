@@ -1,8 +1,8 @@
 package org.influxdb.reactive;
 
+import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -42,5 +42,36 @@ class InfluxDBReactiveTest extends AbstractInfluxDBReactiveTest {
         // disable
         influxDBReactive.disableGzip();
         Assertions.assertThat(influxDBReactive.isGzipEnabled()).isEqualTo(false);
+    }
+
+    @Test
+    void ping() {
+
+        influxDBServer.enqueue(new MockResponse().setHeader("X-Influxdb-Version", "v1.5.2"));
+
+        influxDBReactive
+                .ping()
+                .test()
+                .assertValueCount(1)
+                .assertValue(pong -> {
+
+                    Assertions.assertThat(pong.getVersion()).isEqualTo("v1.5.2");
+                    Assertions.assertThat(pong.isGood()).isTrue();
+                    Assertions.assertThat(pong.getResponseTime()).isGreaterThan(0);
+
+                    return true;
+                });
+    }
+
+    @Test
+    void version() {
+
+        influxDBServer.enqueue(new MockResponse().setHeader("X-Influxdb-Version", "v1.5.2"));
+
+        influxDBReactive
+                .version()
+                .test()
+                .assertValueCount(1)
+                .assertValue("v1.5.2");
     }
 }

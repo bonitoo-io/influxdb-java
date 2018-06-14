@@ -6,8 +6,8 @@ import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.annotations.Experimental;
-import org.influxdb.InfluxDB;
 import org.influxdb.dto.Point;
+import org.influxdb.dto.Pong;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.event.AbstractInfluxEvent;
@@ -184,6 +184,21 @@ public interface InfluxDBReactive {
      */
     @Nonnull
     <T extends AbstractInfluxEvent> Observable<T> listenEvents(@Nonnull Class<T> eventType);
+
+    /**
+     * Ping this he connected InfluxDB Server.
+     *
+     * @return the response of the ping execution.
+     */
+    Maybe<Pong> ping();
+
+    /**
+     * Return the version of the connected InfluxDB Server.
+     *
+     * @return the version String, otherwise unknown.
+     */
+    @Nonnull
+    Maybe<String> version();
 
     /**
      * Enable Gzip compress for http request body.

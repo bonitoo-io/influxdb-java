@@ -22,6 +22,7 @@ import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.BoundParameterQuery;
 import org.influxdb.dto.Point;
+import org.influxdb.dto.Pong;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.BatchOptionsReactive;
@@ -121,8 +122,6 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 .compose(applyJitter(jitterScheduler))
                 .doOnError(throwable -> publish(new UnhandledErrorEvent(throwable)))
                 .subscribe(new WritePointsConsumer(retryScheduler));
-
-//        this.listener.doOnSubscribeWriter(writeDisposable);
     }
 
     @Override
@@ -298,6 +297,23 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(eventType, "EventType is required");
 
         return eventPublisher.ofType(eventType);
+    }
+
+    @Override
+    public Maybe<Pong> ping() {
+
+        SubscribeHandler onSubscribe = new SubscribeHandler();
+
+        return influxDBService
+                .ping()
+                .doOnSubscribe(onSubscribe)
+                .map(response -> createPong(onSubscribe.subscribeTime, response));
+    }
+
+    @Nonnull
+    @Override
+    public Maybe<String> version() {
+        return ping().map(Pong::getVersion);
     }
 
     @Nonnull
@@ -549,6 +565,16 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(event, "Event is required");
 
         eventPublisher.onNext(event);
+    }
+
+    private class SubscribeHandler implements Consumer<Disposable> {
+
+        private Long subscribeTime;
+
+        @Override
+        public void accept(final Disposable disposable) {
+            subscribeTime = System.currentTimeMillis();
+        }
     }
 
     /**

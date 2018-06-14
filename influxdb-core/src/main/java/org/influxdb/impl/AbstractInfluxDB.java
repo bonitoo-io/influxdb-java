@@ -6,12 +6,17 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBEventListener;
 import org.influxdb.InfluxDBOptions;
+import org.influxdb.dto.Pong;
 import org.influxdb.dto.QueryResult;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
@@ -87,5 +92,26 @@ public abstract class AbstractInfluxDB<T> {
      * @param builder to configure Retrofit
      */
     protected void configure(@Nonnull final Retrofit.Builder builder) {
+    }
+
+    @Nonnull
+    protected Pong createPong(final long requestStart, @Nonnull final Response<ResponseBody> response) {
+
+        Objects.requireNonNull(response, "Response is required");
+
+        Headers headers = response.headers();
+        String version = "unknown";
+        for (String name : headers.toMultimap().keySet()) {
+            if ("X-Influxdb-Version".equalsIgnoreCase(name)) {
+                version = headers.get(name);
+                break;
+            }
+        }
+
+        Pong pong = new Pong();
+        pong.setVersion(version);
+        pong.setResponseTime(System.currentTimeMillis() - requestStart);
+
+        return pong;
     }
 }

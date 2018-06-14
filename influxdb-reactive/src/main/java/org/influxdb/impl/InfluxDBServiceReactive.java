@@ -1,9 +1,11 @@
 package org.influxdb.impl;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
+import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -18,23 +20,6 @@ import javax.annotation.Nonnull;
  */
 public interface InfluxDBServiceReactive {
 
-    /**
-     * Write points into InfluxDB.
-     *
-     * @param username        u: optional The username for authentication
-     * @param password        p: optional The password for authentication
-     * @param database        db: required The database to write points
-     * @param retentionPolicy rp: optional The retention policy to write points.
-     *                        If not specified, the autogen retention
-     * @param precision       optional The precision of the time stamps (n, u, ms, s, m, h).
-     *                        If not specified, n
-     * @param consistency     optional The write consistency level required for the write to succeed.
-     *                        Can be one of one, any, all, quorum. Defaults to all.
-     * @param points          The points that will be write into InfluxDB
-     * @return the observable response
-     * @see InfluxDBService#writePoints(String, String, String, String, String, String, RequestBody)
-     * @since 3.0.0
-     */
     @POST("/write")
     @Nonnull
     Completable writePoints(@Query(InfluxDBService.U) String username,
@@ -55,4 +40,7 @@ public interface InfluxDBServiceReactive {
                                    @Query(InfluxDBService.CHUNK_SIZE) int chunkSize,
                                    @Query(value = InfluxDBService.Q, encoded = true) String query,
                                    @Query(value = InfluxDBService.PARAMS, encoded = true) String params);
+
+    @GET("/ping")
+    Maybe<Response<ResponseBody>> ping();
 }

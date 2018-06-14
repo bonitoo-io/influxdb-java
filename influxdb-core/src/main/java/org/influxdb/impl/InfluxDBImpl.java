@@ -2,7 +2,6 @@ package org.influxdb.impl;
 
 
 import com.squareup.moshi.JsonAdapter;
-import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
@@ -281,18 +280,7 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
         Call<ResponseBody> call = this.influxDBService.ping();
         try {
             Response<ResponseBody> response = call.execute();
-            Headers headers = response.headers();
-            String version = "unknown";
-            for (String name : headers.toMultimap().keySet()) {
-                if (null != name && "X-Influxdb-Version".equalsIgnoreCase(name)) {
-                    version = headers.get(name);
-                    break;
-                }
-            }
-            Pong pong = new Pong();
-            pong.setVersion(version);
-            pong.setResponseTime(System.currentTimeMillis() - started);
-            return pong;
+            return createPong(started, response);
         } catch (IOException e) {
             throw new InfluxDBIOException(e);
         }

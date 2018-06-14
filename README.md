@@ -296,7 +296,7 @@ influxDB.enableBatch(BatchOptions.DEFAULTS.jitterDuration(500);
 ### Other Usages:
 For additional usage examples have a look at [InfluxDBTest.java](https://github.com/influxdb/influxdb-java/blob/master/src/test/java/org/influxdb/InfluxDBTest.java "InfluxDBTest.java") or [influxdb-examples](https://github.com/bonitoo-io/influxdb-java/tree/prototype-reactive/influxdb-examples/src/main/java/org/influxdb/examples) directory.
 
-## InfluxDB reactive client (version 3.0+ required)
+## InfluxDB Reactive Client (version 3.0+ required)
 
 The reactive client library is based on the [RxJava](https://github.com/ReactiveX/RxJava). 
 It's support all configurations from the core library packaged to the reactive API and also a lot of improvements:
@@ -507,6 +507,35 @@ Flowable.merge(cpu, mem)
         
     });
 ```
+
+#### Advanced Usage
+
+##### Gzip's support 
+Same as the non reactive client. For detail information see [documentation](#user-content-gzips-support-version-25-required).
+
+##### Check the status and version of InfluxDB instance
+The InfluxDB HTTP API [ping](https://docs.influxdata.com/influxdb/latest/tools/api/#ping) endpoint provides ability 
+to check the status of your InfluxDB instance and your version of InfluxDB:
+
+```java
+// check response time and version
+influxDBReactive
+    .ping()
+    .subscribe(pong -> {
+        
+        long responseTime = pong.getResponseTime();
+        String version = pong.getVersion();
+        
+        System.out.println("InfluxDB response time: " + responseTime + " version: " + version);
+    });
+
+// shortcut to check only version
+influxDBReactive
+    .version()
+    .subscribe(version -> System.out.println("InfluxDB version: " + version));
+```
+
+
 
 ## Version
 
