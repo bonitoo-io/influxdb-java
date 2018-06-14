@@ -128,7 +128,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 //
                 // Jitter interval
                 //
-                .compose(applyJitter(jitterScheduler))
+                .compose(jitter(jitterScheduler))
                 .doOnError(throwable -> publish(new UnhandledErrorEvent(throwable)))
                 .subscribe(new WritePointsConsumer(retryScheduler));
     }
@@ -421,7 +421,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     }
 
     @Nonnull
-    private FlowableTransformer<Flowable<DataPoint>, Flowable<DataPoint>> applyJitter(@Nonnull final Scheduler scheduler) {
+    private FlowableTransformer<Flowable<DataPoint>, Flowable<DataPoint>> jitter(@Nonnull final Scheduler scheduler) {
 
         Objects.requireNonNull(scheduler, "Jitter scheduler is required");
 
@@ -640,7 +640,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         eventPublisher.onNext(event);
     }
 
-    private class DataPoint {
+    private final class DataPoint {
 
         private Point point;
         private WriteOptions options;
