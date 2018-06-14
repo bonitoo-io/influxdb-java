@@ -23,7 +23,7 @@ public final class QueryOptions {
      */
     public static final QueryOptions DEFAULTS = QueryOptions.builder().build();
 
-    public QueryOptions(@Nonnull final Builder builder) {
+    private QueryOptions(@Nonnull final Builder builder) {
 
         Objects.requireNonNull(builder, "QueryOptions.Builder is required");
 
@@ -77,7 +77,7 @@ public final class QueryOptions {
         /**
          * Build an instance of QueryOptions.
          *
-         * @return {@code BatchOptionsReactive}
+         * @return {@code QueryOptions}
          */
         @Nonnull
         public QueryOptions build() {
@@ -85,5 +85,4 @@ public final class QueryOptions {
             return new QueryOptions(this);
         }
     }
-
 }

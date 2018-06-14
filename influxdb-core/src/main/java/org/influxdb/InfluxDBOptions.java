@@ -24,6 +24,10 @@ import java.util.concurrent.TimeUnit;
  */
 public final class InfluxDBOptions {
 
+    public static final String DEFAULT_RETENTION_POLICY = "autogen";
+    public static final InfluxDB.ConsistencyLevel DEFAULT_CONSISTENCY_LEVEL = InfluxDB.ConsistencyLevel.ONE;
+    public static final TimeUnit DEFAULT_PRECISION = TimeUnit.NANOSECONDS;
+
     private String url;
 
     private String username;
@@ -193,10 +197,11 @@ public final class InfluxDBOptions {
         private String password;
 
         private String database;
-        private String retentionPolicy = "autogen";
-        private InfluxDB.ConsistencyLevel consistencyLevel = InfluxDB.ConsistencyLevel.ONE;
 
-        private TimeUnit precision = TimeUnit.NANOSECONDS;
+        private String retentionPolicy = DEFAULT_RETENTION_POLICY;
+        private InfluxDB.ConsistencyLevel consistencyLevel = DEFAULT_CONSISTENCY_LEVEL;
+        private TimeUnit precision = DEFAULT_PRECISION;
+
         private MediaType mediaType = MediaType.parse("text/plain; charset=utf-8");
 
         private OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();

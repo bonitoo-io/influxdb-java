@@ -1,7 +1,6 @@
-package org.influxdb.reactive;
+package org.influxdb.reactive.option;
 
 import org.assertj.core.api.Assertions;
-import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
