@@ -29,6 +29,7 @@ import javax.annotation.Nonnull;
  * <li>Use flat in write</li>
  * <li>Retry for wrong url</li>
  * <li>Write line protocol</li>
+ * <li>Backpressure - wait</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)

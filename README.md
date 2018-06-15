@@ -333,6 +333,7 @@ The `InfluxDBReactive` produces events that allow user to be notified and react 
 
 - `WriteSuccessEvent` - published when arrived the success response from InfluxDB server
 - `WriteErrorEvent` - published when arrived the error response from InfluxDB server
+- `WritePartialEvent` - published when arrived the partial error response from InfluxDB server
 - `QueryParsedResponseEvent` -  published when is parsed streamed response to query result
 - `BackpressureEvent` -  published when is backpressure applied
 - `UnhandledErrorEvent` -  published when occurs a unhandled exception
