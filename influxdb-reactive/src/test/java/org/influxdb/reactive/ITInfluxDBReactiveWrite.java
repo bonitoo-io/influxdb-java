@@ -9,7 +9,9 @@ import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
 import org.influxdb.reactive.event.BackpressureEvent;
+import org.influxdb.reactive.event.WriteSuccessEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
+import org.influxdb.reactive.option.WriteOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -313,6 +315,96 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         Assertions.assertThat(measurements.size()).isEqualTo(20_000);
 
         verifier.verifySuccess();
+    }
+
+    @Test
+    void writeToDifferentDatabases() {
+
+        setUp(BatchOptionsReactive.builder().actions(4).build());
+
+        TestObserver<WriteSuccessEvent> listener = influxDBReactive
+                .listenEvents(WriteSuccessEvent.class)
+                .test();
+
+        simpleQuery("CREATE database " + DATABASE_NAME + "_1");
+        simpleQuery("CREATE database " + DATABASE_NAME + "_2");
+
+        Point point1_1 = Point.measurement("test_measurement1")
+                .tag("tag", "1")
+                .addField("field", 1)
+                .build();
+        Point point1_2 = Point.measurement("test_measurement1")
+                .tag("tag", "2")
+                .addField("field", 2)
+                .build();
+        List<Point> points1 = new ArrayList<>();
+        points1.add(point1_1);
+        points1.add(point1_2);
+
+        Point point2_1 = Point.measurement("test_measurement2")
+                .tag("tag", "1")
+                .addField("field", 1)
+                .build();
+        Point point2_2 = Point.measurement("test_measurement2")
+                .tag("tag", "2")
+                .addField("field", 2)
+                .build();
+        List<Point> points2 = new ArrayList<>();
+        points2.add(point2_1);
+        points2.add(point2_2);
+
+        influxDBReactive.writePoints(points1, WriteOptions.builder().database(DATABASE_NAME + "_1").build());
+        influxDBReactive.writePoints(points2, WriteOptions.builder().database(DATABASE_NAME + "_2").build());
+
+        verifier.waitForResponse(2);
+        verifier.verifySuccessResponse(2);
+        verifier.verifySuccess();
+
+        //
+        // Assert by listener
+        //
+        List<String> databases = new ArrayList<>();
+        listener.assertValueCount(2)
+                .assertValueAt(0, event -> {
+                    Assertions.assertThat(event.getPoints().size()).isEqualTo(2);
+                    databases.add(event.getWriteOptions().getDatabase());
+                    return true;
+                })
+                .assertValueAt(1, event -> {
+                    Assertions.assertThat(event.getPoints().size()).isEqualTo(2);
+                    databases.add(event.getWriteOptions().getDatabase());
+                    return true;
+                });
+
+        Assertions.assertThat(databases).contains(DATABASE_NAME + "_1", DATABASE_NAME + "_2");
+
+        //
+        // Assert by query
+        //
+        influxDBReactive
+                .query(new Query("select * from test_measurement1", DATABASE_NAME + "_1"))
+                .test()
+                .assertValueCount(1).assertValue(result -> {
+
+                    List<List<Object>> values = result.getResults().get(0).getSeries().get(0).getValues();
+                    Assertions.assertThat(values.size()).isEqualTo(2);
+
+                    return true;
+        });
+
+        influxDBReactive
+                .query(new Query("select * from test_measurement2", DATABASE_NAME + "_2"))
+                .test()
+                .assertValueCount(1).assertValue(result -> {
+
+                    List<List<Object>> values = result.getResults().get(0).getSeries().get(0).getValues();
+                    Assertions.assertThat(values.size()).isEqualTo(2);
+
+                    return true;
+        });
+
+        simpleQuery("DROP database " + DATABASE_NAME + "_1");
+        simpleQuery("DROP database " + DATABASE_NAME + "_2");
     }
 
     @Nonnull

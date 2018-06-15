@@ -11,6 +11,7 @@ import org.influxdb.reactive.event.QueryParsedResponseEvent;
 import org.influxdb.reactive.event.WriteErrorEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
+import org.influxdb.reactive.option.WriteOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -48,6 +49,9 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
                     Assertions.assertThat(writeSuccessEvent.getPoints().size()).isEqualTo(1);
                     Assertions.assertThat(writeSuccessEvent.getPoints().get(0)).isEqualTo(createMeasurementPoint());
 
+                    WriteOptions expectedOptions = WriteOptions.builder().database("weather").build();
+                    Assertions.assertThat(writeSuccessEvent.getWriteOptions()).isEqualTo(expectedOptions);
+
                     return true;
                 });
     }
@@ -74,6 +78,9 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
                     Assertions.assertThat(writeErrorEvent.getException().isRetryWorth()).isEqualTo(false);
                     Assertions.assertThat(writeErrorEvent.getException().getMessage())
                             .isEqualTo("database not found: not_exist_database");
+
+                    WriteOptions expectedOptions = WriteOptions.builder().database("weather").build();
+                    Assertions.assertThat(writeErrorEvent.getWriteOptions()).isEqualTo(expectedOptions);
 
                     return true;
                 });

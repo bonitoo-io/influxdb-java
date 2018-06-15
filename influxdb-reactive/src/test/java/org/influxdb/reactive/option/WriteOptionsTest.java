@@ -90,4 +90,12 @@ class WriteOptionsTest {
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("TimeUnit precision is required");
     }
+
+    @Test
+    void equals() {
+        WriteOptions writeOptions1 = WriteOptions.builder().database("my_db").build();
+        WriteOptions writeOptions2 = WriteOptions.builder().database("my_db").build();
+
+        Assertions.assertThat(writeOptions1).isEqualTo(writeOptions2);
+    }
 }

@@ -168,5 +168,35 @@ public final class WriteOptions {
             return new WriteOptions(this);
         }
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof WriteOptions)) {
+            return false;
+        }
+        WriteOptions that = (WriteOptions) o;
+        return Objects.equals(database, that.database)
+                && Objects.equals(retentionPolicy, that.retentionPolicy)
+                && consistencyLevel == that.consistencyLevel
+                && precision == that.precision;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(database, retentionPolicy, consistencyLevel, precision);
+    }
+
+    @Override
+    public String toString() {
+        return "org.influxdb.reactive.option.WriteOptions{"
+                + "database='" + database + '\''
+                + ", retentionPolicy='" + retentionPolicy + '\''
+                + ", consistencyLevel=" + consistencyLevel
+                + ", precision=" + precision
+                + '}';
+    }
 }
 

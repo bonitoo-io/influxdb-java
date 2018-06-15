@@ -69,7 +69,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     private final BatchOptionsReactive batchOptions;
     @Nullable
     private final WriteOptions defaultWriteOptions;
-    
+
     private final InfluxDBResultMapper resultMapper;
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
@@ -147,8 +147,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public <M> Maybe<M> writeMeasurement(@Nonnull final M measurement) {
 
         Objects.requireNonNull(measurement, "Measurement is required");
-        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
-                "Use write method with custom WriteOptions - #writeMeasurement(measurement, options).");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writeMeasurement(measurement, options).");
 
         return writeMeasurement(measurement, defaultWriteOptions);
     }
@@ -166,8 +166,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public <M> Flowable<M> writeMeasurements(@Nonnull final Iterable<M> measurements) {
 
         Objects.requireNonNull(measurements, "Measurements are required");
-        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
-                "Use write method with custom WriteOptions - #writeMeasurements(measurements, options).");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writeMeasurements(measurements, options).");
 
         return writeMeasurements(measurements, defaultWriteOptions);
     }
@@ -186,8 +186,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> measurementStream) {
 
         Objects.requireNonNull(measurementStream, "Measurement stream is required");
-        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
-                "Use write method with custom WriteOptions - #writeMeasurements(measurementStream, options).");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writeMeasurements(measurementStream, options).");
 
         return writeMeasurements(measurementStream, defaultWriteOptions);
     }
@@ -209,8 +209,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public Maybe<Point> writePoint(@Nonnull final Point point) {
 
         Objects.requireNonNull(point, "Point is required");
-        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
-                "Use write method with custom WriteOptions - #writePoint(point, options).");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writePoint(point, options).");
 
         return writePoint(point, defaultWriteOptions);
     }
@@ -228,8 +228,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public Flowable<Point> writePoints(@Nonnull final Iterable<Point> points) {
 
         Objects.requireNonNull(points, "Points are required");
-        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
-                "Use write method with custom WriteOptions - #writePoints(points, options).");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writePoints(points, options).");
 
         return writePoints(points, defaultWriteOptions);
     }
@@ -247,8 +247,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream) {
 
         Objects.requireNonNull(pointStream, "Point stream is required");
-        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
-                "Use write method with custom WriteOptions - #writePoints(pointStream, options).");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writePoints(pointStream, options).");
 
         return writePoints(pointStream, defaultWriteOptions);
     }
@@ -480,67 +480,74 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         public void accept(final Flowable<DataPoint> flowablePoints) {
 
             flowablePoints
-                    .toList()
-                    .filter(dataPoints -> !dataPoints.isEmpty())
-                    .subscribe(dataPoints -> {
+                    .groupBy(dataPoint -> dataPoint.options)
+                    .subscribe(dataPointGroup -> {
 
-                        List<Point> points = dataPoints
-                                .stream()
-                                .map(dp -> dp.point)
-                                .collect(Collectors.toList());
+                        WriteOptions writeOptions = dataPointGroup.getKey();
+                        dataPointGroup
+                                .toList()
+                                .filter(dataPoints -> !dataPoints.isEmpty())
+                                .subscribe(dataPoints -> {
 
-                        //
-                        // Success action
-                        //
-                        Action success = () -> publish(new WriteSuccessEvent(points));
+                                    List<Point> points = dataPoints
+                                            .stream()
+                                            .map(dp -> dp.point)
+                                            .collect(Collectors.toList());
 
-                        //
-                        // Fail action
-                        //
-                        Consumer<Throwable> fail = throwable -> {
+                                    //
+                                    // Success action
+                                    //
+                                    Action success = () -> publish(new WriteSuccessEvent(points, writeOptions));
 
-                            // HttpException is handled in retryCapabilities
-                            if (throwable instanceof HttpException) {
-                                return;
-                            }
+                                    //
+                                    // Fail action
+                                    //
+                                    Consumer<Throwable> fail = throwable -> {
 
-                            publish(new UnhandledErrorEvent(throwable));
-                        };
+                                        // HttpException is handled in retryCapabilities
+                                        if (throwable instanceof HttpException) {
+                                            return;
+                                        }
 
-                        //
-                        // Point => InfluxDB Line Protocol
-                        //
-                        String body = dataPoints.stream()
-                                .map(DataPoint::lineProtocol)
-                                .collect(Collectors.joining("\n"));
+                                        publish(new UnhandledErrorEvent(throwable));
+                                    };
 
-                        //
-                        // InfluxDB Line Protocol => to Request Body
-                        //
-                        RequestBody requestBody = RequestBody.create(options.getMediaType(), body);
+                                    //
+                                    // Point => InfluxDB Line Protocol
+                                    //
+                                    String body = dataPoints.stream()
+                                            .map(DataPoint::lineProtocol)
+                                            .collect(Collectors.joining("\n"));
 
-                        //
-                        // Parameters
-                        //
-                        String username = options.getUsername();
-                        String password = options.getPassword();
-                        String database = options.getDatabase();
+                                    //
+                                    // InfluxDB Line Protocol => to Request Body
+                                    //
+                                    RequestBody requestBody = RequestBody.create(options.getMediaType(), body);
 
-                        String retentionPolicy = options.getRetentionPolicy();
-                        String precision = TimeUtil.toTimePrecision(options.getPrecision());
-                        String consistencyLevel = options.getConsistencyLevel().value();
+                                    //
+                                    // Parameters
+                                    //
+                                    String username = options.getUsername();
+                                    String password = options.getPassword();
+                                    String database = writeOptions.getDatabase();
 
-                        influxDBService.writePoints(
-                                username, password, database,
-                                retentionPolicy, precision, consistencyLevel,
-                                null)
-                                //
-                                // Retry strategy
-                                //
-                                .retryWhen(retryCapabilities(points, retryScheduler))
-                                .subscribe(success, fail);
+                                    String retentionPolicy = writeOptions.getRetentionPolicy();
+                                    String precision = TimeUtil.toTimePrecision(writeOptions.getPrecision());
+                                    String consistencyLevel = writeOptions.getConsistencyLevel().value();
 
+                                    influxDBService.writePoints(
+                                            username, password, database,
+                                            retentionPolicy, precision, consistencyLevel,
+                                            requestBody)
+                                            //
+                                            // Retry strategy
+                                            //
+                                            .retryWhen(retryCapabilities(points, writeOptions, retryScheduler))
+                                            .subscribe(success, fail);
+
+                                }, throwable -> publish(new UnhandledErrorEvent(throwable)));
                     }, throwable -> publish(new UnhandledErrorEvent(throwable)));
+
         }
     }
 
@@ -549,13 +556,17 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
      * the reason of the failure is not permanent.
      *
      * @param points         to write to InfluxDB
+     * @param writeOptions   options for write to InfluxDB
      * @param retryScheduler for scheduling retry write
      * @return the retry handler
      */
     @Nonnull
     private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities(@Nonnull final List<Point> points,
+                                                                          @Nonnull final WriteOptions writeOptions,
                                                                           @Nonnull final Scheduler retryScheduler) {
 
+        Objects.requireNonNull(points, "Points are required");
+        Objects.requireNonNull(writeOptions, "WriteOptions are required");
         Objects.requireNonNull(retryScheduler, "RetryScheduler is required");
 
         return errors -> errors.flatMap(throwable -> {
@@ -564,7 +575,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
                 InfluxDBException influxDBException = buildInfluxDBException(throwable);
 
-                publish(new WriteErrorEvent(points, influxDBException));
+                publish(new WriteErrorEvent(points, writeOptions, influxDBException));
 
                 //
                 // Retry request
