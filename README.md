@@ -386,6 +386,10 @@ WriteOptions writeOptions = WriteOptions.builder()
 
 influxDBReactive.writeMeasurements(measurements, writeOptions);
 ```
+The writes can be also used with default configuration by:
+```java
+influxDBReactive.writeMeasurements(measurements);
+```
 
 #### Batching configuration
 - `actions` - the number of points before the batch is written
