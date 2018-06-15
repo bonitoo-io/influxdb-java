@@ -67,13 +67,14 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
     private final InfluxDBOptions options;
     private final BatchOptionsReactive batchOptions;
+    @Nullable
     private final WriteOptions defaultWriteOptions;
+    
     private final InfluxDBResultMapper resultMapper;
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options) {
         this(options, BatchOptionsReactive.DEFAULTS);
     }
-
 
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                                 @Nonnull final BatchOptionsReactive batchOptions) {
@@ -92,21 +93,25 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         super(InfluxDBServiceReactive.class, options, influxDBService, null);
 
-        Preconditions.checkNonEmptyString(options.getDatabase(), "Default database");
-
-        this.eventPublisher = PublishSubject.create();
-
+        //
+        // Options
+        //
         this.options = options;
         this.batchOptions = batchOptions;
-        this.defaultWriteOptions = WriteOptions.builder()
-                .database(options.getDatabase())
-                .consistencyLevel(options.getConsistencyLevel())
-                .retentionPolicy(options.getRetentionPolicy())
-                .precision(options.getPrecision())
-                .build();
+        if (options.getDatabase() == null) {
+            this.defaultWriteOptions = null;
+        } else {
+            this.defaultWriteOptions = WriteOptions.builder()
+                    .database(options.getDatabase())
+                    .consistencyLevel(options.getConsistencyLevel())
+                    .retentionPolicy(options.getRetentionPolicy())
+                    .precision(options.getPrecision())
+                    .build();
+        }
 
         this.resultMapper = new InfluxDBResultMapper();
 
+        this.eventPublisher = PublishSubject.create();
         this.processor = PublishProcessor.create();
         this.writeConsumer = this.processor
                 //
@@ -142,6 +147,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public <M> Maybe<M> writeMeasurement(@Nonnull final M measurement) {
 
         Objects.requireNonNull(measurement, "Measurement is required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
+                "Use write method with custom WriteOptions - #writeMeasurement(measurement, options).");
 
         return writeMeasurement(measurement, defaultWriteOptions);
     }
@@ -150,7 +157,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public <M> Maybe<M> writeMeasurement(@Nonnull final M measurement, @Nonnull final WriteOptions options) {
 
         Objects.requireNonNull(measurement, "Measurement is required");
-        Objects.requireNonNull(options, "WriteOptions is required");
+        Objects.requireNonNull(options, "WriteOptions are required");
 
         return writeMeasurements(Flowable.just(measurement), options).firstElement();
     }
@@ -159,6 +166,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public <M> Flowable<M> writeMeasurements(@Nonnull final Iterable<M> measurements) {
 
         Objects.requireNonNull(measurements, "Measurements are required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
+                "Use write method with custom WriteOptions - #writeMeasurements(measurements, options).");
 
         return writeMeasurements(measurements, defaultWriteOptions);
     }
@@ -168,7 +177,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                              @Nonnull final WriteOptions options) {
 
         Objects.requireNonNull(measurements, "Measurements are required");
-        Objects.requireNonNull(options, "WriteOptions is required");
+        Objects.requireNonNull(options, "WriteOptions are required");
 
         return writeMeasurements(Flowable.fromIterable(measurements), options);
     }
@@ -177,6 +186,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public <M> Flowable<M> writeMeasurements(@Nonnull final Publisher<M> measurementStream) {
 
         Objects.requireNonNull(measurementStream, "Measurement stream is required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
+                "Use write method with custom WriteOptions - #writeMeasurements(measurementStream, options).");
 
         return writeMeasurements(measurementStream, defaultWriteOptions);
     }
@@ -186,7 +197,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                              @Nonnull final WriteOptions options) {
 
         Objects.requireNonNull(measurementStream, "Measurement stream is required");
-        Objects.requireNonNull(options, "WriteOptions is required");
+        Objects.requireNonNull(options, "WriteOptions are required");
 
         Flowable<M> emitting = Flowable.fromPublisher(measurementStream);
         writePoints(emitting.map(new MeasurementToPoint<>()), options);
@@ -198,6 +209,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public Maybe<Point> writePoint(@Nonnull final Point point) {
 
         Objects.requireNonNull(point, "Point is required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
+                "Use write method with custom WriteOptions - #writePoint(point, options).");
 
         return writePoint(point, defaultWriteOptions);
     }
@@ -206,7 +219,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public Maybe<Point> writePoint(@Nonnull final Point point, @Nonnull final WriteOptions options) {
 
         Objects.requireNonNull(point, "Point is required");
-        Objects.requireNonNull(options, "WriteOptions is required");
+        Objects.requireNonNull(options, "WriteOptions are required");
 
         return writePoints(Flowable.just(point), options).firstElement();
     }
@@ -215,6 +228,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public Flowable<Point> writePoints(@Nonnull final Iterable<Point> points) {
 
         Objects.requireNonNull(points, "Points are required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
+                "Use write method with custom WriteOptions - #writePoints(points, options).");
 
         return writePoints(points, defaultWriteOptions);
     }
@@ -223,7 +238,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public Flowable<Point> writePoints(@Nonnull final Iterable<Point> points, @Nonnull final WriteOptions options) {
 
         Objects.requireNonNull(points, "Points are required");
-        Objects.requireNonNull(options, "WriteOptions is required");
+        Objects.requireNonNull(options, "WriteOptions are required");
 
         return writePoints(Flowable.fromIterable(points), options);
     }
@@ -232,6 +247,8 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream) {
 
         Objects.requireNonNull(pointStream, "Point stream is required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. " +
+                "Use write method with custom WriteOptions - #writePoints(pointStream, options).");
 
         return writePoints(pointStream, defaultWriteOptions);
     }
@@ -241,7 +258,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                        @Nonnull final WriteOptions options) {
 
         Objects.requireNonNull(pointStream, "Point stream is required");
-        Objects.requireNonNull(options, "WriteOptions is required");
+        Objects.requireNonNull(options, "WriteOptions are required");
 
         Flowable<Point> emitting = Flowable.fromPublisher(pointStream);
         emitting
@@ -516,7 +533,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                         influxDBService.writePoints(
                                 username, password, database,
                                 retentionPolicy, precision, consistencyLevel,
-                                requestBody)
+                                null)
                                 //
                                 // Retry strategy
                                 //
