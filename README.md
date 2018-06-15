@@ -366,8 +366,26 @@ influxDBReactive.listenEvents(WriteErrorEvent.class).subscribe(event -> {
 ```
     
 ### Writes
-The writes are processed in batches which are configurable by `BatchOptionsReactive`. 
+
+The writes can be configured by `WriteOptions` and are processed in batches which are configurable by `BatchOptionsReactive`.  
 It's use the same **Retry on error** strategy as non reactive client.
+
+#### Write configuration
+- `database` - the name of the database to write
+- `retentionPolicy` - the Retention Policy to use
+- `consistencyLevel` - the ConsistencyLevel to use
+- `precision` - the time precision to use
+
+```java
+WriteOptions writeOptions = WriteOptions.builder()
+    .database("reactive_measurements")
+    .retentionPolicy("my_policy")
+    .consistencyLevel(InfluxDB.ConsistencyLevel.QUORUM)
+    .precision(TimeUnit.MINUTES)
+    .build();
+
+influxDBReactive.writeMeasurements(measurements, writeOptions);
+```
 
 #### Batching configuration
 - `actions` - the number of points before the batch is written

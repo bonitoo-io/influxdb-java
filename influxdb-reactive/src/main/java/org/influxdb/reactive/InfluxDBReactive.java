@@ -28,7 +28,7 @@ import javax.annotation.Nonnull;
  * <li>Body as Flowable</li>
  * <li>Use flat in write</li>
  * <li>Retry for wrong url</li>
- * <li>Write options - db, retention, add to event</li>
+ * <li>Write line protocol</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)
