@@ -62,7 +62,9 @@ public class WritePartialEvent extends AbstractInfluxEvent {
     }
 
     /**
-     * Parse data point error from InfluxDB response e.g,:
+     * Parse data point error from InfluxDB response.
+     *
+     * e.g.:
      *
      * "unable to parse 'cpu_load_short,host=server02,region=us-west': missing fields"
      * "nable to parse 'cpu_load_short,region=us-west 1422568543702900257': invalid field format dropped=0"
