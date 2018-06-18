@@ -17,6 +17,7 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import okio.BufferedSource;
 import org.influxdb.InfluxDBException;
+import org.influxdb.InfluxDBException.PartialWriteException;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
@@ -31,6 +32,7 @@ import org.influxdb.reactive.event.BackpressureEvent;
 import org.influxdb.reactive.event.QueryParsedResponseEvent;
 import org.influxdb.reactive.event.UnhandledErrorEvent;
 import org.influxdb.reactive.event.WriteErrorEvent;
+import org.influxdb.reactive.event.WritePartialEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.option.QueryOptions;
@@ -574,6 +576,15 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             if (throwable instanceof HttpException) {
 
                 InfluxDBException influxDBException = buildInfluxDBException(throwable);
+
+                //
+                // Partial Write => skip retry
+                //
+                if (influxDBException instanceof PartialWriteException) {
+                    publish(new WritePartialEvent(points, writeOptions, (PartialWriteException) influxDBException));
+
+                    return Flowable.error(throwable);
+                }
 
                 publish(new WriteErrorEvent(points, writeOptions, influxDBException));
 

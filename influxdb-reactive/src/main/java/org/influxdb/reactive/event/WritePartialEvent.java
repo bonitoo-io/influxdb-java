@@ -5,7 +5,6 @@ import org.influxdb.dto.Point;
 import org.influxdb.reactive.option.WriteOptions;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -22,11 +21,11 @@ public class WritePartialEvent extends AbstractInfluxEvent {
 
     private final List<Point> points;
     private final WriteOptions writeOptions;
-    private final InfluxDBException exception;
+    private final InfluxDBException.PartialWriteException exception;
 
     public WritePartialEvent(@Nonnull final List<Point> points,
                              @Nonnull final WriteOptions writeOptions,
-                             @Nonnull final InfluxDBException exception) {
+                             @Nonnull final InfluxDBException.PartialWriteException exception) {
 
         Objects.requireNonNull(points, "Points are required");
         Objects.requireNonNull(writeOptions, "WriteOptions are required");
@@ -57,23 +56,8 @@ public class WritePartialEvent extends AbstractInfluxEvent {
      * @return the partial exception that was throw
      */
     @Nonnull
-    public InfluxDBException getException() {
+    public InfluxDBException.PartialWriteException getException() {
         return exception;
-    }
-
-    /**
-     * Parse data point error from InfluxDB response.
-     *
-     * e.g.:
-     *
-     * "unable to parse 'cpu_load_short,host=server02,region=us-west': missing fields"
-     * "nable to parse 'cpu_load_short,region=us-west 1422568543702900257': invalid field format dropped=0"
-     *
-     * @return the data points error
-     */
-    @Nonnull
-    public List<String> getPartialErrors() {
-        return new ArrayList<>();
     }
 
     @Override

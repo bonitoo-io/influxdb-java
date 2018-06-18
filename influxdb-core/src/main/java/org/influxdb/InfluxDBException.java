@@ -45,6 +45,7 @@ public class InfluxDBException extends RuntimeException {
   static final String USER_NOT_AUTHORIZED_ERROR = "user is not authorized to write to database";
   static final String AUTHORIZATION_FAILED_ERROR = "authorization failed";
   static final String USERNAME_REQUIRED_ERROR = "username required";
+  static final String PARTIAL_WRITE = "partial write";
 
   public static final class DatabaseNotFoundException extends InfluxDBException {
     private DatabaseNotFoundException(final String message) {
@@ -126,7 +127,21 @@ public class InfluxDBException extends RuntimeException {
     }
   }
 
+  public static final class PartialWriteException extends InfluxDBException {
+    public PartialWriteException(final String message) {
+      super(message);
+    }
+
+    @Override
+    public boolean isRetryWorth() {
+      return false;
+    }
+  }
+
   public static InfluxDBException buildExceptionFromErrorMessage(final String errorMessage) {
+    if (errorMessage.startsWith(PARTIAL_WRITE)) {
+      return new PartialWriteException(errorMessage);
+    }
     if (errorMessage.contains(DATABASE_NOT_FOUND_ERROR)) {
       return new DatabaseNotFoundException(errorMessage);
     }

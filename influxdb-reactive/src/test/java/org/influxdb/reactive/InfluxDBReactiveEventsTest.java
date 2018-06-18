@@ -3,12 +3,14 @@ package org.influxdb.reactive;
 import io.reactivex.observers.TestObserver;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
+import org.influxdb.InfluxDBException;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
 import org.influxdb.reactive.event.QueryParsedResponseEvent;
 import org.influxdb.reactive.event.WriteErrorEvent;
+import org.influxdb.reactive.event.WritePartialEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.option.WriteOptions;
@@ -84,6 +86,50 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
 
                     return true;
                 });
+    }
+
+    @Test
+    void writePartialEvent() {
+
+        TestObserver<WritePartialEvent> listener = influxDBReactive
+                .listenEvents(WritePartialEvent.class)
+                .test();
+
+        TestObserver<WriteErrorEvent> listenerError = influxDBReactive
+                .listenEvents(WriteErrorEvent.class)
+                .test();
+
+        TestObserver<WriteSuccessEvent> listenerSuccess = influxDBReactive
+                .listenEvents(WriteSuccessEvent.class)
+                .test();
+
+        // Partial response
+        String influxDBError = "partial write: unable to parse 'cpu_load_short,host=server02,region=us-west "
+                + "value=0.55x 1422568543702900257': invalid number unable to parse "
+                + "'cpu_load_short,direction=in,host=server01,region=us-west 1422568543702900257': "
+                + "invalid field format dropped=0";
+
+        influxDBServer.enqueue(createErrorResponse(influxDBError));
+
+        influxDBReactive.writeMeasurement(createMeasurement());
+
+        listenerError.assertValueCount(0);
+        listenerSuccess.assertValueCount(0);
+        
+        listener.assertValueCount(1).assertValue(event -> {
+
+            Assertions.assertThat(event.getPoints().size()).isEqualTo(1);
+            Assertions.assertThat(event.getPoints().get(0)).isEqualTo(createMeasurementPoint());
+
+            WriteOptions expectedOptions = WriteOptions.builder().database("weather").build();
+            Assertions.assertThat(event.getWriteOptions()).isEqualTo(expectedOptions);
+
+            Assertions.assertThat(event.getException()).isNotNull();
+            Assertions.assertThat(event.getException()).isInstanceOf(InfluxDBException.PartialWriteException.class);
+            Assertions.assertThat(influxDBError).isEqualTo(event.getException().getMessage());
+
+            return true;
+        });
     }
 
     @Test

@@ -107,9 +107,11 @@ public class RetryCapableBatchWriterTest {
     InfluxDBException nonRecoverable5 = InfluxDBException.buildExceptionForErrorState(createErrorBody("field type conflict 'abc'"));
     InfluxDBException nonRecoverable6 = new InfluxDBException.RetryBufferOverrunException(createErrorBody("Retry BufferOverrun Exception"));
     InfluxDBException nonRecoverable7 = InfluxDBException.buildExceptionForErrorState(createErrorBody("user is not authorized to write to database"));
-    
+    String partialWriteMessage = "partial write: unable to parse 'cpu_load_short,direction=in,host=server01,region=us-west 1422568543702900257': invalid field format dropped=0";
+    InfluxDBException nonRecoverable8 = InfluxDBException.buildExceptionForErrorState(createErrorBody(partialWriteMessage));
+
     List<InfluxDBException> exceptions = Arrays.asList(nonRecoverable1, nonRecoverable2, nonRecoverable3,
-        nonRecoverable4, nonRecoverable5, nonRecoverable6, nonRecoverable7);
+        nonRecoverable4, nonRecoverable5, nonRecoverable6, nonRecoverable7, nonRecoverable8);
     int size = exceptions.size();
     doAnswer(new TestAnswer() {
       int i = 0;
