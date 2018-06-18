@@ -6,6 +6,7 @@ import org.influxdb.reactive.event.BackpressureEvent;
 import org.influxdb.reactive.event.QueryParsedResponseEvent;
 import org.influxdb.reactive.event.UnhandledErrorEvent;
 import org.influxdb.reactive.event.WriteErrorEvent;
+import org.influxdb.reactive.event.WritePartialEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
 
 import javax.annotation.Nonnull;
@@ -43,6 +44,14 @@ public class InfluxDBReactiveVerifier {
         // WriteErrorEvent
         influxDBReactive
                 .listenEvents(WriteErrorEvent.class)
+                .subscribe(event -> {
+                    throwables.add(event.getException());
+                    errorResponses.add(1);
+                });
+
+        // WritePartialEvent
+        influxDBReactive
+                .listenEvents(WritePartialEvent.class)
                 .subscribe(event -> {
                     throwables.add(event.getException());
                     errorResponses.add(1);

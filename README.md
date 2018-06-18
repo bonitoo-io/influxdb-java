@@ -368,8 +368,10 @@ influxDBReactive.listenEvents(WriteErrorEvent.class).subscribe(event -> {
     
 ### Writes
 
-The writes can be configured by `WriteOptions` and are processed in batches which are configurable by `BatchOptionsReactive`.  
-It's use the same **Retry on error** strategy as non reactive client.
+The writes can be configured by `WriteOptions` and are processed in batches which are configurable by `BatchOptionsReactive`.
+It's use the same **Retry on error** strategy as non reactive client. 
+
+The `InfluxDBReactive` supports write data points to InfluxDB as POJO, `org.influxdb.dto.Point` or directly in [InfluxDB Line Protocol](https://docs.influxdata.com/influxdb/latest/write_protocols/line_protocol_tutorial/).
 
 #### Write configuration
 - `database` - the name of the database to write
@@ -474,6 +476,25 @@ Flowable<H2OFeetMeasurement> measurements = Flowable.interval(10, TimeUnit.SECON
     });
         
 influxDBReactive.writeMeasurements(measurements);
+```
+
+##### Write points
+```java
+Point point = Point.measurement("h2o_feet")
+    .tag("location", "coyote_creek")
+    .addField("water_level", 2.927)
+    .addField("level description", "below 3 feet")
+    .time(1440046800, TimeUnit.NANOSECONDS)
+    .build();
+
+influxDBReactive.writePoint(point);
+```
+
+##### Write InfluxDB Line Protocol
+```java
+String record = "h2o_feet,location=coyote_creek water_level=2.927,level\\ description=\"below 3 feet\"";
+
+influxDBReactive.writeRecord(record);
 ```
 
 ### Queries

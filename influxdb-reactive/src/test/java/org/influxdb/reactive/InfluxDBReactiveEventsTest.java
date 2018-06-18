@@ -4,7 +4,6 @@ import io.reactivex.observers.TestObserver;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.influxdb.InfluxDBException;
-import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
@@ -20,7 +19,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 /**
  * @author Jakub Bednar (bednar@github) (14/06/2018 09:27)
@@ -42,14 +41,17 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
 
         influxDBServer.enqueue(new MockResponse());
 
-        influxDBReactive.writeMeasurement(createMeasurement());
+        H2OFeetMeasurement measurement = createMeasurement();
+        influxDBReactive.writeMeasurement(measurement);
 
         listener
                 .assertValueCount(1)
                 .assertValue(writeSuccessEvent -> {
 
-                    Assertions.assertThat(writeSuccessEvent.getPoints().size()).isEqualTo(1);
-                    Assertions.assertThat(writeSuccessEvent.getPoints().get(0)).isEqualTo(createMeasurementPoint());
+                    List<H2OFeetMeasurement> dataPoints = writeSuccessEvent.getDataPoints();
+                    
+                    Assertions.assertThat(dataPoints.size()).isEqualTo(1);
+                    Assertions.assertThat(dataPoints.get(0)).isEqualTo(measurement);
 
                     WriteOptions expectedOptions = WriteOptions.builder().database("weather").build();
                     Assertions.assertThat(writeSuccessEvent.getWriteOptions()).isEqualTo(expectedOptions);
@@ -68,14 +70,17 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
         // Only error Retry Error than Success
         influxDBServer.enqueue(createErrorResponse("database not found: not_exist_database"));
 
-        influxDBReactive.writeMeasurement(createMeasurement());
+        H2OFeetMeasurement measurement = createMeasurement();
+        influxDBReactive.writeMeasurement(measurement);
 
         listener
                 .assertValueCount(1)
                 .assertValue(writeErrorEvent -> {
 
-                    Assertions.assertThat(writeErrorEvent.getPoints().size()).isEqualTo(1);
-                    Assertions.assertThat(writeErrorEvent.getPoints().get(0)).isEqualTo(createMeasurementPoint());
+                    List<H2OFeetMeasurement> dataPoints = writeErrorEvent.getDataPoints();
+
+                    Assertions.assertThat(dataPoints.size()).isEqualTo(1);
+                    Assertions.assertThat(dataPoints.get(0)).isEqualTo(measurement);
 
                     Assertions.assertThat(writeErrorEvent.getException().isRetryWorth()).isEqualTo(false);
                     Assertions.assertThat(writeErrorEvent.getException().getMessage())
@@ -111,15 +116,18 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
 
         influxDBServer.enqueue(createErrorResponse(influxDBError));
 
-        influxDBReactive.writeMeasurement(createMeasurement());
+        H2OFeetMeasurement measurement = createMeasurement();
+        influxDBReactive.writeMeasurement(measurement);
 
         listenerError.assertValueCount(0);
         listenerSuccess.assertValueCount(0);
         
         listener.assertValueCount(1).assertValue(event -> {
 
-            Assertions.assertThat(event.getPoints().size()).isEqualTo(1);
-            Assertions.assertThat(event.getPoints().get(0)).isEqualTo(createMeasurementPoint());
+            List<H2OFeetMeasurement> dataPoints = event.getDataPoints();
+
+            Assertions.assertThat(dataPoints.size()).isEqualTo(1);
+            Assertions.assertThat(dataPoints.get(0)).isEqualTo(measurement);
 
             WriteOptions expectedOptions = WriteOptions.builder().database("weather").build();
             Assertions.assertThat(event.getWriteOptions()).isEqualTo(expectedOptions);
@@ -167,15 +175,5 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
     @Nonnull
     private H2OFeetMeasurement createMeasurement() {
         return new H2OFeetMeasurement("coyote_creek", 2.927, "below 3 feet", 1440046800L);
-    }
-
-    @Nonnull
-    private Point createMeasurementPoint() {
-        return Point.measurement("h2o_feet")
-                .tag("location", "coyote_creek")
-                .addField("water_level", 2.927)
-                .addField("level description", "below 3 feet")
-                .time(1440046800L, TimeUnit.NANOSECONDS)
-                .build();
     }
 }

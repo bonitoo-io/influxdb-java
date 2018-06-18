@@ -1,7 +1,6 @@
 package org.influxdb.reactive.event;
 
 import org.influxdb.InfluxDBException;
-import org.influxdb.dto.Point;
 import org.influxdb.reactive.option.WriteOptions;
 
 import javax.annotation.Nonnull;
@@ -15,33 +14,24 @@ import java.util.logging.Logger;
  *
  * @author Jakub Bednar (bednar@github) (15/06/2018 12:49) zaz
  */
-public class WritePartialEvent extends AbstractInfluxEvent {
+public class WritePartialEvent extends AbstractWriteEvent {
 
     private static final Logger LOG = Logger.getLogger(WritePartialEvent.class.getName());
 
-    private final List<Point> points;
     private final WriteOptions writeOptions;
     private final InfluxDBException.PartialWriteException exception;
 
-    public WritePartialEvent(@Nonnull final List<Point> points,
+    public WritePartialEvent(@Nonnull final List<?> points,
                              @Nonnull final WriteOptions writeOptions,
                              @Nonnull final InfluxDBException.PartialWriteException exception) {
 
-        Objects.requireNonNull(points, "Points are required");
+        super(points);
+
         Objects.requireNonNull(writeOptions, "WriteOptions are required");
         Objects.requireNonNull(exception, "InfluxDBException is required");
 
-        this.points = points;
         this.writeOptions = writeOptions;
         this.exception = exception;
-    }
-
-    /**
-     * @return the points that was sent to InfluxDB
-     */
-    @Nonnull
-    public List<Point> getPoints() {
-        return points;
     }
 
     /**

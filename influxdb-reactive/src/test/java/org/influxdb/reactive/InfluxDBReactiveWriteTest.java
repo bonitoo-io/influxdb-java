@@ -294,4 +294,113 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
         // there is no exception
         verifier.verifySuccess();
     }
+
+    @Test
+    void writeRecord() {
+
+        influxDBServer.enqueue(new MockResponse());
+
+        String record =
+                "h2o_feet,location=coyote_creek level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+
+        // response
+        Maybe<String> recordMaybe = influxDBReactive.writeRecord(record);
+        recordMaybe.test()
+                .assertSubscribed()
+                .assertValue(record);
+
+        String actual = pointsBody();
+
+        assertThat(actual).isEqualTo(record);
+
+        // One request
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(1);
+
+        // there is no exception
+        verifier.verifySuccess();
+    }
+
+    @Test
+    void writeRecordsIterable() {
+
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
+
+        String record1 = "h2o_feet,location=coyote_creek " +
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+
+        String record2 = "h2o_feet,location=coyote_creek " +
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
+
+        List<String> records = new ArrayList<>();
+        records.add(record1);
+        records.add(record2);
+
+        // response
+        Flowable<String> recordsFlowable = influxDBReactive.writeRecords(records);
+        recordsFlowable.test()
+                .assertSubscribed()
+                .assertValueAt(0, record1)
+                .assertValueAt(1, record2);
+
+        // written measurements
+        String actual = pointsBody();
+        assertThat(actual).isEqualTo(record1);
+
+        actual = pointsBody();
+        assertThat(actual).isEqualTo(record2);
+
+        // Two requests
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(2);
+
+        // there is no exception
+        verifier.verifySuccess();
+    }
+
+    @Test
+    void writeRecordsPublisher() {
+
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
+
+        String record1 = "h2o_feet,location=coyote_creek " +
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+
+        String record2 = "h2o_feet,location=coyote_creek " +
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
+
+        String record3 = "h2o_feet,location=coyote_creek " +
+                "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
+
+        // response
+        Flowable<String> recordsFlowable = influxDBReactive
+                .writeRecords(Flowable.just(record1, record2, record3));
+
+        recordsFlowable
+                .test()
+                .assertSubscribed()
+                .assertValueAt(0, record1)
+                .assertValueAt(1, record2)
+                .assertValueAt(2, record3);
+
+        // written measurements
+        String actual = pointsBody();
+        assertThat(actual).isEqualTo(record1);
+
+        actual = pointsBody();
+        assertThat(actual).isEqualTo(record2);
+
+        actual = pointsBody();
+        assertThat(actual).isEqualTo(record3);
+
+        // Three requests
+        Assertions.assertThat(influxDBServer.getRequestCount())
+                .isEqualTo(3);
+
+        // there is no exception
+        verifier.verifySuccess();
+    }
 }

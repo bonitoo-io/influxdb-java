@@ -1,6 +1,5 @@
 package org.influxdb.reactive.event;
 
-import org.influxdb.dto.Point;
 import org.influxdb.reactive.option.WriteOptions;
 
 import javax.annotation.Nonnull;
@@ -15,28 +14,20 @@ import java.util.logging.Logger;
  * @author Jakub Bednar (bednar@github) (14/06/2018 09:14)
  * @since 3.0.0
  */
-public class WriteSuccessEvent extends AbstractInfluxEvent {
+public class WriteSuccessEvent extends AbstractWriteEvent {
 
     private static final Logger LOG = Logger.getLogger(WriteSuccessEvent.class.getName());
 
-    private final List<Point> points;
     private final WriteOptions writeOptions;
 
-    public WriteSuccessEvent(@Nonnull final List<Point> points, @Nonnull final WriteOptions writeOptions) {
+    public WriteSuccessEvent(@Nonnull final List<?> points,
+                             @Nonnull final WriteOptions writeOptions) {
 
-        Objects.requireNonNull(points, "Points are required");
+        super(points);
+
         Objects.requireNonNull(writeOptions, "WriteOptions are required");
 
-        this.points = points;
         this.writeOptions = writeOptions;
-    }
-
-    /**
-     * @return the successful wrote points
-     */
-    @Nonnull
-    public List<Point> getPoints() {
-        return points;
     }
 
     /**

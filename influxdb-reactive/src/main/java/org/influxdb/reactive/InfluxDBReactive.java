@@ -148,6 +148,63 @@ public interface InfluxDBReactive {
     Flowable<Point> writePoints(@Nonnull final Publisher<Point> pointStream, @Nonnull final WriteOptions options);
 
     /**
+     * Write data point in InfluxDB Line Protocol into database.
+     *
+     * @param record the data point to write
+     * @return {@link Flowable} emitting the saved data points.
+     */
+    @Nonnull
+    Maybe<String> writeRecord(@Nonnull final String record);
+
+    /**
+     * Write data point in InfluxDB Line Protocol into database.
+     *
+     * @param options the configuration of the write
+     * @param record  the data point to write
+     * @return {@link Flowable} emitting the saved data points.
+     */
+    @Nonnull
+    Maybe<String> writeRecord(@Nonnull final String record, @Nonnull final WriteOptions options);
+
+    /**
+     * Write a bag of data points in InfluxDB Line Protocol into database.
+     *
+     * @param records the data points to write
+     * @return {@link Flowable} emitting the saved data points.
+     */
+    @Nonnull
+    Flowable<String> writeRecords(@Nonnull final Iterable<String> records);
+
+    /**
+     * Write a bag of data points in InfluxDB Line Protocol into database.
+     *
+     * @param options the configuration of the write
+     * @param records the data points to write
+     * @return {@link Flowable} emitting the saved data points.
+     */
+    @Nonnull
+    Flowable<String> writeRecords(@Nonnull final Iterable<String> records, @Nonnull final WriteOptions options);
+
+    /**
+     * Write a a stream of data points in InfluxDB Line Protocol into database.
+     *
+     * @param recordStream the stream of data points to write
+     * @return {@link Flowable} emitting the saved data points.
+     */
+    @Nonnull
+    Flowable<String> writeRecords(@Nonnull final Publisher<String> recordStream);
+
+    /**
+     * Write a a stream of data points in InfluxDB Line Protocol into database.
+     *
+     * @param recordStream the stream of data points to write
+     * @param options      the configuration of the write
+     * @return {@link Flowable} emitting the saved data points.
+     */
+    @Nonnull
+    Flowable<String> writeRecords(@Nonnull final Publisher<String> recordStream, @Nonnull final WriteOptions options);
+
+    /**
      * Execute a query against a default database.
      *
      * @param query           the query to execute.

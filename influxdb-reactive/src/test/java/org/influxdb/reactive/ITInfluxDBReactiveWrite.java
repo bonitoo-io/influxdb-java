@@ -9,6 +9,7 @@ import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
 import org.influxdb.reactive.event.BackpressureEvent;
+import org.influxdb.reactive.event.WritePartialEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.option.WriteOptions;
@@ -318,6 +319,41 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     }
 
     @Test
+    void partialWrite() {
+
+        setUp(BatchOptionsReactive.builder().actions(2).build());
+
+        String record1 = "h2o_feet,location=coyote_creek " +
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+
+        String record2 = "h2o_feet,location=coyote_creek 1440049800";
+
+        TestObserver<WritePartialEvent> listener = influxDBReactive
+                .listenEvents(WritePartialEvent.class)
+                .test();
+
+        influxDBReactive.writeRecords(Flowable.just(record1, record2));
+
+        verifier.waitForResponse(1);
+        verifier.verifyErrorResponse(1);
+
+        listener
+                .assertValueCount(1)
+                .assertValue(event -> {
+
+                    Assertions.assertThat(event.getDataPoints()).containsExactlyInAnyOrder(record1, record2);
+
+                    String errorResponse = "partial write: unable to parse "
+                            + "'h2o_feet,location=coyote_creek 1440049800': invalid field format dropped=0";
+                    Assertions.assertThat(event.getException()).hasMessage(errorResponse);
+
+                    return true;
+                });
+
+        Assertions.assertThat(getMeasurements()).hasSize(1);
+    }
+
+    @Test
     void writeToDifferentDatabases() {
 
         setUp(BatchOptionsReactive.builder().actions(4).build());
@@ -366,12 +402,12 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         List<String> databases = new ArrayList<>();
         listener.assertValueCount(2)
                 .assertValueAt(0, event -> {
-                    Assertions.assertThat(event.getPoints().size()).isEqualTo(2);
+                    Assertions.assertThat(event.getDataPoints().size()).isEqualTo(2);
                     databases.add(event.getWriteOptions().getDatabase());
                     return true;
                 })
                 .assertValueAt(1, event -> {
-                    Assertions.assertThat(event.getPoints().size()).isEqualTo(2);
+                    Assertions.assertThat(event.getDataPoints().size()).isEqualTo(2);
                     databases.add(event.getWriteOptions().getDatabase());
                     return true;
                 });
@@ -386,10 +422,10 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
                 .test()
                 .assertValueCount(1).assertValue(result -> {
 
-                    List<List<Object>> values = result.getResults().get(0).getSeries().get(0).getValues();
-                    Assertions.assertThat(values.size()).isEqualTo(2);
+            List<List<Object>> values = result.getResults().get(0).getSeries().get(0).getValues();
+            Assertions.assertThat(values.size()).isEqualTo(2);
 
-                    return true;
+            return true;
         });
 
         influxDBReactive
@@ -397,10 +433,10 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
                 .test()
                 .assertValueCount(1).assertValue(result -> {
 
-                    List<List<Object>> values = result.getResults().get(0).getSeries().get(0).getValues();
-                    Assertions.assertThat(values.size()).isEqualTo(2);
+            List<List<Object>> values = result.getResults().get(0).getSeries().get(0).getValues();
+            Assertions.assertThat(values.size()).isEqualTo(2);
 
-                    return true;
+            return true;
         });
 
         simpleQuery("DROP database " + DATABASE_NAME + "_1");

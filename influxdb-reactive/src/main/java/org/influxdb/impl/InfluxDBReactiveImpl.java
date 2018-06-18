@@ -19,8 +19,6 @@ import okio.BufferedSource;
 import org.influxdb.InfluxDBException;
 import org.influxdb.InfluxDBException.PartialWriteException;
 import org.influxdb.InfluxDBOptions;
-import org.influxdb.annotation.Column;
-import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.BoundParameterQuery;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Pong;
@@ -47,8 +45,6 @@ import javax.annotation.Nullable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.lang.reflect.Field;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +59,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
     private static final Logger LOG = Logger.getLogger(InfluxDBReactiveImpl.class.getName());
 
-    private final PublishProcessor<DataPoint> processor;
+    private final PublishProcessor<AbstractData> processor;
     private final PublishSubject<Object> eventPublisher;
     private final Disposable writeConsumer;
 
@@ -202,7 +198,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(options, "WriteOptions are required");
 
         Flowable<M> emitting = Flowable.fromPublisher(measurementStream);
-        writePoints(emitting.map(new MeasurementToPoint<>()), options);
+        writeDataPoints(emitting.map(measurement -> new MeasurementData<>(measurement, options)));
 
         return emitting;
     }
@@ -263,9 +259,74 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(options, "WriteOptions are required");
 
         Flowable<Point> emitting = Flowable.fromPublisher(pointStream);
-        emitting
-                .map(point -> new DataPoint(point, options))
-                .subscribe(processor::onNext, throwable -> publish(new UnhandledErrorEvent(throwable)));
+        writeDataPoints(emitting.map(point -> new PointData(point, options)));
+
+        return emitting;
+    }
+
+    @Nonnull
+    @Override
+    public Maybe<String> writeRecord(@Nonnull final String record) {
+
+        Objects.requireNonNull(record, "Record is required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writeRecord(record, options).");
+
+        return writeRecord(record, defaultWriteOptions);
+    }
+
+    @Nonnull
+    @Override
+    public Maybe<String> writeRecord(@Nonnull final String record, @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(record, "Record is required");
+        Objects.requireNonNull(options, "WriteOptions are required");
+
+        return writeRecords(Flowable.just(record), options).firstElement();
+    }
+
+    @Nonnull
+    @Override
+    public Flowable<String> writeRecords(@Nonnull final Iterable<String> records) {
+
+        Objects.requireNonNull(records, "Records are required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writeRecord(records, options).");
+
+        return writeRecords(records, defaultWriteOptions);
+    }
+
+    @Nonnull
+    @Override
+    public Flowable<String> writeRecords(@Nonnull final Iterable<String> records, @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(records, "Records are required");
+        Objects.requireNonNull(options, "WriteOptions are required");
+
+        return writeRecords(Flowable.fromIterable(records), options);
+    }
+
+    @Nonnull
+    @Override
+    public Flowable<String> writeRecords(@Nonnull final Publisher<String> recordStream) {
+
+        Objects.requireNonNull(recordStream, "Record stream is required");
+        Objects.requireNonNull(defaultWriteOptions, "Default WriteOptions are not defined. "
+                + "Use write method with custom WriteOptions - #writeRecords(recordStream, options).");
+
+        return writeRecords(recordStream, defaultWriteOptions);
+    }
+
+    @Nonnull
+    @Override
+    public Flowable<String> writeRecords(@Nonnull final Publisher<String> recordStream,
+                                         @Nonnull final WriteOptions options) {
+
+        Objects.requireNonNull(recordStream, "Record stream is required");
+        Objects.requireNonNull(options, "WriteOptions are required");
+
+        Flowable<String> emitting = Flowable.fromPublisher(recordStream);
+        writeDataPoints(emitting.map(record -> new RecordData(record, options)));
 
         return emitting;
     }
@@ -439,8 +500,17 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         return writeConsumer.isDisposed();
     }
 
+    private <DP extends AbstractData> void writeDataPoints(@Nonnull final Publisher<DP> pointStream) {
+
+        Objects.requireNonNull(pointStream, "Point stream is required");
+
+        Flowable.fromPublisher(pointStream)
+                .subscribe(processor::onNext, throwable -> publish(new UnhandledErrorEvent(throwable)));
+    }
+
     @Nonnull
-    private FlowableTransformer<Flowable<DataPoint>, Flowable<DataPoint>> jitter(@Nonnull final Scheduler scheduler) {
+    private <T extends AbstractData> FlowableTransformer<Flowable<T>, Flowable<T>> jitter(
+            @Nonnull final Scheduler scheduler) {
 
         Objects.requireNonNull(scheduler, "Jitter scheduler is required");
 
@@ -456,7 +526,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             //
             // Add jitter => dynamic delay
             //
-            return source.delay((Function<Flowable<DataPoint>, Flowable<Long>>) pointFlowable -> {
+            return source.delay((Function<Flowable<T>, Flowable<Long>>) pointFlowable -> {
 
                 int delay = jitterDelay();
 
@@ -467,7 +537,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         };
     }
 
-    private final class WritePointsConsumer implements Consumer<Flowable<DataPoint>> {
+    private final class WritePointsConsumer implements Consumer<Flowable<AbstractData>> {
 
         private final Scheduler retryScheduler;
 
@@ -479,10 +549,10 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         }
 
         @Override
-        public void accept(final Flowable<DataPoint> flowablePoints) {
+        public void accept(final Flowable<AbstractData> flowablePoints) {
 
             flowablePoints
-                    .groupBy(dataPoint -> dataPoint.options)
+                    .groupBy(AbstractData::getWriteOptions)
                     .subscribe(dataPointGroup -> {
 
                         WriteOptions writeOptions = dataPointGroup.getKey();
@@ -491,15 +561,14 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                 .filter(dataPoints -> !dataPoints.isEmpty())
                                 .subscribe(dataPoints -> {
 
-                                    List<Point> points = dataPoints
-                                            .stream()
-                                            .map(dp -> dp.point)
-                                            .collect(Collectors.toList());
-
                                     //
                                     // Success action
                                     //
-                                    Action success = () -> publish(new WriteSuccessEvent(points, writeOptions));
+                                    Action success = () -> {
+                                        List<?> points = toDataPoints(dataPoints);
+
+                                        publish(new WriteSuccessEvent(points, writeOptions));
+                                    };
 
                                     //
                                     // Fail action
@@ -518,7 +587,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                     // Point => InfluxDB Line Protocol
                                     //
                                     String body = dataPoints.stream()
-                                            .map(DataPoint::lineProtocol)
+                                            .map(AbstractData::lineProtocol)
                                             .collect(Collectors.joining("\n"));
 
                                     //
@@ -544,7 +613,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                             //
                                             // Retry strategy
                                             //
-                                            .retryWhen(retryCapabilities(points, writeOptions, retryScheduler))
+                                            .retryWhen(retryCapabilities(dataPoints, writeOptions, retryScheduler))
                                             .subscribe(success, fail);
 
                                 }, throwable -> publish(new UnhandledErrorEvent(throwable)));
@@ -563,7 +632,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
      * @return the retry handler
      */
     @Nonnull
-    private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities(@Nonnull final List<Point> points,
+    private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities(@Nonnull final List<AbstractData> points,
                                                                           @Nonnull final WriteOptions writeOptions,
                                                                           @Nonnull final Scheduler retryScheduler) {
 
@@ -577,16 +646,18 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
                 InfluxDBException influxDBException = buildInfluxDBException(throwable);
 
+                List<?> dataPoints = toDataPoints(points);
+
                 //
                 // Partial Write => skip retry
                 //
                 if (influxDBException instanceof PartialWriteException) {
-                    publish(new WritePartialEvent(points, writeOptions, (PartialWriteException) influxDBException));
+                    publish(new WritePartialEvent(dataPoints, writeOptions, (PartialWriteException) influxDBException));
 
                     return Flowable.error(throwable);
                 }
 
-                publish(new WriteErrorEvent(points, writeOptions, influxDBException));
+                publish(new WriteErrorEvent(dataPoints, writeOptions, influxDBException));
 
                 //
                 // Retry request
@@ -604,6 +675,14 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             //
             return Flowable.error(throwable);
         });
+    }
+
+    @Nonnull
+    private List<Object> toDataPoints(@Nonnull final List<AbstractData> points) {
+
+        Objects.requireNonNull(points, "Points are required");
+
+        return points.stream().map(AbstractData::getData).collect(Collectors.toList());
     }
 
     @Nonnull
@@ -679,22 +758,6 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         eventPublisher.onNext(event);
     }
 
-    private final class DataPoint {
-
-        private Point point;
-        private WriteOptions options;
-
-        private DataPoint(@Nonnull final Point point, @Nonnull final WriteOptions options) {
-            this.point = point;
-            this.options = options;
-        }
-
-        @Nonnull
-        private String lineProtocol() {
-            return point.lineProtocol();
-        }
-    }
-
     private class SubscribeHandler implements Consumer<Disposable> {
 
         private Long subscribeTime;
@@ -705,68 +768,4 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         }
     }
 
-    /**
-     * Just a proof of concept.
-     * <p>
-     * TODO caching, testing, ...
-     */
-    private static class MeasurementToPoint<M> implements Function<M, Point> {
-
-        private static final Logger LOG = Logger.getLogger(MeasurementToPoint.class.getName());
-
-        @Override
-        public Point apply(final M measurement) {
-
-            Measurement def = measurement.getClass().getAnnotation(Measurement.class);
-
-            Point.Builder point = Point.measurement(def.name());
-
-            for (Field field : measurement.getClass().getDeclaredFields()) {
-
-                Column column = field.getAnnotation(Column.class);
-                if (column != null) {
-
-                    String name = column.name();
-                    Object value = null;
-
-                    try {
-                        field.setAccessible(true);
-                        value = field.get(measurement);
-                    } catch (IllegalAccessException e) {
-
-                        LOG.log(Level.WARNING,
-                                "Field {0} of {1} is not accessible",
-                                new Object[]{field.getName(), measurement});
-                    }
-
-                    if (value == null) {
-                        LOG.log(Level.FINEST, "Field {0} of {1} has null value",
-                                new Object[]{field.getName(), measurement});
-
-                        continue;
-                    }
-
-                    if (column.tag()) {
-                        point.tag(name, value.toString());
-                    } else if (Instant.class.isAssignableFrom(field.getType())) {
-
-                        point.time(((Instant) value).toEpochMilli(), def.timeUnit());
-                    } else {
-
-                        if (Double.class.isAssignableFrom(value.getClass())) {
-                            point.addField(name, (Double) value);
-                        } else if (Number.class.isAssignableFrom(value.getClass())) {
-
-                            point.addField(name, (Number) value);
-                        } else if (String.class.isAssignableFrom(value.getClass())) {
-
-                            point.addField(name, (String) value);
-                        }
-                    }
-                }
-            }
-
-            return point.build();
-        }
-    }
 }
