@@ -6,7 +6,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.influxdb.InfluxDBEventListener;
 import org.influxdb.InfluxDBOptions;
-import org.influxdb.dto.BatchPoints;
 
 public class JmxMonitorEventListener implements InfluxDBEventListener {
 
@@ -48,27 +47,27 @@ public class JmxMonitorEventListener implements InfluxDBEventListener {
     }
 
     @Override
-    public void onWrite() {
-        stats.incWriteCount();
-    }
-
-    @Override
-    public void onBatchedWrite(final BatchPoints batchPoints) {
-        stats.incBatchedCount(batchPoints.getPoints().size());
-    }
-
-    @Override
-    public void onUnBatched() {
-        stats.incUnBatchedCount();
-    }
-
-    @Override
     public void onError(final Request request, final Response response) {
         stats.incErrorCount();
     }
 
+    private String getFirstPath(final Request request) {
+
+        return request.url().pathSegments().stream().findFirst().orElse(null);
+
+    }
+
     @Override
     public void onSuccess(final Request request, final Response response) {
+
+        String firstPathSegment = getFirstPath(request);
+
+        if (firstPathSegment.startsWith("query")) {
+            stats.incQueryCount();
+        } else if (firstPathSegment.startsWith("write")) {
+            stats.incWriteCount();
+        }
+
         stats.incSuccessCount();
     }
 

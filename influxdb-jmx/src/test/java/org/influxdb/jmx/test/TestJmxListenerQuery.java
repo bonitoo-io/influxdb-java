@@ -36,6 +36,7 @@ class TestJmxListenerQuery extends AbstractJmxListenerTest {
 
         Assert.assertEquals("ErrorCount",getClientStatisticsMBean().getErrorCount(), 1);
         Assert.assertEquals("SuccessCount",getClientStatisticsMBean().getSuccessCount(), 4);
+        Assert.assertEquals("QueryCount",getClientStatisticsMBean().getQueryCount(), 4);
     }
 
     private void prepareSomeData() {

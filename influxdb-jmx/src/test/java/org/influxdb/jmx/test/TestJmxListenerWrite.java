@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
+import org.influxdb.BatchOptions;
 import org.influxdb.dto.Point;
 import org.influxdb.jmx.ClientStatisticsMBean;
 import org.influxdb.jmx.JmxMonitorEventListener;
@@ -16,18 +17,15 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitPlatform.class)
 class TestJmxListenerWrite extends AbstractJmxListenerTest {
 
-
     private static final long WRITE_COUNT = 5000;
 
     @Test
     void testListenerInitialization() throws Exception {
 
         ObjectName objectName = new ObjectName(JmxMonitorEventListener.getMBeanName(MBEAN_NAME));
-
         ObjectInstance mBeanInfo = mBeanServer.getObjectInstance(objectName);
 
         Assert.assertNotNull(mBeanInfo);
-
         System.out.println(mBeanInfo);
 
         int count = 10;
@@ -41,7 +39,6 @@ class TestJmxListenerWrite extends AbstractJmxListenerTest {
         System.out.println("Connection count: " + connectionCount.toString());
         Assert.assertTrue(((int) connectionCount > 0));
         Assert.assertNotNull(connectionCount);
-
     }
 
 
@@ -61,19 +58,19 @@ class TestJmxListenerWrite extends AbstractJmxListenerTest {
         outStats();
 
         Assert.assertEquals("WriteCount", getClientStatisticsMBean().getWriteCount(), WRITE_COUNT);
-        Assert.assertEquals("UnBatchedCount", getClientStatisticsMBean().getUnBatchedCount(), WRITE_COUNT);
-        Assert.assertEquals("BatchedCount", getClientStatisticsMBean().getBatchedCount(), 0);
         Assert.assertEquals("Host Address", options.getUrl(), getClientStatisticsMBean().getHostAddress());
 
         Assert.assertEquals("ErrorCount", getClientStatisticsMBean().getErrorCount(), 1);
         Assert.assertEquals("SuccessCount", getClientStatisticsMBean().getSuccessCount(), WRITE_COUNT);
 
-
     }
 
     @Test
     void testWriteBatchedMultithreadedT20() throws Exception {
-        influxDB.enableBatch();
+
+        BatchOptions batchOptions = BatchOptions.DEFAULTS.actions(500).flushDuration(1000);
+
+        influxDB.enableBatch(batchOptions);
         resetStatistics();
 
         testWriteMultithreaded(20, WRITE_COUNT);
@@ -82,11 +79,8 @@ class TestJmxListenerWrite extends AbstractJmxListenerTest {
 
 
         Assert.assertEquals("No BusyConnections", getClientStatisticsMBean().getBusyConnectionCount(), 0);
-
-        Assert.assertEquals("WriteCount", getClientStatisticsMBean().getWriteCount(), WRITE_COUNT);
-        Assert.assertEquals("UnBatchedCount", getClientStatisticsMBean().getUnBatchedCount(), 0);
-        Assert.assertEquals("BatchedCount", getClientStatisticsMBean().getBatchedCount(), WRITE_COUNT);
-
+        Assert.assertEquals("WriteCount", getClientStatisticsMBean().getWriteCount(),
+                WRITE_COUNT / batchOptions.getActions());
         Assert.assertEquals("ErrorCount", getClientStatisticsMBean().getErrorCount(), 0);
         Assert.assertTrue("SuccessCount < " + WRITE_COUNT, getClientStatisticsMBean().getSuccessCount() < WRITE_COUNT);
 
@@ -95,11 +89,9 @@ class TestJmxListenerWrite extends AbstractJmxListenerTest {
     @SuppressWarnings("SameParameterValue")
     private void testWriteMultithreaded(int threadCount, long writeCount) throws Exception {
 
-//        AtomicLong index = new AtomicLong();
         Runnable task = () -> {
             try {
                 Point cpuStats = getCpuStats();
-//                System.out.println(index.incrementAndGet() + ":" + Thread.currentThread().getName() + " - " + cpuStats);
                 influxDB.write(cpuStats);
             } catch (Exception e) {
                 System.out.println(e.toString());
@@ -122,19 +114,13 @@ class TestJmxListenerWrite extends AbstractJmxListenerTest {
         //wait until terminated
         while (!scheduler.isTerminated()) {
             if (isJmxEnabled()) {
-                ClientStatisticsMBean bean = getClientStatisticsMBean();
-
-                System.out.println("Connection pool: total/busy/idle: " + bean.getConnectionCount()
-                        + "/" + bean.getBusyConnectionCount()
-                        + "/" + bean.getIdleConnectionCount() + " write count: " + getMBeanAttribute("WriteCount"));
+                printConnectionPoolInfo();
             }
             Thread.sleep(100);
         }
-
         System.out.println("Finished all threads");
 
     }
-
 
     private boolean isJmxEnabled() throws Exception {
         ObjectName objectName = new
@@ -142,6 +128,5 @@ class TestJmxListenerWrite extends AbstractJmxListenerTest {
 
         return mBeanServer.isRegistered(objectName);
     }
-
 
 }

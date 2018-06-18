@@ -47,14 +47,9 @@ public interface ClientStatisticsMBean {
     long getWriteCount();
 
     /**
-     * Gets the number of batched writes operations.
+     * Gets the number of executed query operations.
      */
-    long getBatchedCount();
-
-    /**
-     * Gets number of non batched write operations.
-     */
-    long getUnBatchedCount();
+    long getQueryCount();
 
     /**
      * Gets the number of influxDB error responses.

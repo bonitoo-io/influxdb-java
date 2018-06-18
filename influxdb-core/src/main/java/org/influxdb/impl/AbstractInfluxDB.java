@@ -114,4 +114,10 @@ public abstract class AbstractInfluxDB<T> {
 
         return pong;
     }
+
+    protected void destroy() {
+
+        listeners.forEach(InfluxDBEventListener::onDestroy);
+
+    }
 }

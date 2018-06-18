@@ -77,33 +77,47 @@ class AbstractJmxListenerTest {
 
     }
 
-    void resetStatistics() throws Exception {
+    void resetStatistics()  {
         ClientStatisticsMBean bean = getClientStatisticsMBean();
         bean.reset();
     }
 
-    ClientStatisticsMBean getClientStatisticsMBean() throws MalformedObjectNameException {
-        ObjectName objectName = new
-                ObjectName(JmxMonitorEventListener.getMBeanName(MBEAN_NAME));
+    ClientStatisticsMBean getClientStatisticsMBean()  {
+        ObjectName objectName;
+        try {
+            objectName = new
+                    ObjectName(JmxMonitorEventListener.getMBeanName(MBEAN_NAME));
+        } catch (MalformedObjectNameException e) {
+            throw new RuntimeException(e);
+        }
 
         return JMX.newMBeanProxy(mBeanServer, objectName, ClientStatisticsMBean.class);
     }
 
     void outStats() throws Exception {
-        System.out.println("Host Address: "+getClientStatisticsMBean().getHostAddress());
+        System.out.println("Host Address: " + getClientStatisticsMBean().getHostAddress());
         System.out.println("Write count: " + getMBeanAttribute("WriteCount"));
-        System.out.println("UnBatchedCount count: " + getMBeanAttribute("UnBatchedCount"));
-        System.out.println("BatchedCount count: " + getMBeanAttribute("BatchedCount"));
+        System.out.println("Query count: " + getMBeanAttribute("QueryCount"));
         System.out.println("SuccessCount count: " + getMBeanAttribute("SuccessCount"));
         System.out.println("ErrorCount count: " + getMBeanAttribute("ErrorCount"));
     }
 
-    Object getMBeanAttribute(String attr) throws Exception {
+    private Object getMBeanAttribute(String attr) throws Exception {
 
         ObjectName objectName = new
                 ObjectName(JmxMonitorEventListener.getMBeanName(MBEAN_NAME));
 
         return mBeanServer.getAttribute(objectName, attr);
+    }
+
+    void printConnectionPoolInfo() throws Exception {
+
+        ClientStatisticsMBean bean = getClientStatisticsMBean();
+
+        System.out.println("Connection pool: total/busy/idle: " + bean.getConnectionCount()
+                + "/" + bean.getBusyConnectionCount()
+                + "/" + bean.getIdleConnectionCount() + " write count: " + getMBeanAttribute("WriteCount"));
+
     }
 
 

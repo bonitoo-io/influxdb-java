@@ -483,14 +483,15 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         return this.gzipRequestInterceptor.isEnabled();
     }
 
-    @Override
+
     @Nonnull
+    @Override
     public InfluxDBReactive close() {
 
         LOG.log(Level.INFO, "Flushing any cached metrics before shutdown.");
-
         processor.onComplete();
         eventPublisher.onComplete();
+        super.destroy();
 
         return this;
     }

@@ -14,12 +14,12 @@ import org.influxdb.InfluxDBOptions;
 class ClientStatistics implements ClientStatisticsMBean {
 
     private final AtomicLong writeCount = new AtomicLong();
-    private final AtomicLong unBatchedCount = new AtomicLong();
-    private final AtomicLong batchedCount = new AtomicLong();
+    private final AtomicLong queryCount = new AtomicLong();
+
     private final AtomicLong errorRequestsCount = new AtomicLong();
     private final AtomicLong successRequestsCount = new AtomicLong();
-    private OkHttpClient okHttpClient;
-    private InfluxDBOptions influxDBOptions;
+    private final OkHttpClient okHttpClient;
+    private final InfluxDBOptions influxDBOptions;
 
     ClientStatistics(final OkHttpClient okHttpClient, final InfluxDBOptions influxDBOptions) {
         this.okHttpClient = okHttpClient;
@@ -29,8 +29,7 @@ class ClientStatistics implements ClientStatisticsMBean {
     @Override
     public void reset() {
         writeCount.set(0);
-        unBatchedCount.set(0);
-        batchedCount.set(0);
+        queryCount.set(0);
         errorRequestsCount.set(0);
         successRequestsCount.set(0);
     }
@@ -54,14 +53,6 @@ class ClientStatistics implements ClientStatisticsMBean {
         return okHttpClient.connectionPool().idleConnectionCount();
     }
 
-    void incUnBatchedCount() {
-        unBatchedCount.incrementAndGet();
-    }
-
-    void incBatchedCount(final int count) {
-        batchedCount.addAndGet(count);
-    }
-
     void incSuccessCount() {
         successRequestsCount.incrementAndGet();
     }
@@ -72,14 +63,6 @@ class ClientStatistics implements ClientStatisticsMBean {
 
     public long getWriteCount() {
         return writeCount.longValue();
-    }
-
-    public long getBatchedCount() {
-        return batchedCount.longValue();
-    }
-
-    public long getUnBatchedCount() {
-        return unBatchedCount.longValue();
     }
 
     @Override
@@ -95,5 +78,15 @@ class ClientStatistics implements ClientStatisticsMBean {
     @Override
     public long getSuccessCount() {
         return successRequestsCount.longValue();
+    }
+
+    void incQueryCount() {
+        queryCount.incrementAndGet();
+    }
+
+    @Override
+    public long getQueryCount() {
+        return queryCount.longValue();
+
     }
 }

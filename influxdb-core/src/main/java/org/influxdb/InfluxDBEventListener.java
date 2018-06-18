@@ -3,7 +3,6 @@ package org.influxdb;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.influxdb.dto.BatchPoints;
 
 /**
  * Listener for InfluxDB client related events.
@@ -20,21 +19,6 @@ public interface InfluxDBEventListener {
      * Invoked on {@link InfluxDB#close()}.
      */
     void onDestroy();
-
-    /**
-     * Invoked in each write operation.
-     */
-    void onWrite();
-
-    /**
-     * Invoked on each batched write.
-     */
-    void onBatchedWrite(BatchPoints batchPoints);
-
-    /**
-     * Invoked on each unbatched write.
-     */
-    void onUnBatched();
 
     /**
      * Invoked on error response from server.

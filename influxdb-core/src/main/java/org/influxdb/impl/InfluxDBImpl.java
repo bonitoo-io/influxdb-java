@@ -10,7 +10,6 @@ import okhttp3.logging.HttpLoggingInterceptor.Level;
 import okio.BufferedSource;
 import org.influxdb.BatchOptions;
 import org.influxdb.InfluxDB;
-import org.influxdb.InfluxDBEventListener;
 import org.influxdb.InfluxDBException;
 import org.influxdb.InfluxDBIOException;
 import org.influxdb.InfluxDBOptions;
@@ -316,9 +315,7 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
                     .retentionPolicy(retentionPolicy).build();
             batchPoints.point(point);
             this.write(batchPoints);
-            listeners.forEach(l->l.onUnBatched());
         }
-        listeners.forEach(l -> l.onWrite());
     }
 
     /**
@@ -331,9 +328,7 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
             this.batchProcessor.put(batchEntry);
         } else {
             this.write(udpPort, point.lineProtocol());
-            listeners.forEach(l->l.onUnBatched());
         }
-        listeners.forEach(l -> l.onWrite());
     }
 
     @Override
@@ -348,9 +343,6 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
                 TimeUtil.toTimePrecision(batchPoints.getPrecision()),
                 batchPoints.getConsistency().value(),
                 lineProtocol));
-        if (batchEnabled.get()) {
-            listeners.forEach(l -> l.onBatchedWrite(batchPoints));
-        }
     }
 
 
@@ -365,8 +357,6 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
                 TimeUtil.toTimePrecision(precision),
                 consistency.value(),
                 RequestBody.create(mediaType, records)));
-
-        listeners.forEach(l -> l.onWrite());
     }
 
     @Override
@@ -642,8 +632,8 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
             if (datagramSocket != null && !datagramSocket.isClosed()) {
                 datagramSocket.close();
             }
-            listeners.forEach(InfluxDBEventListener::onDestroy);
         }
+        super.destroy();
     }
 
     @Override
