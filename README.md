@@ -463,22 +463,8 @@ cpuLoad.value = 0.67D;
 
 influxDBReactive.writeMeasurement(cpuLoad);
 ```
-##### Write measurements every 10 seconds
-```java
-Flowable<H2OFeetMeasurement> measurements = Flowable.interval(10, TimeUnit.SECONDS, Schedulers.trampoline())
-    .map(time -> {
 
-        double h2oLevel = getLevel();
-        String location = getLocation();
-        String description = getLocationDescription();
-                    
-        return new H2OFeetMeasurement(location, h2oLevel, description, Instant.now());
-    });
-        
-influxDBReactive.writeMeasurements(measurements);
-```
-
-##### Write points
+##### Write Point
 ```java
 Point point = Point.measurement("h2o_feet")
     .tag("location", "coyote_creek")
@@ -496,6 +482,22 @@ String record = "h2o_feet,location=coyote_creek water_level=2.927,level\\ descri
 
 influxDBReactive.writeRecord(record);
 ```
+
+##### Write measurements every 10 seconds
+```java
+Flowable<H2OFeetMeasurement> measurements = Flowable.interval(10, TimeUnit.SECONDS, Schedulers.trampoline())
+    .map(time -> {
+
+        double h2oLevel = getLevel();
+        String location = getLocation();
+        String description = getLocationDescription();
+                    
+        return new H2OFeetMeasurement(location, h2oLevel, description, Instant.now());
+    });
+        
+influxDBReactive.writeMeasurements(measurements);
+```
+
 
 ### Queries
 The queries uses the [InfluxDB chunking](https://docs.influxdata.com/influxdb/latest/guides/querying_data/#chunking) 

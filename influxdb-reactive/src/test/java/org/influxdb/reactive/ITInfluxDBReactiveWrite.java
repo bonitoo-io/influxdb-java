@@ -350,6 +350,9 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
                     return true;
                 });
 
+        // wait for response
+        verifier.waitForClose();
+
         Assertions.assertThat(getMeasurements()).hasSize(1);
     }
 
