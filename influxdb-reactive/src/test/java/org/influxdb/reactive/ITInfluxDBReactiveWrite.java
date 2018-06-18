@@ -334,8 +334,12 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
 
         influxDBReactive.writeRecords(Flowable.just(record1, record2));
 
+        // wait for response
         verifier.waitForResponse(1);
         verifier.verifyErrorResponse(1);
+
+        influxDBReactive.close();
+        verifier.waitForClose();
 
         listener
                 .assertValueCount(1)
@@ -349,9 +353,6 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
 
                     return true;
                 });
-
-        // wait for response
-        verifier.waitForClose();
 
         Assertions.assertThat(getMeasurements()).hasSize(1);
     }
