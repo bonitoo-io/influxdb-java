@@ -8,6 +8,7 @@ import org.influxdb.reactive.event.UnhandledErrorEvent;
 import org.influxdb.reactive.event.WriteErrorEvent;
 import org.influxdb.reactive.event.WritePartialEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
+import org.influxdb.reactive.event.WriteUDPEvent;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -56,6 +57,11 @@ public class InfluxDBReactiveVerifier {
                     throwables.add(event.getException());
                     errorResponses.add(1);
                 });
+
+        // WriteUDPEvent
+        influxDBReactive
+                .listenEvents(WriteUDPEvent.class)
+                .subscribe(event -> successResponses.add(1));
 
         // UnhandledErrorEvent
         influxDBReactive

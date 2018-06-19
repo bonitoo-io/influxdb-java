@@ -7,11 +7,13 @@ import org.influxdb.InfluxDBEventListener;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
+import org.influxdb.reactive.H2OFeetMeasurement;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.junit.jupiter.api.AfterEach;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -42,7 +44,7 @@ public abstract class AbstractITInfluxDBReactiveTest implements InfluxDBEventLis
                 .username("admin")
                 .password("admin")
                 .database(DATABASE_NAME)
-                .precision(TimeUnit.MILLISECONDS)
+                .precision(TimeUnit.NANOSECONDS)
                 .addListener(this)
                 .build();
 
@@ -88,5 +90,20 @@ public abstract class AbstractITInfluxDBReactiveTest implements InfluxDBEventLis
         QueryResult result = influxDBReactive.query(new Query(simpleQuery, null)).blockingSingle();
 
         LOG.log(Level.FINEST, "Simple query: {0} result: {1}", new Object[]{simpleQuery, result});
+    }
+
+    @Nonnull
+    protected List<H2OFeetMeasurement> getMeasurements() {
+        return getMeasurements(DATABASE_NAME);
+    }
+
+    @Nonnull
+    protected List<H2OFeetMeasurement> getMeasurements(@Nonnull  final String databaseName) {
+
+        Objects.requireNonNull(databaseName, "Database name is required");
+
+        Query reactive_database = new Query("select * from h2o_feet group by *", databaseName);
+
+        return influxDBReactive.query(reactive_database, H2OFeetMeasurement.class).toList().blockingGet();
     }
 }

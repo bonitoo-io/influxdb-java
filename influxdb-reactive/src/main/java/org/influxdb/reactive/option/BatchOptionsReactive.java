@@ -8,6 +8,7 @@ import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.Objects;
 
 import static org.influxdb.BatchOptions.DEFAULT_BATCH_ACTIONS_LIMIT;
@@ -21,6 +22,7 @@ import static org.influxdb.BatchOptions.DEFAULT_JITTER_INTERVAL_DURATION;
  * @author Jakub Bednar (bednar@github) (04/06/2018 14:09)
  * @since 3.0.0
  */
+@ThreadSafe
 public final class BatchOptionsReactive {
 
     /**

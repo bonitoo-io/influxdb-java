@@ -2,7 +2,6 @@ package org.influxdb.impl;
 
 
 import com.squareup.moshi.JsonAdapter;
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -29,12 +28,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -53,13 +46,11 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
 
     private static final String SHOW_DATABASE_COMMAND_ENCODED = Query.encode("SHOW DATABASES");
 
-    private final InetAddress hostAddress;
     private final String username;
     private final String password;
     private final TimeUnit precision = TimeUnit.NANOSECONDS;
     private BatchProcessor batchProcessor;
     private final AtomicBoolean batchEnabled = new AtomicBoolean(false);
-    private volatile DatagramSocket datagramSocket;
     private String database;
     private String retentionPolicy = "autogen";
     private ConsistencyLevel consistency = ConsistencyLevel.ONE;
@@ -112,7 +103,6 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
 
         super(InfluxDBService.class, options, service, adapter);
 
-        this.hostAddress = parseHostAddress(options.getUrl());
         this.username = options.getUsername();
         this.password = options.getPassword();
         this.mediaType = options.getMediaType();
@@ -120,20 +110,6 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
         setConsistency(options.getConsistencyLevel());
         setDatabase(options.getDatabase());
         setRetentionPolicy(options.getRetentionPolicy());
-    }
-
-    private InetAddress parseHostAddress(final String url) {
-        HttpUrl httpUrl = HttpUrl.parse(url);
-
-        if (httpUrl == null) {
-            throw new IllegalArgumentException("Unable to parse url: " + url);
-        }
-
-        try {
-            return InetAddress.getByName(httpUrl.host());
-        } catch (UnknownHostException e) {
-            throw new InfluxDBIOException(e);
-        }
     }
 
     @Override
@@ -384,27 +360,7 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
      */
     @Override
     public void write(final int udpPort, final String records) {
-        initialDatagramSocket();
-        byte[] bytes = records.getBytes(StandardCharsets.UTF_8);
-        try {
-            datagramSocket.send(new DatagramPacket(bytes, bytes.length, hostAddress, udpPort));
-        } catch (IOException e) {
-            throw new InfluxDBIOException(e);
-        }
-    }
-
-    private void initialDatagramSocket() {
-        if (datagramSocket == null) {
-            synchronized (InfluxDBImpl.class) {
-                if (datagramSocket == null) {
-                    try {
-                        datagramSocket = new DatagramSocket();
-                    } catch (SocketException e) {
-                        throw new InfluxDBIOException(e);
-                    }
-                }
-            }
-        }
+        writeRecordsThroughUDP(udpPort, records);
     }
 
     /**
@@ -629,11 +585,8 @@ public class InfluxDBImpl extends AbstractInfluxDB<InfluxDBService> implements I
         try {
             this.disableBatch();
         } finally {
-            if (datagramSocket != null && !datagramSocket.isClosed()) {
-                datagramSocket.close();
-            }
+            super.destroy();
         }
-        super.destroy();
     }
 
     @Override

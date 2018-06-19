@@ -18,29 +18,19 @@ public class WriteErrorEvent extends AbstractWriteEvent {
 
     private static final Logger LOG = Logger.getLogger(WriteErrorEvent.class.getName());
 
-    private final WriteOptions writeOptions;
     private final InfluxDBException exception;
 
     public WriteErrorEvent(@Nonnull final List<?> dataPoints,
                            @Nonnull final WriteOptions writeOptions,
                            @Nonnull final InfluxDBException exception) {
 
-        super(dataPoints);
+        super(dataPoints, writeOptions);
 
         Objects.requireNonNull(dataPoints, "Points are required");
         Objects.requireNonNull(writeOptions, "WriteOptions are required");
         Objects.requireNonNull(exception, "InfluxDBException is required");
 
-        this.writeOptions = writeOptions;
         this.exception = exception;
-    }
-
-    /**
-     * @return {@code writeOptions} that was used in write
-     */
-    @Nonnull
-    public WriteOptions getWriteOptions() {
-        return writeOptions;
     }
 
     /**

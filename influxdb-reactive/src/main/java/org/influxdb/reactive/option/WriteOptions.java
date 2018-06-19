@@ -4,7 +4,9 @@ import org.influxdb.InfluxDB;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -18,12 +20,15 @@ import static org.influxdb.InfluxDBOptions.DEFAULT_RETENTION_POLICY;
  * @author Jakub Bednar (bednar@github) (14/06/2018 15:44)
  * @since 3.0.0
  */
+@ThreadSafe
 public final class WriteOptions {
 
     private final String database;
     private final String retentionPolicy;
     private final InfluxDB.ConsistencyLevel consistencyLevel;
     private final TimeUnit precision;
+    private final boolean udpEnable;
+    private final int udpPort;
 
     private WriteOptions(@Nonnull final Builder builder) {
 
@@ -33,12 +38,15 @@ public final class WriteOptions {
         retentionPolicy = builder.retentionPolicy;
         consistencyLevel = builder.consistencyLevel;
         precision = builder.precision;
+
+        udpEnable = builder.udpEnable;
+        udpPort = builder.udpPort;
     }
 
     /**
-     * @return the name of the database to write
+     * @return the name of the database to write. It can be nullable for UDP writes.
      */
-    @Nonnull
+    @Nullable
     public String getDatabase() {
         return database;
     }
@@ -67,6 +75,26 @@ public final class WriteOptions {
         return precision;
     }
 
+
+    /**
+     * @return if {@link Boolean#TRUE} than enable write data points through UDP
+     * @see WriteOptions.Builder#udp(boolean, int)
+     * @since 3.0.0
+     */
+    public boolean isUdpEnable() {
+        return udpEnable;
+    }
+
+
+    /**
+     * @return the UDP Port where InfluxDB is listening
+     * @see WriteOptions.Builder#udp(boolean, int)
+     * @since 3.0.0
+     */
+    public int getUdpPort() {
+        return udpPort;
+    }
+
     /**
      * Creates a builder instance.
      *
@@ -90,6 +118,8 @@ public final class WriteOptions {
         private String retentionPolicy = DEFAULT_RETENTION_POLICY;
         private InfluxDB.ConsistencyLevel consistencyLevel = DEFAULT_CONSISTENCY_LEVEL;
         private TimeUnit precision = DEFAULT_PRECISION;
+        private boolean udpEnable = false;
+        private int udpPort = -1;
 
         /**
          * Set the name of the database to write.
@@ -156,6 +186,25 @@ public final class WriteOptions {
         }
 
         /**
+         * Enable write data through
+         * <a href="https://docs.influxdata.com/influxdb/latest/supported_protocols/udp/">UDP</a>.
+         * If is enabled UDP than are ignored {@link WriteOptions#getDatabase()},
+         * {@link WriteOptions#getConsistencyLevel()}, {@link WriteOptions#getPrecision()}
+         * and {@link WriteOptions#getRetentionPolicy()}. Those settings depends on the InfluxDB UDP endpoint.
+         *
+         * @param enable if {@link Boolean#TRUE} than enable write data points through UDP
+         * @param port   the UDP Port where InfluxDB is listening
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder udp(final boolean enable, final int port) {
+            this.udpEnable = enable;
+            this.udpPort = port;
+            return this;
+        }
+
+        /**
          * Build an instance of WriteOptions.
          *
          * @return {@code WriteOptions}
@@ -163,7 +212,9 @@ public final class WriteOptions {
         @Nonnull
         public WriteOptions build() {
 
-            Preconditions.checkNonEmptyString(database, "database");
+            if (!udpEnable) {
+                Preconditions.checkNonEmptyString(database, "database");
+            }
 
             return new WriteOptions(this);
         }
@@ -178,7 +229,9 @@ public final class WriteOptions {
             return false;
         }
         WriteOptions that = (WriteOptions) o;
-        return Objects.equals(database, that.database)
+        return udpEnable == that.udpEnable
+                && udpPort == that.udpPort
+                && Objects.equals(database, that.database)
                 && Objects.equals(retentionPolicy, that.retentionPolicy)
                 && consistencyLevel == that.consistencyLevel
                 && precision == that.precision;
@@ -186,7 +239,7 @@ public final class WriteOptions {
 
     @Override
     public int hashCode() {
-        return Objects.hash(database, retentionPolicy, consistencyLevel, precision);
+        return Objects.hash(database, retentionPolicy, consistencyLevel, precision, udpEnable, udpPort);
     }
 
     @Override

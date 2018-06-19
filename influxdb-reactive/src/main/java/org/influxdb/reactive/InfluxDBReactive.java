@@ -22,8 +22,6 @@ import javax.annotation.Nonnull;
  * <p>
  * Not Implemented:
  * <ul>
- * <li>Partial writes = writeMeasurements(good,good,wrong,good)... -
- * https://docs.influxdata.com/influxdb/v1.5/guides/writing_data/#writing-multiple-points</li>
  * <li>UDP</li>
  * <li>Body as Flowable</li>
  * <li>Use flat in write</li>

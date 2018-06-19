@@ -1,5 +1,7 @@
 package org.influxdb.reactive.event;
 
+import org.influxdb.reactive.option.WriteOptions;
+
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
@@ -11,12 +13,16 @@ import java.util.Objects;
 public abstract class AbstractWriteEvent extends AbstractInfluxEvent {
 
     private final List<?> points;
+    private final WriteOptions writeOptions;
 
-    AbstractWriteEvent(@Nonnull final List<?> points) {
+    AbstractWriteEvent(@Nonnull final List<?> points,
+                       @Nonnull final WriteOptions writeOptions) {
 
         Objects.requireNonNull(points, "Points are required");
+        Objects.requireNonNull(writeOptions, "WriteOptions are required");
 
         this.points = points;
+        this.writeOptions = writeOptions;
     }
 
     /**
@@ -27,5 +33,13 @@ public abstract class AbstractWriteEvent extends AbstractInfluxEvent {
 
         //noinspection unchecked
         return List.class.cast(points);
+    }
+
+    /**
+     * @return {@code writeOptions} that was used in write
+     */
+    @Nonnull
+    public WriteOptions getWriteOptions() {
+        return writeOptions;
     }
 }

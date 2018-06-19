@@ -334,6 +334,7 @@ The `InfluxDBReactive` produces events that allow user to be notified and react 
 - `WriteSuccessEvent` - published when arrived the success response from InfluxDB server
 - `WriteErrorEvent` - published when arrived the error response from InfluxDB server
 - `WritePartialEvent` - published when arrived the partial error response from InfluxDB server
+- `WriteUDPEvent` - published when the data was written through UDP to InfluxDB server
 - `QueryParsedResponseEvent` -  published when is parsed streamed response to query result
 - `BackpressureEvent` -  published when is backpressure applied
 - `UnhandledErrorEvent` -  published when occurs a unhandled exception
@@ -378,6 +379,9 @@ The `InfluxDBReactive` supports write data points to InfluxDB as POJO, `org.infl
 - `retentionPolicy` - the Retention Policy to use
 - `consistencyLevel` - the ConsistencyLevel to use
 - `precision` - the time precision to use
+- `udp` 
+    - `enable` - enable write data through [UDP](https://docs.influxdata.com/influxdb/latest/supported_protocols/udp/)
+    - `port` - the UDP Port where InfluxDB is listening
 
 ```java
 WriteOptions writeOptions = WriteOptions.builder()
@@ -431,7 +435,7 @@ The BatchOptionsReactive can be also created with default configuration by:
 // backpressureStrategy = DROP_OLDEST
 BatchOptions options = BatchOptions.DEFAULTS;
 ```
-There is also configuration for disable batching:
+There is also configuration for disable batching (data points are written asynchronously one-by-one):
 ```java
 BatchOptionsReactive disabledBatching = BatchOptionsReactive.DISABLED;
 
@@ -509,6 +513,19 @@ Flowable<H2OFeetMeasurement> measurements = Flowable.interval(10, TimeUnit.SECON
     });
         
 influxDBReactive.writeMeasurements(measurements);
+```
+
+##### Write through UDP
+```java
+WriteOptions udpOptions = WriteOptions.builder()
+    .udp(true, 8089)
+    .build();
+
+CpuLoad cpuLoad = new CpuLoad();
+cpuLoad.host = "server02";
+cpuLoad.value = 0.67D;
+
+influxDBReactive.writeMeasurement(cpuLoad, udpOptions);
 ```
 
 

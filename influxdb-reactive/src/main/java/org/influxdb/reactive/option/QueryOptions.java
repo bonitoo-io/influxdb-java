@@ -4,6 +4,7 @@ import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.Objects;
 
 /**
@@ -12,6 +13,7 @@ import java.util.Objects;
  * @author Jakub Bednar (bednar@github) (11/06/2018 14:02)
  * @since 3.0.0
  */
+@ThreadSafe
 public final class QueryOptions {
 
     private static final int DEFAULT_CHUNK_SIZE = 10_000;

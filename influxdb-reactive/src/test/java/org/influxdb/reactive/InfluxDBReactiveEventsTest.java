@@ -11,6 +11,7 @@ import org.influxdb.reactive.event.QueryParsedResponseEvent;
 import org.influxdb.reactive.event.WriteErrorEvent;
 import org.influxdb.reactive.event.WritePartialEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
+import org.influxdb.reactive.event.WriteUDPEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.option.WriteOptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +50,7 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
                 .assertValue(writeSuccessEvent -> {
 
                     List<H2OFeetMeasurement> dataPoints = writeSuccessEvent.getDataPoints();
-                    
+
                     Assertions.assertThat(dataPoints.size()).isEqualTo(1);
                     Assertions.assertThat(dataPoints.get(0)).isEqualTo(measurement);
 
@@ -121,7 +122,7 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
 
         listenerError.assertValueCount(0);
         listenerSuccess.assertValueCount(0);
-        
+
         listener.assertValueCount(1).assertValue(event -> {
 
             List<H2OFeetMeasurement> dataPoints = event.getDataPoints();
@@ -138,6 +139,30 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
 
             return true;
         });
+    }
+
+    @Test
+    void writeUDPEvent() {
+
+        TestObserver<WriteUDPEvent> listener = influxDBReactive.listenEvents(WriteUDPEvent.class).test();
+
+        H2OFeetMeasurement measurement = createMeasurement();
+        WriteOptions writeOptions = WriteOptions.builder().udp(true, 8089).build();
+
+        influxDBReactive.writeMeasurement(measurement, writeOptions);
+
+        listener.assertValueCount(1)
+                .assertValue(event -> {
+
+                    List<H2OFeetMeasurement> dataPoints = event.getDataPoints();
+
+                    Assertions.assertThat(dataPoints.size()).isEqualTo(1);
+                    Assertions.assertThat(dataPoints.get(0)).isEqualTo(measurement);
+
+                    Assertions.assertThat(event.getWriteOptions()).isEqualTo(writeOptions);
+
+                    return true;
+                });
     }
 
     @Test

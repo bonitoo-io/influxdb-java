@@ -18,28 +18,17 @@ public class WritePartialEvent extends AbstractWriteEvent {
 
     private static final Logger LOG = Logger.getLogger(WritePartialEvent.class.getName());
 
-    private final WriteOptions writeOptions;
     private final InfluxDBException.PartialWriteException exception;
 
     public WritePartialEvent(@Nonnull final List<?> points,
                              @Nonnull final WriteOptions writeOptions,
                              @Nonnull final InfluxDBException.PartialWriteException exception) {
 
-        super(points);
+        super(points, writeOptions);
 
-        Objects.requireNonNull(writeOptions, "WriteOptions are required");
         Objects.requireNonNull(exception, "InfluxDBException is required");
 
-        this.writeOptions = writeOptions;
         this.exception = exception;
-    }
-
-    /**
-     * @return {@code writeOptions} that was used in write
-     */
-    @Nonnull
-    public WriteOptions getWriteOptions() {
-        return writeOptions;
     }
 
     /**

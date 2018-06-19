@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -469,14 +468,6 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         writeMeasurementsInThreads();
 
         Assertions.assertThat(okHttpClient.connectionPool().connectionCount()).isGreaterThan(1);
-    }
-
-    @Nonnull
-    private List<H2OFeetMeasurement> getMeasurements() {
-
-        Query reactive_database = new Query("select * from h2o_feet", DATABASE_NAME);
-
-        return influxDBReactive.query(reactive_database, H2OFeetMeasurement.class).toList().blockingGet();
     }
 
     private void writeMeasurementsInThreads() throws InterruptedException {

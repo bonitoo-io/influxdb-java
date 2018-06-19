@@ -2,17 +2,14 @@ package org.influxdb.impl;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import java.util.List;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import okhttp3.Headers;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBEventListener;
+import org.influxdb.InfluxDBIOException;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Pong;
 import org.influxdb.dto.QueryResult;
@@ -20,10 +17,26 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * @author Jakub Bednar (bednar@github) (04/06/2018 09:45)
  */
 public abstract class AbstractInfluxDB<T> {
+
+    private final OkHttpClient okHttpClient;
+    private final InetAddress hostAddress;
+    private volatile DatagramSocket datagramSocket;
 
     final T influxDBService;
 
@@ -31,10 +44,9 @@ public abstract class AbstractInfluxDB<T> {
 
     final GzipRequestInterceptor gzipRequestInterceptor;
 
-    private OkHttpClient okHttpClient;
     InfluxDB.LogLevel logLevel = InfluxDB.LogLevel.NONE;
     JsonAdapter<QueryResult> adapter;
-    List<InfluxDBEventListener> listeners;
+    private List<InfluxDBEventListener> listeners;
 
 
     AbstractInfluxDB(@Nonnull final Class<T> influxDBServiceClass,
@@ -57,8 +69,8 @@ public abstract class AbstractInfluxDB<T> {
             okBuilder.addInterceptor(new MonitorRequestInterceptor(this.listeners));
         }
 
+        this.hostAddress = parseHostAddress(options.getUrl());
         this.okHttpClient = okBuilder.build();
-
 
         Retrofit.Builder builder = new Retrofit.Builder()
                 .baseUrl(options.getUrl())
@@ -67,10 +79,8 @@ public abstract class AbstractInfluxDB<T> {
 
         configure(builder);
 
-        Retrofit retrofit = builder.build();
-
-
         if (service == null) {
+            Retrofit retrofit = builder.build();
             this.influxDBService = retrofit.create(influxDBServiceClass);
         } else {
             this.influxDBService = service;
@@ -117,7 +127,58 @@ public abstract class AbstractInfluxDB<T> {
 
     void destroy() {
 
-        listeners.forEach(InfluxDBEventListener::onDestroy);
+        if (datagramSocket != null && !datagramSocket.isClosed()) {
+            datagramSocket.close();
+        }
 
+        listeners.forEach(InfluxDBEventListener::onDestroy);
+    }
+
+    void writeRecordsThroughUDP(final int udpPort, @Nullable final String records) {
+
+        if (records == null) {
+            return;
+        }
+
+        initialDatagramSocket();
+
+        byte[] bytes = records.getBytes(StandardCharsets.UTF_8);
+        try {
+            datagramSocket.send(new DatagramPacket(bytes, bytes.length, hostAddress, udpPort));
+        } catch (IOException e) {
+            throw new InfluxDBIOException(e);
+        }
+    }
+
+    @Nonnull
+    private InetAddress parseHostAddress(@Nonnull final String url) {
+
+        Objects.requireNonNull(url, "URL is required");
+
+        HttpUrl httpUrl = HttpUrl.parse(url);
+
+        if (httpUrl == null) {
+            throw new IllegalArgumentException("Unable to parse url: " + url);
+        }
+
+        try {
+            return InetAddress.getByName(httpUrl.host());
+        } catch (UnknownHostException e) {
+            throw new InfluxDBIOException(e);
+        }
+    }
+
+    private void initialDatagramSocket() {
+        if (datagramSocket == null) {
+            synchronized (InfluxDBImpl.class) {
+                if (datagramSocket == null) {
+                    try {
+                        datagramSocket = new DatagramSocket();
+                    } catch (SocketException e) {
+                        throw new InfluxDBIOException(e);
+                    }
+                }
+            }
+        }
     }
 }

@@ -32,6 +32,7 @@ import org.influxdb.reactive.event.UnhandledErrorEvent;
 import org.influxdb.reactive.event.WriteErrorEvent;
 import org.influxdb.reactive.event.WritePartialEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
+import org.influxdb.reactive.event.WriteUDPEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.option.QueryOptions;
 import org.influxdb.reactive.option.WriteOptions;
@@ -416,6 +417,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             String password = this.options.getPassword();
             String database = query.getDatabase();
 
+            //TODO from query options
             String precision = TimeUtil.toTimePrecision(this.options.getPrecision());
 
             int chunkSize = options.getChunkSize();
@@ -612,6 +614,14 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                     String precision = TimeUtil.toTimePrecision(writeOptions.getPrecision());
                                     String consistencyLevel = writeOptions.getConsistencyLevel().value();
 
+                                    if (writeOptions.isUdpEnable()) {
+                                        writeRecordsThroughUDP(writeOptions.getUdpPort(), body);
+
+                                        publish(new WriteUDPEvent(toDataPoints(dataPoints), writeOptions));
+
+                                        return;
+                                    }
+
                                     influxDBService.writePoints(
                                             username, password, database,
                                             retentionPolicy, precision, consistencyLevel,
@@ -683,6 +693,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         });
     }
 
+    // TODO remove
     @Nonnull
     private List<Object> toDataPoints(@Nonnull final List<AbstractData> points) {
 

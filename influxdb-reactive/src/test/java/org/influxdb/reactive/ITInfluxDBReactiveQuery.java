@@ -22,7 +22,7 @@ import java.time.Instant;
  * @author Jakub Bednar (bednar@github) (11/06/2018 11:33)
  */
 @RunWith(JUnitPlatform.class)
-class ITInfluxDBReactiveQueryTest extends AbstractITInfluxDBReactiveTest {
+class ITInfluxDBReactiveQuery extends AbstractITInfluxDBReactiveTest {
 
     @BeforeEach
     void setUp() {
