@@ -121,13 +121,9 @@ class InfluxDBReactiveQueryTest extends AbstractInfluxDBReactiveTest {
     void error() {
 
         Query query = new Query("select * ", "reactive_database");
-        String body = "{\"error\":\"error parsing query: found EOF, expected FROM at line 1, char 9\"}";
 
-        influxDBServer.enqueue(new MockResponse()
-                .setBody(body)
-                .setResponseCode(400)
-                .setHeader("X-Influxdb-Error", "error parsing query: " +
-                        "found EOF, expected FROM at line 1, char 9"));
+        String errorMessage = "error parsing query: found EOF, expected FROM at line 1, char 9";
+        influxDBServer.enqueue(createErrorResponse(errorMessage));
 
         Flowable<QueryResult> result = influxDBReactive.query(query);
 

@@ -17,6 +17,8 @@ import java.util.logging.Logger;
  */
 final class MeasurementData<M> extends AbstractData<M> {
 
+    private static final Logger LOG = Logger.getLogger(MeasurementData.class.getName());
+
     private M measurement;
 
     MeasurementData(@Nonnull final M measurement, @Nonnull final WriteOptions writeOptions) {
@@ -33,7 +35,13 @@ final class MeasurementData<M> extends AbstractData<M> {
     @Nonnull
     @Override
     String lineProtocol() {
-        return new MeasurementToPoint<>().apply(measurement).lineProtocol();
+
+        String lineProtocol = new MeasurementToPoint<>().apply(measurement).lineProtocol();
+
+        Object[] params = {measurement, lineProtocol};
+        LOG.log(Level.FINEST, "Map measurement: {0} to InfluxDB Line Protocol: {1}", params);
+
+        return lineProtocol;
     }
 
     /**
@@ -65,14 +73,13 @@ final class MeasurementData<M> extends AbstractData<M> {
                         value = field.get(measurement);
                     } catch (IllegalAccessException e) {
 
-                        LOG.log(Level.WARNING,
-                                "Field {0} of {1} is not accessible",
-                                new Object[]{field.getName(), measurement});
+                        Object[] params = {field.getName(), measurement};
+                        LOG.log(Level.WARNING, "Field {0} of {1} is not accessible", params);
                     }
 
                     if (value == null) {
-                        LOG.log(Level.FINEST, "Field {0} of {1} has null value",
-                                new Object[]{field.getName(), measurement});
+                        Object[] params = {field.getName(), measurement};
+                        LOG.log(Level.FINEST, "Field {0} of {1} has null value", params);
 
                         continue;
                     }

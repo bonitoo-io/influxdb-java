@@ -347,9 +347,9 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
 
                     Assertions.assertThat(event.getDataPoints()).containsExactlyInAnyOrder(record1, record2);
 
-                    String errorResponse = "partial write: unable to parse "
-                            + "'h2o_feet,location=coyote_creek 1440049800': invalid field format dropped=0";
-                    Assertions.assertThat(event.getException()).hasMessage(errorResponse);
+                    Assertions.assertThat(event.getException())
+                            .hasMessageStartingWith("partial write:")
+                            .hasMessageContaining("'h2o_feet,location=coyote_creek 1440049800': invalid field format");
 
                     return true;
                 });

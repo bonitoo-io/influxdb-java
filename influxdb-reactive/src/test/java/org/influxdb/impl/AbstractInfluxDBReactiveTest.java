@@ -93,6 +93,12 @@ public abstract class AbstractInfluxDBReactiveTest {
 
     @Nonnull
     protected MockResponse createErrorResponse(@Nullable final String influxDBError) {
-        return new MockResponse().setResponseCode(400).addHeader("X-Influxdb-Error", influxDBError);
+
+        String body = String.format("{\"error\":\"%s\"}", influxDBError);
+
+        return new MockResponse()
+                .setResponseCode(400)
+                .addHeader("X-Influxdb-Error", influxDBError)
+                .setBody(body);
     }
 }

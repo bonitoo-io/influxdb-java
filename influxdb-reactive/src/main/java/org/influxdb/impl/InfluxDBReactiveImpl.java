@@ -693,9 +693,12 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         if (throwable instanceof HttpException) {
 
-            String errorMessage = ((HttpException) throwable).response().headers().get("X-Influxdb-Error");
-            if (errorMessage != null) {
-                return InfluxDBException.buildExceptionFromErrorMessage(errorMessage);
+            try (ResponseBody errorBody = ((HttpException) throwable).response().errorBody()) {
+                if (errorBody != null) {
+                    return InfluxDBException.buildExceptionForErrorState(errorBody.string());
+                }
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Build exception from error body fail", e);
             }
         }
 
