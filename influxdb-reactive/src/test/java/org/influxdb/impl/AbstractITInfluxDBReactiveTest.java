@@ -1,5 +1,9 @@
 package org.influxdb.impl;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.influxdb.InfluxDBEventListener;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
@@ -16,7 +20,7 @@ import java.util.logging.Logger;
 /**
  * @author Jakub Bednar (bednar@github) (05/06/2018 09:14)
  */
-public abstract class AbstractITInfluxDBReactiveTest {
+public abstract class AbstractITInfluxDBReactiveTest implements InfluxDBEventListener {
 
     private static final Logger LOG = Logger.getLogger(AbstractITInfluxDBReactiveTest.class.getName());
 
@@ -24,6 +28,7 @@ public abstract class AbstractITInfluxDBReactiveTest {
 
     protected InfluxDBReactive influxDBReactive;
     protected InfluxDBReactiveVerifier verifier;
+    protected OkHttpClient okHttpClient;
 
     protected void setUp(@Nonnull final BatchOptionsReactive batchOptions) {
 
@@ -38,6 +43,7 @@ public abstract class AbstractITInfluxDBReactiveTest {
                 .password("admin")
                 .database(DATABASE_NAME)
                 .precision(TimeUnit.MILLISECONDS)
+                .addListener(this)
                 .build();
 
 
@@ -54,6 +60,26 @@ public abstract class AbstractITInfluxDBReactiveTest {
         simpleQuery("DROP DATABASE " + DATABASE_NAME);
 
         influxDBReactive.close();
+    }
+
+    @Override
+    public void onCreate(OkHttpClient okHttpClient, InfluxDBOptions influxDBOptions) {
+        this.okHttpClient = okHttpClient;
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
+    public void onError(Request request, Response response) {
+
+    }
+
+    @Override
+    public void onSuccess(Request request, Response response) {
+
     }
 
     protected void simpleQuery(@Nonnull final String simpleQuery) {

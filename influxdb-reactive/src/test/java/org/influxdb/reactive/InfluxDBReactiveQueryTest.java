@@ -24,7 +24,7 @@ class InfluxDBReactiveQueryTest extends AbstractInfluxDBReactiveTest {
 
     @BeforeEach
     void setUp() {
-        super.setUp(BatchOptionsReactive.DISABLED);
+        super.setUp(BatchOptionsReactive.DEFAULTS);
     }
 
     @Test

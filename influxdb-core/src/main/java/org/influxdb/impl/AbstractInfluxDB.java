@@ -95,7 +95,7 @@ public abstract class AbstractInfluxDB<T> {
     }
 
     @Nonnull
-    protected Pong createPong(final long requestStart, @Nonnull final Response<ResponseBody> response) {
+    Pong createPong(final long requestStart, @Nonnull final Response<ResponseBody> response) {
 
         Objects.requireNonNull(response, "Response is required");
 
@@ -115,7 +115,7 @@ public abstract class AbstractInfluxDB<T> {
         return pong;
     }
 
-    protected void destroy() {
+    void destroy() {
 
         listeners.forEach(InfluxDBEventListener::onDestroy);
 

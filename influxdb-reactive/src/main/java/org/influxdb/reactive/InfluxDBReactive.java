@@ -28,7 +28,6 @@ import javax.annotation.Nonnull;
  * <li>Body as Flowable</li>
  * <li>Use flat in write</li>
  * <li>Retry for wrong url</li>
- * <li>Write line protocol - partial</li>
  * <li>Backpressure - wait</li>
  * <li>Hystrix collapser</li>
  * <li>swagger API</li>

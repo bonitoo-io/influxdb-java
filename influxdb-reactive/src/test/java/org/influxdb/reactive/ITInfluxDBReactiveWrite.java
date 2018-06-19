@@ -2,6 +2,7 @@ package org.influxdb.reactive;
 
 import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
@@ -22,6 +23,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +39,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void write() {
 
-        setUp(BatchOptionsReactive.DISABLED);
+        setUp(BatchOptionsReactive.builder().actions(1).build());
 
         H2OFeetMeasurement measurement1 = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046801L);
@@ -70,7 +74,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void writeFail() {
 
-        setUp(BatchOptionsReactive.DISABLED);
+        setUp(BatchOptionsReactive.builder().actions(1).build());
 
         Map<String, Object> fieldsToAdd = new HashMap<>();
         fieldsToAdd.put("level", null);
@@ -88,7 +92,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void publishPattern() {
 
-        setUp(BatchOptionsReactive.DISABLED);
+        setUp(BatchOptionsReactive.builder().actions(1).build());
 
         TestScheduler scheduler = new TestScheduler();
 
@@ -447,11 +451,47 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         simpleQuery("DROP database " + DATABASE_NAME + "_2");
     }
 
+    @Test
+    void enableBatchingOneConnectionCount() throws InterruptedException {
+
+        setUp(BatchOptionsReactive.builder().actions(5).build());
+
+        writeMeasurementsInThreads();
+
+        Assertions.assertThat(okHttpClient.connectionPool().connectionCount()).isEqualTo(1);
+    }
+
+    @Test
+    void disableBatchingMoreConnectionCount() throws InterruptedException {
+
+        setUp(BatchOptionsReactive.DISABLED);
+
+        writeMeasurementsInThreads();
+
+        Assertions.assertThat(okHttpClient.connectionPool().connectionCount()).isGreaterThan(1);
+    }
+
     @Nonnull
     private List<H2OFeetMeasurement> getMeasurements() {
 
         Query reactive_database = new Query("select * from h2o_feet", DATABASE_NAME);
 
         return influxDBReactive.query(reactive_database, H2OFeetMeasurement.class).toList().blockingGet();
+    }
+
+    private void writeMeasurementsInThreads() throws InterruptedException {
+
+        ExecutorService scheduler = Executors.newFixedThreadPool(20);
+
+        Flowable
+                .range(0, 1000)
+                .map(index -> (Callable<Maybe<H2OFeetMeasurement>>) () ->
+                        influxDBReactive.writeMeasurement(H2OFeetMeasurement.createMeasurement(index)))
+                .subscribe(scheduler::submit);
+
+        Thread.sleep(5_000);
+
+        influxDBReactive.close();
+        verifier.waitForClose();
     }
 }

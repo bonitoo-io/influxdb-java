@@ -1,6 +1,7 @@
 package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
@@ -10,7 +11,6 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,7 +24,12 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
     @Test
     void flushByActions() {
 
-        BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled().actions(5).flushInterval(1_000_000).build();
+        BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
+                .actions(5)
+                .flushInterval(1_000_000)
+                .writeScheduler(Schedulers.trampoline())
+                .build();
+
         setUp(batchOptions);
 
         influxDBServer.enqueue(new MockResponse());
@@ -70,6 +75,7 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
                 .actions(10)
                 .flushInterval(1_000_000)
+                .writeScheduler(Schedulers.trampoline())
                 .build();
 
         setUp(batchOptions);
@@ -124,6 +130,7 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
                 .actions(5)
                 .flushInterval(10_000)
                 .jitterInterval(5_000)
+                .writeScheduler(Schedulers.trampoline())
                 .build();
 
         setUp(batchOptions);
@@ -141,7 +148,7 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
                 .isEqualTo(0);
 
         // move time to feature by 5 seconds - jitter interval elapsed
-        advanceTimeBy(5, jitterScheduler);
+        advanceTimeBy(6, jitterScheduler);
 
         // was call remote API
         Assertions.assertThat(influxDBServer.getRequestCount())
@@ -164,7 +171,12 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
     void flushBeforeClose() {
 
         // after 5 actions
-        BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled().actions(5).build();
+        BatchOptionsReactive batchOptions = BatchOptionsReactive
+                .disabled()
+                .actions(5)
+                .writeScheduler(Schedulers.trampoline())
+                .build();
+
         setUp(batchOptions);
 
         influxDBServer.enqueue(new MockResponse());
@@ -195,11 +207,6 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
     @Nonnull
     private H2OFeetMeasurement createMeasurement(@Nonnull final Integer index) {
 
-        Objects.requireNonNull(index, "Measurement index is required");
-
-        double level = index.doubleValue();
-        long time = 1440046800L + index;
-
-        return new H2OFeetMeasurement("coyote_creek", level, "feet " + index, time);
+        return H2OFeetMeasurement.createMeasurement(index);
     }
 }

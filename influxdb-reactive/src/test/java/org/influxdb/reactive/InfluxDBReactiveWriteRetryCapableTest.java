@@ -22,7 +22,7 @@ class InfluxDBReactiveWriteRetryCapableTest extends AbstractInfluxDBReactiveTest
     @Test
     void writeAfterRetryException() {
 
-        setUp(BatchOptionsReactive.DISABLED);
+        setUp(BatchOptionsReactive.builder().actions(1).build());
 
         // First Retry Error than Success
         influxDBServer.enqueue(createErrorResponse("cache-max-memory-size exceeded 104/1400"));
@@ -45,7 +45,12 @@ class InfluxDBReactiveWriteRetryCapableTest extends AbstractInfluxDBReactiveTest
     @Test
     void withoutRetry() {
 
-        setUp(BatchOptionsReactive.DISABLED);
+        BatchOptionsReactive options = BatchOptionsReactive
+                .builder()
+                .actions(1)
+                .build();
+
+        setUp(options);
 
         // Only error Retry Error than Success
         influxDBServer.enqueue(createErrorResponse("database not found: not_exist_database"));
@@ -70,7 +75,8 @@ class InfluxDBReactiveWriteRetryCapableTest extends AbstractInfluxDBReactiveTest
 
         // random retry interval
         BatchOptionsReactive options = BatchOptionsReactive
-                .disabled()
+                .builder()
+                .actions(1)
                 .retryInterval(500)
                 .jitterInterval(500)
                 .build();

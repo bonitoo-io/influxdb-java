@@ -489,9 +489,13 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public InfluxDBReactive close() {
 
         LOG.log(Level.INFO, "Flushing any cached metrics before shutdown.");
-        processor.onComplete();
-        eventPublisher.onComplete();
-        super.destroy();
+
+        try {
+            processor.onComplete();
+            eventPublisher.onComplete();
+        } finally {
+            super.destroy();
+        }
 
         return this;
     }
@@ -554,6 +558,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
             flowablePoints
                     .groupBy(AbstractData::getWriteOptions)
+                    .subscribeOn(batchOptions.getWriteScheduler())
                     .subscribe(dataPointGroup -> {
 
                         WriteOptions writeOptions = dataPointGroup.getKey();

@@ -2,6 +2,7 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
@@ -27,7 +28,12 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
     @BeforeEach
     void setUp() {
-        super.setUp(BatchOptionsReactive.DISABLED);
+        BatchOptionsReactive build = BatchOptionsReactive
+                .disabled()
+                .writeScheduler(Schedulers.trampoline())
+                .build();
+
+        super.setUp(build);
     }
 
     @Test

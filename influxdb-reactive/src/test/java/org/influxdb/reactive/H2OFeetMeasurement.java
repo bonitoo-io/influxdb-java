@@ -3,6 +3,7 @@ package org.influxdb.reactive;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Objects;
@@ -50,6 +51,17 @@ public class H2OFeetMeasurement {
 
     public Instant getTime() {
         return time;
+    }
+
+    @Nonnull
+    public static H2OFeetMeasurement createMeasurement(@Nonnull final Integer index)
+    {
+        Objects.requireNonNull(index, "Measurement index is required");
+
+        double level = index.doubleValue();
+        long time = 1440046800L + index;
+
+        return new H2OFeetMeasurement("coyote_creek", level, "feet " + index, time);
     }
 
     @Override

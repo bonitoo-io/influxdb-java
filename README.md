@@ -399,7 +399,8 @@ influxDBReactive.writeMeasurements(measurements);
 - `flushInterval` - the number of milliseconds before the batch is written 
 - `jitterInterval` - the number of milliseconds to increase the batch flush interval by a random amount (see documentation above)
 - `retryInterval` - the number of milliseconds to retry unsuccessful write
-- `bufferLimit` - the maximum number of unwrittens stored points
+- `bufferLimit` - the maximum number of unwritten stored points
+- `writeScheduler` - the scheduler which is used for write data points (by overriding default settings can be disabled batching)
 - `backpressureStrategy` - the strategy to deal with buffer overflow
 
 ```java
@@ -426,8 +427,20 @@ The BatchOptionsReactive can be also created with default configuration by:
 // jitterInterval = 0
 // retryInterval = 1_000
 // bufferLimit = 10_000
+// writeScheduler = Schedulers.trampoline()
 // backpressureStrategy = DROP_OLDEST
 BatchOptions options = BatchOptions.DEFAULTS;
+```
+There is also configuration for disable batching:
+```java
+BatchOptionsReactive disabledBatching = BatchOptionsReactive.DISABLED;
+
+// Reactive client
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, disabledBatching);
+
+...
+
+influxDBReactive.close();
 ```
 #### Backpressure
 The backpressure presents the problem of what to do with a growing backlog of unconsumed data points. 

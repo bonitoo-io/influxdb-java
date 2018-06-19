@@ -1,6 +1,8 @@
 package org.influxdb.reactive.option;
 
 import io.reactivex.BackpressureOverflowStrategy;
+import io.reactivex.Scheduler;
+import io.reactivex.schedulers.Schedulers;
 import org.influxdb.BatchOptions;
 import org.influxdb.impl.Preconditions;
 
@@ -36,6 +38,7 @@ public final class BatchOptionsReactive {
     private final int jitterInterval;
     private final int retryInterval;
     private final int bufferLimit;
+    private final Scheduler writeScheduler;
     private final BackpressureOverflowStrategy backpressureStrategy;
 
     /**
@@ -85,6 +88,15 @@ public final class BatchOptionsReactive {
     }
 
     /**
+     * @return Set the scheduler which is used for write data points.
+     * @see BatchOptionsReactive.Builder#writeScheduler(Scheduler)
+     */
+    @Nonnull
+    public Scheduler getWriteScheduler() {
+        return writeScheduler;
+    }
+
+    /**
      * @return the strategy to deal with buffer overflow when using onBackpressureBuffer
      * @see BatchOptionsReactive.Builder#backpressureStrategy(BackpressureOverflowStrategy)
      * @since 3.0.0
@@ -103,6 +115,7 @@ public final class BatchOptionsReactive {
         jitterInterval = builder.jitterInterval;
         retryInterval = builder.retryInterval;
         bufferLimit = builder.bufferLimit;
+        writeScheduler = builder.writeScheduler;
         backpressureStrategy = builder.backpressureStrategy;
     }
 
@@ -118,14 +131,15 @@ public final class BatchOptionsReactive {
     }
 
     /**
-     * Creates a builder instance with disabled batching.
+     * Creates a builder instance with disabled batching. The {@link BatchOptionsReactive#getActions()} is set to 1 and
+     * {@link BatchOptionsReactive#getWriteScheduler()} is set to {@link Schedulers#io()}.
      *
      * @return a builder
      * @since 3.0.0
      */
     @Nonnull
     public static BatchOptionsReactive.Builder disabled() {
-        return BatchOptionsReactive.builder().actions(1);
+        return BatchOptionsReactive.builder().actions(1).writeScheduler(Schedulers.io());
     }
 
     /**
@@ -141,6 +155,7 @@ public final class BatchOptionsReactive {
         private int jitterInterval = DEFAULT_JITTER_INTERVAL_DURATION;
         private int retryInterval = DEFAULT_BATCH_INTERVAL_DURATION;
         private int bufferLimit = DEFAULT_BUFFER_LIMIT;
+        private Scheduler writeScheduler = Schedulers.trampoline();
         private BackpressureOverflowStrategy backpressureStrategy = BackpressureOverflowStrategy.DROP_OLDEST;
 
         /**
@@ -216,6 +231,23 @@ public final class BatchOptionsReactive {
         public Builder bufferLimit(final int bufferLimit) {
             Preconditions.checkNotNegativeNumber(bufferLimit, "bufferLimit");
             this.bufferLimit = bufferLimit;
+            return this;
+        }
+
+        /**
+         * Set the scheduler which is used for write data points. It is useful for disabling batch writes or
+         * for tuning the performance. Default value is {@link Schedulers#trampoline()}.
+         *
+         * @param writeScheduler the scheduler which is used for write data points.
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder writeScheduler(@Nonnull final Scheduler writeScheduler) {
+
+            Objects.requireNonNull(writeScheduler, "Write scheduler is required");
+
+            this.writeScheduler = writeScheduler;
             return this;
         }
 
