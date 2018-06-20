@@ -1,11 +1,13 @@
 package org.influxdb.reactive.option;
 
+import org.influxdb.InfluxDBOptions;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * QueryOptions are used to configure query data from the InfluxDB.
@@ -19,6 +21,7 @@ public final class QueryOptions {
     private static final int DEFAULT_CHUNK_SIZE = 10_000;
 
     private final int chunkSize;
+    private final TimeUnit precision;
 
     /**
      * Default configuration: chunk_size = 10_000.
@@ -30,6 +33,7 @@ public final class QueryOptions {
         Objects.requireNonNull(builder, "QueryOptions.Builder is required");
 
         chunkSize = builder.chunkSize;
+        precision = builder.precision;
     }
 
     /**
@@ -39,6 +43,16 @@ public final class QueryOptions {
      */
     public int getChunkSize() {
         return chunkSize;
+    }
+
+    /**
+     * @return the time unit of the results.
+     * @see QueryOptions.Builder#precision(TimeUnit) (int)
+     * @since 3.0.0
+     */
+    @Nonnull
+    public TimeUnit getPrecision() {
+        return precision;
     }
 
     /**
@@ -61,6 +75,7 @@ public final class QueryOptions {
     public static class Builder {
 
         private int chunkSize = DEFAULT_CHUNK_SIZE;
+        private TimeUnit precision = InfluxDBOptions.DEFAULT_PRECISION;
 
         /**
          * Set the number of QueryResults to process in one chunk.
@@ -73,6 +88,22 @@ public final class QueryOptions {
         public Builder chunkSize(final int chunkSize) {
             Preconditions.checkPositiveNumber(chunkSize, "chunkSize");
             this.chunkSize = chunkSize;
+            return this;
+        }
+
+        /**
+         * Set the time unit of the results.
+         *
+         * @param timeUnit the time unit of the results.
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder precision(@Nonnull final TimeUnit timeUnit) {
+
+            Objects.requireNonNull(timeUnit, "TimeUnit is required");
+
+            this.precision = timeUnit;
             return this;
         }
 

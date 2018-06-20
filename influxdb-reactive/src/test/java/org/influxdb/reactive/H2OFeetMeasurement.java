@@ -30,11 +30,11 @@ public class H2OFeetMeasurement {
     public H2OFeetMeasurement() {
     }
 
-    public H2OFeetMeasurement(String location, Double level, String description, @Nullable final Long time) {
+    public H2OFeetMeasurement(String location, Double level, String description, @Nullable final Long millis) {
         this.location = location;
         this.level = level;
         this.description = description;
-        this.time = time != null ? Instant.ofEpochMilli(time) : null;
+        this.time = millis != null ? Instant.ofEpochMilli(millis) : null;
     }
 
     public String getLocation() {

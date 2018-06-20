@@ -53,7 +53,7 @@ class ITInfluxDBReactiveWriteUDP extends AbstractITInfluxDBReactiveTest {
                 .tag("location", "coyote_creek")
                 .addField("water_level", 2.928)
                 .addField("level description", "below 3 feet")
-                .time(1440046800, TimeUnit.NANOSECONDS)
+                .time(1440046800000000L, TimeUnit.NANOSECONDS)
                 .build();
 
         influxDBReactive.writePoint(point, udpWriteOptions);
@@ -76,7 +76,7 @@ class ITInfluxDBReactiveWriteUDP extends AbstractITInfluxDBReactiveTest {
     void writeRecordThroughUDP() {
 
         String record = "h2o_feetRecord,location=coyote_creek "
-                + "level\\ description=\"below 3 feet\",water_level=2.928 1440046800";
+                + "level\\ description=\"below 3 feet\",water_level=2.928 1440046800000000";
 
         influxDBReactive.writeRecord(record, udpWriteOptions);
 
@@ -113,7 +113,7 @@ class ITInfluxDBReactiveWriteUDP extends AbstractITInfluxDBReactiveTest {
                             .containsExactlyInAnyOrder("time", "level description", "water_level");
                     Assertions.assertThat(series.getValues()).hasSize(1);
                     Assertions.assertThat(series.getValues().get(0))
-                            .containsExactlyInAnyOrder(1440046800.0, "below 3 feet", 2.928);
+                            .containsExactlyInAnyOrder(1440046800000000.0, "below 3 feet", 2.928);
 
                     return true;
                 });

@@ -116,13 +116,13 @@ class InfluxDBReactiveWriteRetryCapableTest extends AbstractInfluxDBReactiveTest
                 .isEqualTo(5);
 
         String measurement1Expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"below 3 feet\",water_level=2.927 1440046801";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046801000000";
 
         String measurement2Expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"below 2 feet\",water_level=1.927 1440049802";
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049802000000";
 
         String measurement3Expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"over 5 feet\",water_level=5.927 1440052803";
+                "level\\ description=\"over 5 feet\",water_level=5.927 1440052803000000";
 
         // success 1
         Assertions.assertThat(pointsBody()).isEqualTo(measurement1Expected);

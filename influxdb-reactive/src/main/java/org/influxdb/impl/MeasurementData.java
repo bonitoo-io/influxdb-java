@@ -9,6 +9,8 @@ import org.influxdb.reactive.option.WriteOptions;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,7 +38,9 @@ final class MeasurementData<M> extends AbstractData<M> {
     @Override
     String lineProtocol() {
 
-        String lineProtocol = new MeasurementToPoint<>().apply(measurement).lineProtocol();
+        String lineProtocol = new MeasurementToPoint<>(writeOptions.getPrecision())
+                .apply(measurement)
+                .lineProtocol(writeOptions.getPrecision());
 
         Object[] params = {measurement, lineProtocol};
         LOG.log(Level.FINEST, "Map measurement: {0} to InfluxDB Line Protocol: {1}", params);
@@ -53,6 +57,14 @@ final class MeasurementData<M> extends AbstractData<M> {
 
         private static final Logger LOG = Logger.getLogger(MeasurementToPoint.class.getName());
 
+        private final TimeUnit precision;
+
+        MeasurementToPoint(@Nonnull final TimeUnit precision) {
+            Objects.requireNonNull(precision, "TimeUnit is required");
+
+            this.precision = precision;
+        }
+
         @Override
         public Point apply(final M measurement) {
 
@@ -67,7 +79,6 @@ final class MeasurementData<M> extends AbstractData<M> {
 
                     String name = column.name();
                     Object value = null;
-
                     try {
                         field.setAccessible(true);
                         value = field.get(measurement);
@@ -88,7 +99,9 @@ final class MeasurementData<M> extends AbstractData<M> {
                         point.tag(name, value.toString());
                     } else if (Instant.class.isAssignableFrom(field.getType())) {
 
-                        point.time(((Instant) value).toEpochMilli(), def.timeUnit());
+                        Instant instant = (Instant) value;
+                        long timeToSet = precision.convert(instant.toEpochMilli(), TimeUnit.MILLISECONDS);
+                        point.time(timeToSet, precision);
                     } else {
 
                         if (Double.class.isAssignableFrom(value.getClass())) {

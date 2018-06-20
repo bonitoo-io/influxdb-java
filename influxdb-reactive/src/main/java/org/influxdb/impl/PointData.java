@@ -26,6 +26,6 @@ final class PointData extends AbstractData<Point> {
     @Nonnull
     @Override
     String lineProtocol() {
-        return point.lineProtocol();
+        return point.lineProtocol(writeOptions.getPrecision());
     }
 }

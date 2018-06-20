@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Jakub Bednar (bednar@github) (11/06/2018 14:13)
  */
@@ -16,6 +18,7 @@ class QueryOptionsTest {
         QueryOptions queryOptions = QueryOptions.builder().build();
 
         Assertions.assertThat(queryOptions.getChunkSize()).isEqualTo(10_000);
+        Assertions.assertThat(queryOptions.getPrecision()).isEqualTo(TimeUnit.NANOSECONDS);
     }
 
     @Test

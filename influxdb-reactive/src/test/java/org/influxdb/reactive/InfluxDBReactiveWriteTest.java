@@ -195,7 +195,7 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
         // written measurement
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800000000";
         String actual = pointsBody();
 
         assertThat(actual).isEqualTo(expected);
@@ -233,12 +233,12 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
         // written measurements
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800000000";
         String actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800000000";
         actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
@@ -279,17 +279,17 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
         // written measurements
         String expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
+                "level\\ description=\"below 3 feet\",water_level=2.927 1440046800000000";
         String actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800";
+                "level\\ description=\"below 2 feet\",water_level=1.927 1440049800000000";
         actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 
         expected = "h2o_feet,location=coyote_creek " +
-                "level\\ description=\"over 5 feet\",water_level=5.927 1440052800";
+                "level\\ description=\"over 5 feet\",water_level=5.927 1440052800000000";
         actual = pointsBody();
         assertThat(actual).isEqualTo(expected);
 

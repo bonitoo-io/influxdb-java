@@ -266,11 +266,11 @@ public interface InfluxDBReactive {
      * Execute a query against a default database.
      *
      * @param query   the query to execute.
-     * @param options the configuration of the query
+     * @param queryOptions the configuration of the query
      * @return {@link Single} emitting a List of Series which matched the query or
      * {@link Flowable#empty()} if none found.
      */
-    Flowable<QueryResult> query(@Nonnull final Query query, @Nonnull final QueryOptions options);
+    Flowable<QueryResult> query(@Nonnull final Query query, @Nonnull final QueryOptions queryOptions);
 
     /**
      * Execute a query against a default database.
@@ -285,11 +285,11 @@ public interface InfluxDBReactive {
      * Execute a query against a default database.
      *
      * @param queryStream the query to execute. Uses the first emitted element to perform the find-query.
-     * @param options     the configuration of the query
+     * @param queryOptions     the configuration of the query
      * @return {@link Single} emitting a List of Series which matched the query or
      * {@link Flowable#empty()} if none found.
      */
-    Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream, @Nonnull final QueryOptions options);
+    Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream, @Nonnull final QueryOptions queryOptions);
 
     /**
      * Listen the events produced by {@link InfluxDBReactive}.

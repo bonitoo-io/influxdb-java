@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 abstract class AbstractData<D> {
 
-    private WriteOptions writeOptions;
+    protected WriteOptions writeOptions;
 
     AbstractData(@Nonnull final WriteOptions writeOptions) {
 

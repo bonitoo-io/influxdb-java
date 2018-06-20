@@ -38,6 +38,8 @@ import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.QueryResult;
 
+import javax.annotation.Nonnull;
+
 /**
  * Main class responsible for mapping a QueryResult to a POJO.
  *
@@ -84,9 +86,36 @@ public class InfluxDBResultMapper {
    * possible to define the values of your POJO (e.g. due to an unsupported field type).
    */
   public <T> List<T> toPOJO(final QueryResult queryResult, final Class<T> clazz) throws InfluxDBMapperException {
+    return toPOJO(queryResult, clazz, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * <p>
+   * Process a {@link QueryResult} object returned by the InfluxDB client inspecting the internal
+   * data structure and creating the respective object instances based on the Class passed as
+   * parameter.
+   * </p>
+   *
+   * @param queryResult the InfluxDB result object
+   * @param clazz the Class that will be used to hold your measurement data
+   * @param precision the time unit of the results.
+   * @param <T> the target type
+   *
+   * @return a {@link List} of objects from the same Class passed as parameter and sorted on the
+   * same order as received from InfluxDB.
+   *
+   * @throws InfluxDBMapperException If {@link QueryResult} parameter contain errors,
+   * <tt>clazz</tt> parameter is not annotated with &#64;Measurement or it was not
+   * possible to define the values of your POJO (e.g. due to an unsupported field type).
+   */
+  public <T> List<T> toPOJO(final QueryResult queryResult, final Class<T> clazz, @Nonnull final TimeUnit precision)
+          throws InfluxDBMapperException {
+
+    Objects.requireNonNull(precision, "TimeUnit precision is required");
+
     throwExceptionIfMissingAnnotation(clazz);
     String measurementName = getMeasurementName(clazz);
-    return this.toPOJO(queryResult, clazz, measurementName);
+    return this.toPOJO(queryResult, clazz, measurementName, precision);
   }
 
   /**
@@ -110,6 +139,32 @@ public class InfluxDBResultMapper {
    */
   public <T> List<T> toPOJO(final QueryResult queryResult, final Class<T> clazz, final String measurementName)
       throws InfluxDBMapperException {
+    return toPOJO(queryResult, clazz, measurementName, TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * <p>
+   * Process a {@link QueryResult} object returned by the InfluxDB client inspecting the internal
+   * data structure and creating the respective object instances based on the Class passed as
+   * parameter.
+   * </p>
+   *
+   * @param queryResult the InfluxDB result object
+   * @param clazz the Class that will be used to hold your measurement data
+   * @param <T> the target type
+   * @param measurementName name of the Measurement
+   * @param precision the time unit of the results.
+   *
+   * @return a {@link List} of objects from the same Class passed as parameter and sorted on the
+   * same order as received from InfluxDB.
+   *
+   * @throws InfluxDBMapperException If {@link QueryResult} parameter contain errors,
+   * <tt>clazz</tt> parameter is not annotated with &#64;Measurement or it was not
+   * possible to define the values of your POJO (e.g. due to an unsupported field type).
+   */
+  public <T> List<T> toPOJO(final QueryResult queryResult, final Class<T> clazz, final String measurementName,
+                            @Nonnull final TimeUnit precision)
+      throws InfluxDBMapperException {
 
     Objects.requireNonNull(measurementName, "measurementName");
     Objects.requireNonNull(queryResult, "queryResult");
@@ -126,7 +181,7 @@ public class InfluxDBResultMapper {
         internalResult.getSeries().stream()
           .filter(series -> series.getName().equals(measurementName))
           .forEachOrdered(series -> {
-            parseSeriesAs(series, clazz, result);
+            parseSeriesAs(series, clazz, result, precision);
           });
         });
 
@@ -177,6 +232,14 @@ public class InfluxDBResultMapper {
   }
 
   <T> List<T> parseSeriesAs(final QueryResult.Series series, final Class<T> clazz, final List<T> result) {
+    return parseSeriesAs(series, clazz, result, TimeUnit.MILLISECONDS);
+  }
+
+  <T> List<T> parseSeriesAs(final QueryResult.Series series, final Class<T> clazz, final List<T> result,
+                            @Nonnull final TimeUnit precision) {
+
+    Objects.requireNonNull(precision, "TimeUnit precision is required");
+
     int columnSize = series.getColumns().size();
     ConcurrentMap<String, Field> colNameAndFieldMap = CLASS_FIELD_CACHE.get(clazz.getName());
     try {
@@ -188,7 +251,7 @@ public class InfluxDBResultMapper {
             if (object == null) {
               object = clazz.newInstance();
             }
-            setFieldValue(object, correspondingField, row.get(i));
+            setFieldValue(object, correspondingField, row.get(i), precision);
           }
         }
         // When the "GROUP BY" clause is used, "tags" are returned as Map<String,String> and
@@ -200,7 +263,7 @@ public class InfluxDBResultMapper {
             Field correspondingField = colNameAndFieldMap.get(entry.getKey()/*InfluxDB columnName*/);
             if (correspondingField != null) {
               // I don't think it is possible to reach here without a valid "object"
-              setFieldValue(object, correspondingField, entry.getValue());
+              setFieldValue(object, correspondingField, entry.getValue(), precision);
             }
           }
         }
@@ -223,11 +286,15 @@ public class InfluxDBResultMapper {
    * @param object
    * @param field
    * @param value
+   * @param precision
    * @throws IllegalArgumentException
    * @throws IllegalAccessException
    */
-  <T> void setFieldValue(final T object, final Field field, final Object value)
+  <T> void setFieldValue(final T object, final Field field, final Object value, @Nonnull final TimeUnit precision)
     throws IllegalArgumentException, IllegalAccessException {
+
+    Objects.requireNonNull(precision, "TimeUnit precision is required");
+
     if (value == null) {
       return;
     }
@@ -236,7 +303,7 @@ public class InfluxDBResultMapper {
       if (!field.isAccessible()) {
         field.setAccessible(true);
       }
-      if (fieldValueModified(fieldType, field, object, value)
+      if (fieldValueModified(fieldType, field, object, value, precision)
         || fieldValueForPrimitivesModified(fieldType, field, object, value)
         || fieldValueForPrimitiveWrappersModified(fieldType, field, object, value)) {
         return;
@@ -252,8 +319,12 @@ public class InfluxDBResultMapper {
     }
   }
 
-  <T> boolean fieldValueModified(final Class<?> fieldType, final Field field, final T object, final Object value)
+  <T> boolean fieldValueModified(final Class<?> fieldType, final Field field, final T object, final Object value,
+                                 @Nonnull final TimeUnit precision)
     throws IllegalArgumentException, IllegalAccessException {
+
+    Objects.requireNonNull(precision, "TimeUnit precision is required");
+
     if (String.class.isAssignableFrom(fieldType)) {
       field.set(object, String.valueOf(value));
       return true;
@@ -263,9 +334,9 @@ public class InfluxDBResultMapper {
       if (value instanceof String) {
         instant = Instant.from(ISO8601_FORMATTER.parse(String.valueOf(value)));
       } else if (value instanceof Long) {
-        instant = Instant.ofEpochMilli((Long) value);
+        instant = Instant.ofEpochMilli(toMillis((Long) value, precision));
       } else if (value instanceof Double) {
-        instant = Instant.ofEpochMilli(((Double) value).longValue());
+        instant = Instant.ofEpochMilli(toMillis(((Double) value).longValue(), precision));
       } else {
         throw new InfluxDBMapperException("Unsupported type " + field.getClass() + " for field " + field.getName());
       }
@@ -273,6 +344,14 @@ public class InfluxDBResultMapper {
       return true;
     }
     return false;
+  }
+
+  @Nonnull
+  private Long toMillis(@Nonnull final Long value, @Nonnull final TimeUnit precision) {
+
+    Objects.requireNonNull(precision, "TimeUnit precision is required");
+
+    return TimeUnit.MILLISECONDS.convert(value, precision);
   }
 
   <T> boolean fieldValueForPrimitivesModified(final Class<?> fieldType, final Field field, final T object,

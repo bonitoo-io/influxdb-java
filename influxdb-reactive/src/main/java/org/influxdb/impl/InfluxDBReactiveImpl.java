@@ -68,6 +68,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     private final BatchOptionsReactive batchOptions;
     @Nullable
     private final WriteOptions defaultWriteOptions;
+    private final QueryOptions defaultQueryOptions;
 
     private final InfluxDBResultMapper resultMapper;
 
@@ -107,6 +108,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                     .precision(options.getPrecision())
                     .build();
         }
+        this.defaultQueryOptions = QueryOptions.builder().build();
 
         this.resultMapper = new InfluxDBResultMapper();
 
@@ -338,7 +340,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(query, "Query is required");
         Objects.requireNonNull(measurementType, "Measurement type is required");
 
-        return query(query, measurementType, QueryOptions.DEFAULTS);
+        return query(query, measurementType, defaultQueryOptions);
     }
 
     @Override
@@ -359,7 +361,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(query, "Query publisher is required");
         Objects.requireNonNull(measurementType, "Measurement type is required");
 
-        return query(query, measurementType, QueryOptions.DEFAULTS);
+        return query(query, measurementType, defaultQueryOptions);
     }
 
     @Override
@@ -372,7 +374,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         Objects.requireNonNull(queryOptions, "QueryOptions is required");
 
         return query(query, queryOptions)
-                .map(queryResult -> resultMapper.toPOJO(queryResult, measurementType))
+                .map(queryResult -> resultMapper.toPOJO(queryResult, measurementType, queryOptions.getPrecision()))
                 .concatMap(Flowable::fromIterable);
     }
 
@@ -381,16 +383,16 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(query, "Query is required");
 
-        return query(query, QueryOptions.DEFAULTS);
+        return query(query, defaultQueryOptions);
     }
 
     @Override
-    public Flowable<QueryResult> query(@Nonnull final Query query, @Nonnull final QueryOptions options) {
+    public Flowable<QueryResult> query(@Nonnull final Query query, @Nonnull final QueryOptions queryOptions) {
 
         Objects.requireNonNull(query, "Query is required");
-        Objects.requireNonNull(options, "QueryOptions is required");
+        Objects.requireNonNull(queryOptions, "QueryOptions is required");
 
-        return query(Flowable.just(query), options);
+        return query(Flowable.just(query), queryOptions);
     }
 
     @Override
@@ -398,15 +400,15 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(queryStream, "Query publisher is required");
 
-        return query(queryStream, QueryOptions.DEFAULTS);
+        return query(queryStream, defaultQueryOptions);
     }
 
     @Override
     public Flowable<QueryResult> query(@Nonnull final Publisher<Query> queryStream,
-                                       @Nonnull final QueryOptions options) {
+                                       @Nonnull final QueryOptions queryOptions) {
 
         Objects.requireNonNull(queryStream, "Query publisher is required");
-        Objects.requireNonNull(options, "QueryOptions is required");
+        Objects.requireNonNull(queryOptions, "QueryOptions is required");
 
         return Flowable.fromPublisher(queryStream).concatMap((Function<Query, Publisher<QueryResult>>) query -> {
 
@@ -417,10 +419,9 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
             String password = this.options.getPassword();
             String database = query.getDatabase();
 
-            //TODO from query options
-            String precision = TimeUtil.toTimePrecision(this.options.getPrecision());
+            String precision = TimeUtil.toTimePrecision(queryOptions.getPrecision());
 
-            int chunkSize = options.getChunkSize();
+            int chunkSize = queryOptions.getChunkSize();
             String rawQuery = query.getCommandWithUrlEncoded();
 
             String params = "";

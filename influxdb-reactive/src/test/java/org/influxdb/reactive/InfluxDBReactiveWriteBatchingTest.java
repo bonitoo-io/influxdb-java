@@ -54,12 +54,12 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
                 .isEqualTo(1);
 
         // check content
-        String expectedContent = Stream.of
-                ("h2o_feet,location=coyote_creek level\\ description=\"feet 1\",water_level=1.0 1440046801",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 2\",water_level=2.0 1440046802",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 3\",water_level=3.0 1440046803",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 4\",water_level=4.0 1440046804",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 5\",water_level=5.0 1440046805")
+        String expectedContent = Stream.of(
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 1\",water_level=1.0 1440046801000000",
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 2\",water_level=2.0 1440046802000000",
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 3\",water_level=3.0 1440046803000000",
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 4\",water_level=4.0 1440046804000000",
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 5\",water_level=5.0 1440046805000000")
                 .collect(Collectors.joining("\n"));
 
         Assertions.assertThat(pointsBody()).isEqualTo(expectedContent);
@@ -105,12 +105,12 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
                 .isEqualTo(1);
 
         // check content
-        String expectedContent = Stream.of
-                ("h2o_feet,location=coyote_creek level\\ description=\"feet 1\",water_level=1.0 1440046801",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 2\",water_level=2.0 1440046802",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 3\",water_level=3.0 1440046803",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 4\",water_level=4.0 1440046804",
-                        "h2o_feet,location=coyote_creek level\\ description=\"feet 5\",water_level=5.0 1440046805")
+        String expectedContent = Stream.of(
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 1\",water_level=1.0 1440046801000000",
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 2\",water_level=2.0 1440046802000000",
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 3\",water_level=3.0 1440046803000000",
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 4\",water_level=4.0 1440046804000000",
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 5\",water_level=5.0 1440046805000000")
                 .collect(Collectors.joining("\n"));
 
         Assertions.assertThat(pointsBody()).isEqualTo(expectedContent);
@@ -157,7 +157,7 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
         // check content
 
         String expected =
-                "h2o_feet,location=coyote_creek level\\ description=\"feet 150\",water_level=150.0 1440046950";
+                "h2o_feet,location=coyote_creek level\\ description=\"feet 150\",water_level=150.0 1440046950000000";
 
         Assertions
                 .assertThat(pointsBody())
@@ -196,9 +196,12 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
 
         // check content
 
+        String expected = "h2o_feet,location=coyote_creek "
+                + "level\\ description=\"feet 1\",water_level=1.0 1440046801000000";
+
         Assertions
                 .assertThat(pointsBody())
-                .isEqualTo("h2o_feet,location=coyote_creek level\\ description=\"feet 1\",water_level=1.0 1440046801");
+                .isEqualTo(expected);
 
         // there is no exception
         verifier.verifySuccess();

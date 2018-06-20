@@ -7,6 +7,7 @@ import io.reactivex.subscribers.TestSubscriber;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.BoundParameterQuery;
 import org.influxdb.dto.Query;
+import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.option.QueryOptions;
@@ -17,6 +18,9 @@ import org.junit.runner.RunWith;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author Jakub Bednar (bednar@github) (11/06/2018 11:33)
@@ -33,9 +37,9 @@ class ITInfluxDBReactiveQuery extends AbstractITInfluxDBReactiveTest {
 
             String location = getLocation(index);
             double level = index.doubleValue();
-            long time = index.longValue();
+            long millis = TimeUnit.MILLISECONDS.convert(index, TimeUnit.SECONDS);
 
-            return new H2OFeetMeasurement(location, level, "Feet = " + index, time);
+            return new H2OFeetMeasurement(location, level, "Feet = " + index, millis);
         });
 
         influxDBReactive.writeMeasurements(measurements);
@@ -75,8 +79,7 @@ class ITInfluxDBReactiveQuery extends AbstractITInfluxDBReactiveTest {
                 .test()
                 .assertValueCount(1000);
 
-        for (int i = 0; i < 1000; i++)
-        {
+        for (int i = 0; i < 1000; i++) {
             testSubscriber
                     .assertValueAt(i, assertMeasurement(i));
         }
@@ -168,6 +171,46 @@ class ITInfluxDBReactiveQuery extends AbstractITInfluxDBReactiveTest {
                 .assertValueCount(0);
     }
 
+    @Test
+    void timeUnit() {
+
+        Query query = new Query("select * from h2o_feet", DATABASE_NAME);
+
+        influxDBReactive.query(query, QueryOptions.builder().precision(TimeUnit.MILLISECONDS).build())
+                .test()
+                .assertValueCount(1)
+                .assertValue(createPredicate(TimeUnit.MILLISECONDS));
+
+        influxDBReactive.query(query, QueryOptions.builder().precision(TimeUnit.SECONDS).build())
+                .test()
+                .assertValueCount(1)
+                .assertValue(createPredicate(TimeUnit.SECONDS));
+
+        influxDBReactive.query(query, QueryOptions.builder().precision(TimeUnit.NANOSECONDS).build())
+                .test()
+                .assertValueCount(1)
+                .assertValue(createPredicate(TimeUnit.NANOSECONDS));
+    }
+
+    @Nonnull
+    private Predicate<QueryResult> createPredicate(@Nonnull final TimeUnit requiredUnit) {
+
+        return result -> {
+
+            List<List<Object>> values = result.getResults().get(0).getSeries().get(0).getValues();
+
+            List<Long> times = values.stream()
+                    .map(objects -> ((Double) objects.get(0)).longValue())
+                    .collect(Collectors.toList());
+
+            for (int i = 0; i < 999; i++) {
+                Assertions.assertThat(times.get(i)).isEqualTo(requiredUnit.convert(i, TimeUnit.SECONDS));
+            }
+
+            return true;
+        };
+    }
+
     @Nonnull
     private String getLocation(@Nonnull final Integer index) {
         String location;
@@ -184,10 +227,12 @@ class ITInfluxDBReactiveQuery extends AbstractITInfluxDBReactiveTest {
 
         return measurement -> {
 
+            long millis = TimeUnit.MILLISECONDS.convert(index, TimeUnit.SECONDS);
+            
             Assertions.assertThat(measurement.getLocation()).isEqualTo(getLocation(index));
             Assertions.assertThat(measurement.getLevel()).isEqualTo(index);
             Assertions.assertThat(measurement.getDescription()).isEqualTo("Feet = " + index);
-            Assertions.assertThat(measurement.getTime()).isEqualTo(Instant.ofEpochMilli(index));
+            Assertions.assertThat(measurement.getTime()).isEqualTo(Instant.ofEpochMilli(millis));
 
             return true;
         };

@@ -534,10 +534,14 @@ The queries uses the [InfluxDB chunking](https://docs.influxdata.com/influxdb/la
 for streaming response to the consumer. The default `chunk_size` is preconfigured to 10,000 points 
 (or series) and can be configured for every query by `QueryOptions`.
 
-#### The chunk size configuration
+#### Query configuration
+- `chunkSize` - the number of QueryResults to process in one chunk
+- `precision` - the time unit of the results 
+
 ```java
 QueryOptions options = QueryOptions.builder()
     .chunkSize(20_000)
+    .precision(TimeUnit.SECONDS)
     .build();
 
 Query query = new Query("select * from cpu", "telegraf");
