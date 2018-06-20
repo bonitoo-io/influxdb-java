@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.influxdb.InfluxDBMapperException;
 import org.influxdb.annotation.Column;
@@ -334,6 +335,27 @@ public class InfluxDBResultMapperTest {
     Assertions.assertEquals(1, result.size(), "incorrect number of elemets");
     Assertions.assertEquals(1, result.get(0).time.getNano(), "incorrect value for the nanoseconds field");
   }
+
+	@Test
+	void queryResultsInCustomTimeUnit() {
+		// Given...
+		mapper.cacheMeasurementClass(MyCustomMeasurement.class);
+
+		List<String> columnList = Arrays.asList("time");
+		List<Object> firstSeriesResult = Arrays.asList(1_500_000L);
+
+		QueryResult.Series series = new QueryResult.Series();
+		series.setColumns(columnList);
+		series.setValues(Arrays.asList(firstSeriesResult));
+
+		// When...
+		List<MyCustomMeasurement> result = new LinkedList<>();
+		mapper.parseSeriesAs(series, MyCustomMeasurement.class, result, TimeUnit.SECONDS);
+
+		// Then...
+		Assertions.assertEquals(1, result.size(), "incorrect number of elemets");
+		Assertions.assertEquals(1_500_000_000L, result.get(0).time.toEpochMilli(), "incorrect value for the millis field");
+	}
 
 	@Measurement(name = "CustomMeasurement")
 	static class MyCustomMeasurement {
