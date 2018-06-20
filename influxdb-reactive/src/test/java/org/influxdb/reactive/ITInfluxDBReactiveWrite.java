@@ -38,7 +38,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void write() {
 
-        setUp(BatchOptionsReactive.builder().actions(1).build());
+        setUp(BatchOptionsReactive.builder().batchSize(1).build());
 
         H2OFeetMeasurement measurement1 = new H2OFeetMeasurement(
                 "coyote_creek", 2.927, "below 3 feet", 1440046801L);
@@ -73,7 +73,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void writeFail() {
 
-        setUp(BatchOptionsReactive.builder().actions(1).build());
+        setUp(BatchOptionsReactive.builder().batchSize(1).build());
 
         Map<String, Object> fieldsToAdd = new HashMap<>();
         fieldsToAdd.put("level", null);
@@ -91,7 +91,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void publishPattern() {
 
-        setUp(BatchOptionsReactive.builder().actions(1).build());
+        setUp(BatchOptionsReactive.builder().batchSize(1).build());
 
         TestScheduler scheduler = new TestScheduler();
 
@@ -130,9 +130,9 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void batchingOrderForJitter() {
 
-        // after 5 actions or 10 seconds + 5 seconds jitter interval
+        // after 5 data points or 10 seconds + 5 seconds jitter interval
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
-                .actions(2)
+                .batchSize(2)
                 .flushInterval(10_000)
                 .jitterInterval(5_000)
                 .build();
@@ -324,7 +324,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void partialWrite() {
 
-        setUp(BatchOptionsReactive.builder().actions(2).build());
+        setUp(BatchOptionsReactive.builder().batchSize(2).build());
 
         String record1 = "h2o_feet,location=coyote_creek " +
                 "level\\ description=\"below 3 feet\",water_level=2.927 1440046800";
@@ -363,7 +363,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void writeToDifferentDatabases() {
 
-        setUp(BatchOptionsReactive.builder().actions(4).build());
+        setUp(BatchOptionsReactive.builder().batchSize(4).build());
 
         TestObserver<WriteSuccessEvent> listener = influxDBReactive
                 .listenEvents(WriteSuccessEvent.class)
@@ -453,7 +453,7 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
     @Test
     void enableBatchingOneConnectionCount() throws InterruptedException {
 
-        setUp(BatchOptionsReactive.builder().actions(5).build());
+        setUp(BatchOptionsReactive.builder().batchSize(5).build());
 
         writeMeasurementsInThreads();
 

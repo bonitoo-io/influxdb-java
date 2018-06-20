@@ -32,7 +32,7 @@ class ITInfluxDBReactiveWriteUDP extends AbstractITInfluxDBReactiveTest {
     @BeforeEach
     void setUp() {
 
-        super.setUp(BatchOptionsReactive.builder().actions(1).build());
+        super.setUp(BatchOptionsReactive.builder().batchSize(1).build());
 
         simpleQuery("CREATE DATABASE " + UDP_DATABASE);
 

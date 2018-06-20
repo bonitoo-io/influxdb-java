@@ -25,7 +25,7 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
     void flushByActions() {
 
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
-                .actions(5)
+                .batchSize(5)
                 .flushInterval(1_000_000)
                 .writeScheduler(Schedulers.trampoline())
                 .build();
@@ -42,7 +42,7 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
 
         influxDBReactive.writeMeasurements(measurements);
 
-        // only 4 actions
+        // only 4 data points
         Assertions.assertThat(influxDBServer.getRequestCount())
                 .isEqualTo(0);
 
@@ -71,9 +71,9 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
     @Test
     void flushByDuration() {
 
-        // after 10 actions or 1000 seconds
+        // after 10 batchSize or 1000 seconds
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
-                .actions(10)
+                .batchSize(10)
                 .flushInterval(1_000_000)
                 .writeScheduler(Schedulers.trampoline())
                 .build();
@@ -125,9 +125,9 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
     @Test
     void jitterInterval() {
 
-        // after 5 actions or 10 seconds + 5 seconds jitter interval
+        // after 5 batchSize or 10 seconds + 5 seconds jitter interval
         BatchOptionsReactive batchOptions = BatchOptionsReactive.disabled()
-                .actions(5)
+                .batchSize(5)
                 .flushInterval(10_000)
                 .jitterInterval(5_000)
                 .writeScheduler(Schedulers.trampoline())
@@ -170,10 +170,10 @@ class InfluxDBReactiveWriteBatchingTest extends AbstractInfluxDBReactiveTest {
     @Test
     void flushBeforeClose() {
 
-        // after 5 actions
+        // after 5 batchSize
         BatchOptionsReactive batchOptions = BatchOptionsReactive
                 .disabled()
-                .actions(5)
+                .batchSize(5)
                 .writeScheduler(Schedulers.trampoline())
                 .build();
 

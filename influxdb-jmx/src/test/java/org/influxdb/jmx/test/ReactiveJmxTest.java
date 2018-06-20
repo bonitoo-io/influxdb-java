@@ -85,7 +85,7 @@ class ReactiveJmxTest extends AbstractJmxListenerTest {
                 }).flatMap(f -> Flowable.fromCallable(this::getCpuStats));
 
         influxDBReactive.writePoints(objectFlowable).subscribe();
-        Assert.assertEquals("WriteCount", count / batchOptionsReactive.getActions(), getClientStatisticsMBean().getWriteCount());
+        Assert.assertEquals("WriteCount", count / batchOptionsReactive.getBatchSize(), getClientStatisticsMBean().getWriteCount());
     }
 
     @Test

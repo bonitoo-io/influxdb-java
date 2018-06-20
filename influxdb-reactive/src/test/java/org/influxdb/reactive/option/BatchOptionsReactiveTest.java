@@ -16,7 +16,7 @@ class BatchOptionsReactiveTest {
 
         BatchOptionsReactive batchOptions = BatchOptionsReactive.builder().build();
 
-        Assertions.assertThat(batchOptions.getActions()).isEqualTo(1000);
+        Assertions.assertThat(batchOptions.getBatchSize()).isEqualTo(1000);
         Assertions.assertThat(batchOptions.getBufferLimit()).isEqualTo(10000);
         Assertions.assertThat(batchOptions.getFlushInterval()).isEqualTo(1000);
         Assertions.assertThat(batchOptions.getJitterInterval()).isEqualTo(0);

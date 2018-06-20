@@ -35,7 +35,7 @@ public final class BatchOptionsReactive {
      */
     public static final BatchOptionsReactive DISABLED = BatchOptionsReactive.disabled().build();
 
-    private final int actions;
+    private final int batchSize;
     private final int flushInterval;
     private final int jitterInterval;
     private final int retryInterval;
@@ -44,12 +44,12 @@ public final class BatchOptionsReactive {
     private final BackpressureOverflowStrategy backpressureStrategy;
 
     /**
-     * @return the number of actions to collect
-     * @see BatchOptionsReactive.Builder#actions(int)
+     * @return the number of data point to collect in batch
+     * @see BatchOptionsReactive.Builder#batchSize(int)
      * @since 3.0.0
      */
-    public int getActions() {
-        return actions;
+    public int getBatchSize() {
+        return batchSize;
     }
 
     /**
@@ -112,7 +112,7 @@ public final class BatchOptionsReactive {
 
         Objects.requireNonNull(builder, "BatchOptionsReactive.Builder is required");
 
-        actions = builder.actions;
+        batchSize = builder.batchSize;
         flushInterval = builder.flushInterval;
         jitterInterval = builder.jitterInterval;
         retryInterval = builder.retryInterval;
@@ -133,15 +133,15 @@ public final class BatchOptionsReactive {
     }
 
     /**
-     * Creates a builder instance with disabled batching. The {@link BatchOptionsReactive#getActions()} is set to 1 and
-     * {@link BatchOptionsReactive#getWriteScheduler()} is set to {@link Schedulers#io()}.
+     * Creates a builder instance with disabled batching. The {@link BatchOptionsReactive#getBatchSize()} is set to 1
+     * and {@link BatchOptionsReactive#getWriteScheduler()} is set to {@link Schedulers#io()}.
      *
      * @return a builder
      * @since 3.0.0
      */
     @Nonnull
     public static BatchOptionsReactive.Builder disabled() {
-        return BatchOptionsReactive.builder().actions(1).writeScheduler(Schedulers.io());
+        return BatchOptionsReactive.builder().batchSize(1).writeScheduler(Schedulers.io());
     }
 
     /**
@@ -152,7 +152,7 @@ public final class BatchOptionsReactive {
     @NotThreadSafe
     public static class Builder {
 
-        private int actions = DEFAULT_BATCH_ACTIONS_LIMIT;
+        private int batchSize = DEFAULT_BATCH_ACTIONS_LIMIT;
         private int flushInterval = DEFAULT_BATCH_INTERVAL_DURATION;
         private int jitterInterval = DEFAULT_JITTER_INTERVAL_DURATION;
         private int retryInterval = DEFAULT_BATCH_INTERVAL_DURATION;
@@ -161,16 +161,16 @@ public final class BatchOptionsReactive {
         private BackpressureOverflowStrategy backpressureStrategy = BackpressureOverflowStrategy.DROP_OLDEST;
 
         /**
-         * Set the number of actions to collect.
+         * Set the number of data point to collect in batch.
          *
-         * @param actions the number of actions to collect
+         * @param batchSize the number of data point to collect in batch
          * @return {@code this}
          * @since 3.0.0
          */
         @Nonnull
-        public Builder actions(final int actions) {
-            Preconditions.checkPositiveNumber(actions, "actions");
-            this.actions = actions;
+        public Builder batchSize(final int batchSize) {
+            Preconditions.checkPositiveNumber(batchSize, "batchSize");
+            this.batchSize = batchSize;
             return this;
         }
 

@@ -26,7 +26,7 @@ public class BackpressureWriteExample2 {
                 .url("http://localhost:8086").build();
 
         BatchOptionsReactive batchOptionsReactive = BatchOptionsReactive.builder()
-                .actions(100)
+                .batchSize(100)
                 .bufferLimit(1000)
                 .backpressureStrategy(BackpressureOverflowStrategy.DROP_OLDEST)
                 .flushInterval(1000).build();

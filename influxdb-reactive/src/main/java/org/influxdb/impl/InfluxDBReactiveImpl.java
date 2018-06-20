@@ -129,7 +129,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 .window(batchOptions.getFlushInterval(),
                         TimeUnit.MILLISECONDS,
                         batchScheduler,
-                        batchOptions.getActions(),
+                        batchOptions.getBatchSize(),
                         true)
                 //
                 // Jitter interval

@@ -30,7 +30,7 @@ class InfluxDBReactiveEventsTest extends AbstractInfluxDBReactiveTest {
 
     @BeforeEach
     void setUp() {
-        super.setUp(BatchOptionsReactive.builder().actions(1).build());
+        super.setUp(BatchOptionsReactive.builder().batchSize(1).build());
     }
 
     @Test

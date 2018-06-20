@@ -399,7 +399,7 @@ influxDBReactive.writeMeasurements(measurements);
 ```
 
 #### Batching configuration
-- `actions` - the number of points before the batch is written
+- `batchSize` - the number of data point to collect in batch
 - `flushInterval` - the number of milliseconds before the batch is written 
 - `jitterInterval` - the number of milliseconds to increase the batch flush interval by a random amount (see documentation above)
 - `retryInterval` - the number of milliseconds to retry unsuccessful write
@@ -409,7 +409,7 @@ influxDBReactive.writeMeasurements(measurements);
 
 ```java
 BatchOptionsReactive batchOptions = BatchOptionsReactive.builder()
-    .actions(5_000)
+    .batchSize(5_000)
     .flushInterval(10_000)
     .jitterInterval(5_000)
     .retryInterval(5_000)
@@ -426,7 +426,7 @@ influxDBReactive.close();
 ```
 The BatchOptionsReactive can be also created with default configuration by:
 ```java
-// actions = 1_000
+// batchSize = 1_000
 // flushInterval = 1_000
 // jitterInterval = 0
 // retryInterval = 1_000

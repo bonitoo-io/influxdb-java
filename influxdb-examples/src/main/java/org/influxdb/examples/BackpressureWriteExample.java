@@ -23,7 +23,7 @@ public class BackpressureWriteExample {
         System.out.println("Simulate back pressure");
 
         BatchOptionsReactive batchOptionsReactive = BatchOptionsReactive.builder()
-                .actions(100)
+                .batchSize(100)
                 .bufferLimit(300)
                 .flushInterval(1000).build();
 
