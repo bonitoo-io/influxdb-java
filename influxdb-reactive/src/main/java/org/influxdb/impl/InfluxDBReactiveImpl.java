@@ -1,6 +1,7 @@
 package org.influxdb.impl;
 
 import io.reactivex.BackpressureStrategy;
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableTransformer;
 import io.reactivex.Maybe;
@@ -26,6 +27,7 @@ import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.event.AbstractInfluxEvent;
+import org.influxdb.reactive.event.AbstractWriteEvent;
 import org.influxdb.reactive.event.BackpressureEvent;
 import org.influxdb.reactive.event.QueryParsedResponseEvent;
 import org.influxdb.reactive.event.UnhandledErrorEvent;
@@ -576,7 +578,15 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                     Action success = () -> {
                                         List<?> points = toDataPoints(dataPoints);
 
-                                        publish(new WriteSuccessEvent(points, writeOptions));
+                                        AbstractWriteEvent event;
+                                        if (writeOptions.isUdpEnable()) {
+                                            event = new WriteUDPEvent(points, writeOptions);
+                                        } else {
+
+                                            event = new WriteSuccessEvent(points, writeOptions);
+                                        }
+
+                                        publish(event);
                                     };
 
                                     //
@@ -615,23 +625,25 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                     String precision = TimeUtil.toTimePrecision(writeOptions.getPrecision());
                                     String consistencyLevel = writeOptions.getConsistencyLevel().value();
 
+                                    Completable completable;
                                     if (writeOptions.isUdpEnable()) {
-                                        writeRecordsThroughUDP(writeOptions.getUdpPort(), body);
 
-                                        publish(new WriteUDPEvent(toDataPoints(dataPoints), writeOptions));
+                                        completable = Completable.fromAction(
+                                                () -> writeRecordsThroughUDP(writeOptions.getUdpPort(), body));
 
-                                        return;
+                                    } else {
+
+                                        completable = influxDBService.writePoints(
+                                                username, password, database,
+                                                retentionPolicy, precision, consistencyLevel,
+                                                requestBody)
+                                                //
+                                                // Retry strategy
+                                                //
+                                                .retryWhen(retryCapabilities(dataPoints, writeOptions, retryScheduler));
                                     }
 
-                                    influxDBService.writePoints(
-                                            username, password, database,
-                                            retentionPolicy, precision, consistencyLevel,
-                                            requestBody)
-                                            //
-                                            // Retry strategy
-                                            //
-                                            .retryWhen(retryCapabilities(dataPoints, writeOptions, retryScheduler))
-                                            .subscribe(success, fail);
+                                    completable.subscribe(success, fail);
 
                                 }, throwable -> publish(new UnhandledErrorEvent(throwable)));
                     }, throwable -> publish(new UnhandledErrorEvent(throwable)));

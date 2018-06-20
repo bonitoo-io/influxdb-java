@@ -22,13 +22,9 @@ import javax.annotation.Nonnull;
  * <p>
  * Not Implemented:
  * <ul>
- * <li>UDP</li>
  * <li>Body as Flowable</li>
  * <li>Use flat in write</li>
- * <li>Retry for wrong url</li>
  * <li>Backpressure - wait</li>
- * <li>Hystrix collapser</li>
- * <li>swagger API</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (29/05/2018 14:58)
