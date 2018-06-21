@@ -2,11 +2,16 @@ package org.influxdb.reactive;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
+import io.reactivex.observers.TestObserver;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
+import org.influxdb.InfluxDBException;
+import org.influxdb.InfluxDBMapperException;
 import org.influxdb.dto.Point;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
+import org.influxdb.reactive.event.UnhandledErrorEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -209,6 +214,23 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
     }
 
     @Test
+    void writeMeasurementWhichIsNotMappableToPoint() {
+
+        influxDBServer.enqueue(new MockResponse());
+
+        Maybe<Integer> writeMeasurement = influxDBReactive
+                .writeMeasurement(15);
+
+        // just emmit source
+        writeMeasurement
+                .test()
+                .assertValue(15);
+
+        // without any request
+        Assertions.assertThat(influxDBServer.getRequestCount()).isEqualTo(0);
+    }
+
+    @Test
     void writeMeasurementsIterable() {
 
         influxDBServer.enqueue(new MockResponse());
@@ -248,6 +270,53 @@ class InfluxDBReactiveWriteTest extends AbstractInfluxDBReactiveTest {
 
         // there is no exception
         verifier.verifySuccess();
+    }
+
+    @Test
+    void writeMeasurementsIterableWhichIsNotMappableToPoint() {
+
+        influxDBServer.enqueue(new MockResponse());
+        influxDBServer.enqueue(new MockResponse());
+
+        TestObserver<UnhandledErrorEvent> listener = influxDBReactive.listenEvents(UnhandledErrorEvent.class).test();
+
+        List<Object> measurements = Lists.newArrayList(
+                H2OFeetMeasurement.createMeasurement(1),
+                2,
+                H2OFeetMeasurement.createMeasurement(3));
+
+        Flowable<Object> writeMeasurements = influxDBReactive
+                .writeMeasurements(measurements);
+
+        // just emmit source
+        writeMeasurements
+                .test()
+                .assertValueCount(3)
+                .assertValueAt(0, measurements.get(0))
+                .assertValueAt(1, measurements.get(1))
+                .assertValueAt(2, measurements.get(2));
+
+        // two request
+        Assertions.assertThat(influxDBServer.getRequestCount()).isEqualTo(2);
+
+        String body1 = "h2o_feet,location=coyote_creek level\\ description=\"feet 1\",water_level=1.0 1440046801000000";
+        Assertions.assertThat(body1).isEqualTo(pointsBody());
+
+        String body2 = "h2o_feet,location=coyote_creek level\\ description=\"feet 3\",water_level=3.0 1440046803000000";
+        Assertions.assertThat(body2).isEqualTo(pointsBody());
+
+        listener
+                .assertValueCount(1)
+                .assertValue(event -> {
+                    
+                    Assertions
+                            .assertThat(event.getThrowable())
+                            .isInstanceOf(InfluxDBException.class)
+                            .hasMessage("Can not calculate InfluxDB Line Protocol for '2'")
+                            .hasCauseInstanceOf(InfluxDBMapperException.class);
+
+                    return true;
+                });
     }
 
     @Test

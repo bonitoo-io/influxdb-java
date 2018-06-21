@@ -22,8 +22,6 @@ import javax.annotation.Nonnull;
  * <p>
  * Not Implemented:
  * <ul>
- * <li>Body as Flowable</li>
- * <li>Use flat in write</li>
  * <li>Backpressure - wait</li>
  * </ul>
  *

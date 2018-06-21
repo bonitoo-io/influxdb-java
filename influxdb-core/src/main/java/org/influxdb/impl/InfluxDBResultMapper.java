@@ -29,12 +29,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.influxdb.InfluxDBMapperException;
-import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.QueryResult;
 
@@ -45,13 +43,7 @@ import javax.annotation.Nonnull;
  *
  * @author fmachado
  */
-public class InfluxDBResultMapper {
-
-  /**
-   * Data structure used to cache classes used as measurements.
-   */
-  private static final
-    ConcurrentMap<String, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<>();
+public class InfluxDBResultMapper extends AbstractInfluxDBMapper {
 
   private static final int FRACTION_MIN_WIDTH = 0;
   private static final int FRACTION_MAX_WIDTH = 9;
@@ -205,30 +197,6 @@ public class InfluxDBResultMapper {
         throw new InfluxDBMapperException("InfluxDB returned an error with Series: " + seriesResult.getError());
       }
     });
-  }
-
-  void cacheMeasurementClass(final Class<?>... classVarAgrs) {
-    for (Class<?> clazz : classVarAgrs) {
-      if (CLASS_FIELD_CACHE.containsKey(clazz.getName())) {
-        continue;
-      }
-      ConcurrentMap<String, Field> initialMap = new ConcurrentHashMap<>();
-      ConcurrentMap<String, Field> influxColumnAndFieldMap = CLASS_FIELD_CACHE.putIfAbsent(clazz.getName(), initialMap);
-      if (influxColumnAndFieldMap == null) {
-        influxColumnAndFieldMap = initialMap;
-      }
-
-      for (Field field : clazz.getDeclaredFields()) {
-        Column colAnnotation = field.getAnnotation(Column.class);
-        if (colAnnotation != null) {
-          influxColumnAndFieldMap.put(colAnnotation.name(), field);
-        }
-      }
-    }
-  }
-
-  String getMeasurementName(final Class<?> clazz) {
-    return ((Measurement) clazz.getAnnotation(Measurement.class)).name();
   }
 
   <T> List<T> parseSeriesAs(final QueryResult.Series series, final Class<T> clazz, final List<T> result) {

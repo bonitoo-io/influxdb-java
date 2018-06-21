@@ -1,16 +1,8 @@
 package org.influxdb.impl;
 
-import io.reactivex.functions.Function;
-import org.influxdb.annotation.Column;
-import org.influxdb.annotation.Measurement;
-import org.influxdb.dto.Point;
 import org.influxdb.reactive.option.WriteOptions;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Field;
-import java.time.Instant;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,86 +30,13 @@ final class MeasurementData<M> extends AbstractData<M> {
     @Override
     String lineProtocol() {
 
-        String lineProtocol = new MeasurementToPoint<>(writeOptions.getPrecision())
-                .apply(measurement)
+        String lineProtocol = new InfluxDBPointMapper()
+                .toPoint(measurement, writeOptions.getPrecision())
                 .lineProtocol(writeOptions.getPrecision());
 
         Object[] params = {measurement, lineProtocol};
         LOG.log(Level.FINEST, "Map measurement: {0} to InfluxDB Line Protocol: {1}", params);
 
         return lineProtocol;
-    }
-
-    /**
-     * Just a proof of concept.
-     * <p>
-     * TODO caching, testing, ...
-     */
-    private static class MeasurementToPoint<M> implements Function<M, Point> {
-
-        private static final Logger LOG = Logger.getLogger(MeasurementToPoint.class.getName());
-
-        private final TimeUnit precision;
-
-        MeasurementToPoint(@Nonnull final TimeUnit precision) {
-            Objects.requireNonNull(precision, "TimeUnit is required");
-
-            this.precision = precision;
-        }
-
-        @Override
-        public Point apply(final M measurement) {
-
-            Measurement def = measurement.getClass().getAnnotation(Measurement.class);
-
-            Point.Builder point = Point.measurement(def.name());
-
-            for (Field field : measurement.getClass().getDeclaredFields()) {
-
-                Column column = field.getAnnotation(Column.class);
-                if (column != null) {
-
-                    String name = column.name();
-                    Object value = null;
-                    try {
-                        field.setAccessible(true);
-                        value = field.get(measurement);
-                    } catch (IllegalAccessException e) {
-
-                        Object[] params = {field.getName(), measurement};
-                        LOG.log(Level.WARNING, "Field {0} of {1} is not accessible", params);
-                    }
-
-                    if (value == null) {
-                        Object[] params = {field.getName(), measurement};
-                        LOG.log(Level.FINEST, "Field {0} of {1} has null value", params);
-
-                        continue;
-                    }
-
-                    if (column.tag()) {
-                        point.tag(name, value.toString());
-                    } else if (Instant.class.isAssignableFrom(field.getType())) {
-
-                        Instant instant = (Instant) value;
-                        long timeToSet = precision.convert(instant.toEpochMilli(), TimeUnit.MILLISECONDS);
-                        point.time(timeToSet, precision);
-                    } else {
-
-                        if (Double.class.isAssignableFrom(value.getClass())) {
-                            point.addField(name, (Double) value);
-                        } else if (Number.class.isAssignableFrom(value.getClass())) {
-
-                            point.addField(name, (Number) value);
-                        } else if (String.class.isAssignableFrom(value.getClass())) {
-
-                            point.addField(name, (String) value);
-                        }
-                    }
-                }
-            }
-
-            return point.build();
-        }
     }
 }

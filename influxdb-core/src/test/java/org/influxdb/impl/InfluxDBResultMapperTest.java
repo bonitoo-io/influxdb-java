@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +34,6 @@ import org.influxdb.InfluxDBMapperException;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.QueryResult;
-import org.influxdb.impl.InfluxDBResultMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -45,7 +43,7 @@ import org.junit.runner.RunWith;
  * @author fmachado
  */
 @RunWith(JUnitPlatform.class)
-public class InfluxDBResultMapperTest {
+public class InfluxDBResultMapperTest extends AbstractMapperTest {
 
   InfluxDBResultMapper mapper = new InfluxDBResultMapper();
 
@@ -107,6 +105,13 @@ public class InfluxDBResultMapperTest {
 	@Test
 	public void testGetMeasurementName_testStateMeasurement() {
 		Assertions.assertEquals("CustomMeasurement", mapper.getMeasurementName(MyCustomMeasurement.class));
+	}
+
+	@Test
+	void testGetMeasurementName_withoutAnnotation() {
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> mapper.getMeasurementName(Integer.class))
+				.isInstanceOf(InfluxDBMapperException.class)
+				.hasMessage("Measurement type 'class java.lang.Integer' does not have a @Measurement annotation.");
 	}
 
 	@Test
@@ -357,54 +362,7 @@ public class InfluxDBResultMapperTest {
 		Assertions.assertEquals(1_500_000_000L, result.get(0).time.toEpochMilli(), "incorrect value for the millis field");
 	}
 
-	@Measurement(name = "CustomMeasurement")
-	static class MyCustomMeasurement {
-
-		@Column(name = "time")
-		private Instant time;
-
-		@Column(name = "uuid")
-		private String uuid;
-
-		@Column(name = "doubleObject")
-		private Double doubleObject;
-
-		@Column(name = "longObject")
-		private Long longObject;
-
-		@Column(name = "integerObject")
-		private Integer integerObject;
-
-		@Column(name = "doublePrimitive")
-		private double doublePrimitive;
-
-		@Column(name = "longPrimitive")
-		private long longPrimitive;
-
-		@Column(name = "integerPrimitive")
-		private int integerPrimitive;
-
-		@Column(name = "booleanObject")
-		private Boolean booleanObject;
-
-		@Column(name = "booleanPrimitive")
-		private boolean booleanPrimitive;
-
-		@SuppressWarnings("unused")
-		private String nonColumn1;
-
-		@SuppressWarnings("unused")
-		private Random rnd;
-
-		@Override
-		public String toString() {
-			return "MyCustomMeasurement [time=" + time + ", uuid=" + uuid + ", doubleObject=" + doubleObject + ", longObject=" + longObject
-				+ ", integerObject=" + integerObject + ", doublePrimitive=" + doublePrimitive + ", longPrimitive=" + longPrimitive
-				+ ", integerPrimitive=" + integerPrimitive + ", booleanObject=" + booleanObject + ", booleanPrimitive=" + booleanPrimitive + "]";
-		}
-	}
-
-	@Measurement(name = "foo")
+    @Measurement(name = "foo")
 	static class MyPojoWithUnsupportedField {
 
 		@Column(name = "bar")

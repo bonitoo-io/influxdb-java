@@ -6,10 +6,14 @@ import io.reactivex.Maybe;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.schedulers.TestScheduler;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
+import org.influxdb.InfluxDBException;
+import org.influxdb.InfluxDBMapperException;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.AbstractITInfluxDBReactiveTest;
 import org.influxdb.reactive.event.BackpressureEvent;
+import org.influxdb.reactive.event.UnhandledErrorEvent;
 import org.influxdb.reactive.event.WritePartialEvent;
 import org.influxdb.reactive.event.WriteSuccessEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
@@ -468,6 +472,52 @@ class ITInfluxDBReactiveWrite extends AbstractITInfluxDBReactiveTest {
         writeMeasurementsInThreads();
 
         Assertions.assertThat(okHttpClient.connectionPool().connectionCount()).isGreaterThan(1);
+    }
+
+    @Test
+    void writeNotMappableMeasurements() {
+
+        setUp(BatchOptionsReactive.builder().batchSize(5).build());
+
+        // Listeners
+        TestObserver<UnhandledErrorEvent> errorHandler = influxDBReactive
+                .listenEvents(UnhandledErrorEvent.class).test();
+
+        TestObserver<WriteSuccessEvent> successHandler = influxDBReactive
+                .listenEvents(WriteSuccessEvent.class).test();
+
+        H2OFeetMeasurement h2oMeasurement1 = H2OFeetMeasurement.createMeasurement(1);
+        H2OFeetMeasurement h2oMeasurement2 = H2OFeetMeasurement.createMeasurement(3);
+
+        // write data
+        influxDBReactive.writeMeasurements(Lists.newArrayList(h2oMeasurement1, 2, h2oMeasurement2));
+
+        verifier.waitForResponse(1);
+
+        errorHandler
+                .assertValueCount(1)
+                .assertValue(event -> {
+                    
+                    Assertions
+                            .assertThat(event.getThrowable())
+                            .isInstanceOf(InfluxDBException.class)
+                            .hasMessage("Can not calculate InfluxDB Line Protocol for '2'")
+                            .hasCauseInstanceOf(InfluxDBMapperException.class);
+                    return true;
+                });
+
+        successHandler.assertValueCount(1).assertValue(event -> {
+
+            Assertions.assertThat(event.getDataPoints())
+                    .hasSize(2)
+                    .containsExactlyInAnyOrder(h2oMeasurement1, h2oMeasurement2);
+
+            return true;
+        });
+
+        List<H2OFeetMeasurement> h2oMeasurements = getMeasurements();
+        Assertions.assertThat(h2oMeasurements).hasSize(2)
+                .containsExactlyInAnyOrder(h2oMeasurement1, h2oMeasurement2);
     }
 
     private void writeMeasurementsInThreads() throws InterruptedException {

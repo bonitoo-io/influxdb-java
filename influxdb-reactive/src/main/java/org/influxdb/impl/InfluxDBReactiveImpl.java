@@ -48,8 +48,10 @@ import javax.annotation.Nullable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -562,92 +564,136 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         public void accept(final Flowable<AbstractData> flowablePoints) {
 
             flowablePoints
+                    //
+                    // Group by key - same database, same retention policy...
+                    //
                     .groupBy(AbstractData::getWriteOptions)
                     .subscribeOn(batchOptions.getWriteScheduler())
-                    .subscribe(dataPointGroup -> {
+                    .subscribe(group -> {
 
-                        WriteOptions writeOptions = dataPointGroup.getKey();
-                        dataPointGroup
+                        WriteOptions writeOptions = group.getKey();
+                        group
                                 .toList()
                                 .filter(dataPoints -> !dataPoints.isEmpty())
-                                .subscribe(dataPoints -> {
-
-                                    //
-                                    // Success action
-                                    //
-                                    Action success = () -> {
-                                        List<?> points = toDataPoints(dataPoints);
-
-                                        AbstractWriteEvent event;
-                                        if (writeOptions.isUdpEnable()) {
-                                            event = new WriteUDPEvent(points, writeOptions);
-                                        } else {
-
-                                            event = new WriteSuccessEvent(points, writeOptions);
-                                        }
-
-                                        publish(event);
-                                    };
-
-                                    //
-                                    // Fail action
-                                    //
-                                    Consumer<Throwable> fail = throwable -> {
-
-                                        // HttpException is handled in retryCapabilities
-                                        if (throwable instanceof HttpException) {
-                                            return;
-                                        }
-
-                                        publish(new UnhandledErrorEvent(throwable));
-                                    };
-
-                                    //
-                                    // Point => InfluxDB Line Protocol
-                                    //
-                                    String body = dataPoints.stream()
-                                            .map(AbstractData::lineProtocol)
-                                            .collect(Collectors.joining("\n"));
-
-                                    //
-                                    // InfluxDB Line Protocol => to Request Body
-                                    //
-                                    RequestBody requestBody = RequestBody.create(options.getMediaType(), body);
-
-                                    //
-                                    // Parameters
-                                    //
-                                    String username = options.getUsername();
-                                    String password = options.getPassword();
-                                    String database = writeOptions.getDatabase();
-
-                                    String retentionPolicy = writeOptions.getRetentionPolicy();
-                                    String precision = TimeUtil.toTimePrecision(writeOptions.getPrecision());
-                                    String consistencyLevel = writeOptions.getConsistencyLevel().value();
-
-                                    Completable completable;
-                                    if (writeOptions.isUdpEnable()) {
-
-                                        completable = Completable.fromAction(
-                                                () -> writeRecordsThroughUDP(writeOptions.getUdpPort(), body));
-
-                                    } else {
-
-                                        completable = influxDBService.writePoints(
-                                                username, password, database,
-                                                retentionPolicy, precision, consistencyLevel,
-                                                requestBody)
-                                                //
-                                                // Retry strategy
-                                                //
-                                                .retryWhen(retryCapabilities(dataPoints, writeOptions, retryScheduler));
-                                    }
-
-                                    completable.subscribe(success, fail);
-
-                                }, throwable -> publish(new UnhandledErrorEvent(throwable)));
+                                .subscribe(
+                                        dataPoints -> writeDataPoints(writeOptions, dataPoints),
+                                        throwable -> publish(new UnhandledErrorEvent(throwable)));
                     }, throwable -> publish(new UnhandledErrorEvent(throwable)));
 
+        }
+
+        private void writeDataPoints(@Nonnull final WriteOptions writeOptions,
+                                     @Nonnull final List<AbstractData> dataPoints) {
+
+            Objects.requireNonNull(writeOptions, "WriteOptions are required");
+            Objects.requireNonNull(dataPoints, "DatePoints are required");
+
+            //
+            // Data which are not parsable to InfluxDB Line Protocol
+            //
+            List<AbstractData> notParsable = new ArrayList<>();
+
+            //
+            // Success action
+            //
+            Action success = () -> {
+                List<?> points = toDataPoints(dataPoints, notParsable);
+
+                AbstractWriteEvent event;
+                if (writeOptions.isUdpEnable()) {
+                    event = new WriteUDPEvent(points, writeOptions);
+                } else {
+
+                    event = new WriteSuccessEvent(points, writeOptions);
+                }
+
+                publish(event);
+            };
+
+            //
+            // Fail action
+            //
+            Consumer<Throwable> fail = throwable -> {
+
+                // HttpException is handled in retryHandler
+                if (throwable instanceof HttpException) {
+                    return;
+                }
+
+                publish(new UnhandledErrorEvent(throwable));
+            };
+
+            //
+            // Data => InfluxDB Line Protocol
+            //
+
+            String body = dataPoints.stream()
+                    .map(data -> {
+                        try {
+                            return data.lineProtocol();
+                        } catch (Exception e) {
+                            //
+                            // Data are not parsable to InfluxDB Line Protocol
+                            //
+                            notParsable.add(data);
+
+                            String errorMessage = String
+                                    .format("Can not calculate InfluxDB Line Protocol for '%s'", data.getData());
+
+                            publish(new UnhandledErrorEvent(new InfluxDBException(errorMessage, e)));
+
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining("\n"));
+
+            if (body.isEmpty()) {
+
+                String message = "The points {0} are parsed to empty request body => skip call InfluxDB server.";
+
+                LOG.log(Level.FINE, message, dataPoints);
+
+                return;
+            }
+
+            //
+            // InfluxDB Line Protocol => to Request Body
+            //
+            RequestBody requestBody = RequestBody.create(options.getMediaType(), body);
+
+            //
+            // Parameters
+            //
+            String username = options.getUsername();
+            String password = options.getPassword();
+            String database = writeOptions.getDatabase();
+
+            String retentionPolicy = writeOptions.getRetentionPolicy();
+            String precision = TimeUtil.toTimePrecision(writeOptions.getPrecision());
+            String consistencyLevel = writeOptions.getConsistencyLevel().value();
+
+            Completable completable;
+            if (writeOptions.isUdpEnable()) {
+
+                completable = Completable.fromAction(
+                        () -> writeRecordsThroughUDP(writeOptions.getUdpPort(), body));
+
+            } else {
+
+                Callable<List<Object>> points = () -> toDataPoints(dataPoints, notParsable);
+
+                completable = influxDBService.writePoints(
+                        username, password, database,
+                        retentionPolicy, precision, consistencyLevel,
+                        requestBody)
+                        //
+                        // Retry strategy
+                        //
+                        .retryWhen(retryHandler(retryScheduler, writeOptions, points));
+            }
+
+            completable.subscribe(success, fail);
         }
     }
 
@@ -655,15 +701,15 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
      * The retry handler that tries to retry a write if it failed previously and
      * the reason of the failure is not permanent.
      *
-     * @param points         to write to InfluxDB
-     * @param writeOptions   options for write to InfluxDB
      * @param retryScheduler for scheduling retry write
+     * @param writeOptions   options for write to InfluxDB
+     * @param points         to write to InfluxDB
      * @return the retry handler
      */
     @Nonnull
-    private Function<Flowable<Throwable>, Publisher<?>> retryCapabilities(@Nonnull final List<AbstractData> points,
-                                                                          @Nonnull final WriteOptions writeOptions,
-                                                                          @Nonnull final Scheduler retryScheduler) {
+    private Function<Flowable<Throwable>, Publisher<?>> retryHandler(@Nonnull final Scheduler retryScheduler,
+                                                                     @Nonnull final WriteOptions writeOptions,
+                                                                     @Nonnull final Callable<List<Object>> points) {
 
         Objects.requireNonNull(points, "Points are required");
         Objects.requireNonNull(writeOptions, "WriteOptions are required");
@@ -675,7 +721,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
                 InfluxDBException influxDBException = buildInfluxDBException(throwable);
 
-                List<?> dataPoints = toDataPoints(points);
+                List<Object> dataPoints = points.call();
 
                 //
                 // Partial Write => skip retry
@@ -708,11 +754,16 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
     // TODO remove
     @Nonnull
-    private List<Object> toDataPoints(@Nonnull final List<AbstractData> points) {
+    private List<Object> toDataPoints(@Nonnull final List<AbstractData> points,
+                                      @Nonnull final List<AbstractData> notParsable) {
 
         Objects.requireNonNull(points, "Points are required");
+        Objects.requireNonNull(notParsable, "Not parsable points are required");
 
-        return points.stream().map(AbstractData::getData).collect(Collectors.toList());
+        return points.stream()
+                .filter(dataPoint -> !notParsable.contains(dataPoint))
+                .map(AbstractData::getData)
+                .collect(Collectors.toList());
     }
 
     @Nonnull
