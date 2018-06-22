@@ -459,7 +459,7 @@ The size of backlog is configured by
 - `DROP_OLDEST` - Drop the oldest data points from the backlog 
 - `DROP_LATEST` - Drop the latest data points from the backlog  
 - `ERROR` - Signal a exception
-- `BLOCK` - Wait specified time for space in buffer to become available (not implented yet - [see](http://vlkan.com/blog/post/2016/07/20/rxjava-backpressure/))
+- `BLOCK` - (not implemented yet) Wait specified time for space in buffer to become available
   - `timeout` - how long to wait before giving up
   - `unit` - TimeUnit of the timeout
 
