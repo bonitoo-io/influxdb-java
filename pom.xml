@@ -42,6 +42,7 @@
   <modules>
     <module>influxdb-core</module>
     <module>influxdb-reactive</module>
+    <module>influxdb-flux</module>
     <module>influxdb-jmx</module>
     <module>influxdb-examples</module>
   </modules>
