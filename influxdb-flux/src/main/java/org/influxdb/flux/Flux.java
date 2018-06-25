@@ -3,6 +3,7 @@ package org.influxdb.flux;
 import org.influxdb.flux.operators.CountFlux;
 import org.influxdb.flux.operators.FirstFlux;
 import org.influxdb.flux.operators.FromFlux;
+import org.influxdb.flux.operators.GroupFlux;
 import org.influxdb.flux.operators.LastFlux;
 import org.influxdb.flux.operators.LimitFlux;
 import org.influxdb.flux.operators.MaxFlux;
@@ -28,7 +29,7 @@ import java.util.Objects;
  * <li>{@link CountFlux}</li>
  * <li>filter - UNSUPPORTED</li>
  * <li>{@link FirstFlux}</li>
- * <li>group - UNSUPPORTED</li>
+ * <li>{@link GroupFlux}</li>
  * <li>join - UNSUPPORTED</li>
  * <li>{@link LastFlux}</li>
  * <li>{@link LimitFlux}</li>
@@ -177,6 +178,176 @@ public abstract class Flux {
         Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
 
         return new FirstFlux(this, useStartTimeParameterName);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param groupBy Group by these specific tag names.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupBy(@Nonnull final Collection<String> groupBy) {
+        Objects.requireNonNull(groupBy, "GroupBy Columns are required");
+
+        return new GroupFlux(this, groupBy, GroupFlux.GroupType.GROUP_BY);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param groupBy Group by these specific tag names.
+     * @param keep    Keep specific tag keys that were not in {@code groupBy} in the results.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupBy(@Nonnull final Collection<String> groupBy, @Nonnull final Collection<String> keep) {
+        Objects.requireNonNull(groupBy, "GroupBy Columns are required");
+        Objects.requireNonNull(keep, "Keep Columns are required");
+
+        return new GroupFlux(this, groupBy, keep, GroupFlux.GroupType.GROUP_BY);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param groupBy Group by these specific tag names.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupBy(@Nonnull final String[] groupBy) {
+        Objects.requireNonNull(groupBy, "GroupBy Columns are required");
+
+        return new GroupFlux(this, Arrays.asList(groupBy), GroupFlux.GroupType.GROUP_BY);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param groupBy Group by these specific tag names.
+     * @param keep    Keep specific tag keys that were not in {@code groupBy} in the results.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupBy(@Nonnull final String[] groupBy, @Nonnull final String[] keep) {
+        Objects.requireNonNull(groupBy, "GroupBy Columns are required");
+        Objects.requireNonNull(keep, "Keep Columns are required");
+
+        return new GroupFlux(this, Arrays.asList(groupBy), Arrays.asList(keep), GroupFlux.GroupType.GROUP_BY);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param groupByParameterName The parameter name for the group by these specific tag names.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupBy(@Nonnull final String groupByParameterName) {
+        Preconditions.checkNonEmptyString(groupByParameterName, "GroupBy parameter name");
+
+        return new GroupFlux(this, groupByParameterName, GroupFlux.GroupType.GROUP_BY);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param groupByParameterName The parameter name for the group by these specific tag names.
+     * @param keepParameterName    The parameter name for the Keep specific tag keys that
+     *                             were not in {@code groupBy} in the results.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupBy(@Nonnull final String groupByParameterName, @Nonnull final String keepParameterName) {
+        Preconditions.checkNonEmptyString(groupByParameterName, "GroupBy parameter name");
+        Preconditions.checkNonEmptyString(keepParameterName, "Keep parameter name");
+
+        return new GroupFlux(this, groupByParameterName, keepParameterName, GroupFlux.GroupType.GROUP_BY);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param except Group by all but these tag keys Cannot be used.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupExcept(@Nonnull final Collection<String> except) {
+        Objects.requireNonNull(except, "GroupBy Except Columns are required");
+
+        return new GroupFlux(this, except, GroupFlux.GroupType.EXCEPT);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param except Group by all but these tag keys Cannot be used.
+     * @param keep   Keep specific tag keys that were not in {@code groupBy} in the results.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupExcept(@Nonnull final Collection<String> except, @Nonnull final Collection<String> keep) {
+        Objects.requireNonNull(except, "GroupBy Except Columns are required");
+        Objects.requireNonNull(keep, "Keep Columns are required");
+
+        return new GroupFlux(this, except, keep, GroupFlux.GroupType.EXCEPT);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param except Group by all but these tag keys Cannot be used.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupExcept(@Nonnull final String[] except) {
+        Objects.requireNonNull(except, "GroupBy Except Columns are required");
+
+        return new GroupFlux(this, Arrays.asList(except), GroupFlux.GroupType.EXCEPT);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param except Group by all but these tag keys Cannot be used.
+     * @param keep   Keep specific tag keys that were not in {@code groupBy} in the results.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupExcept(@Nonnull final String[] except, @Nonnull final String[] keep) {
+        Objects.requireNonNull(except, "GroupBy Except Columns are required");
+        Objects.requireNonNull(keep, "Keep Columns are required");
+
+        return new GroupFlux(this, Arrays.asList(except), Arrays.asList(keep), GroupFlux.GroupType.EXCEPT);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param exceptParameterName The parameter name for the Group by all but these tag keys Cannot be used.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupExcept(@Nonnull final String exceptParameterName) {
+        Preconditions.checkNonEmptyString(exceptParameterName, "GroupBy Except parameter name");
+
+        return new GroupFlux(this, exceptParameterName, GroupFlux.GroupType.EXCEPT);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param exceptParameterName The parameter name for the Group by all but these tag keys Cannot be used.
+     * @param keepParameterName   The parameter name for the Keep specific tag keys that
+     *                            were not in {@code groupBy} in the results.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux groupExcept(@Nonnull final String exceptParameterName, @Nonnull final String keepParameterName) {
+        Preconditions.checkNonEmptyString(exceptParameterName, "GroupBy Except parameter name");
+        Preconditions.checkNonEmptyString(keepParameterName, "Keep parameter name");
+
+        return new GroupFlux(this, exceptParameterName, keepParameterName, GroupFlux.GroupType.EXCEPT);
     }
 
     /**

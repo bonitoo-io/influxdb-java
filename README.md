@@ -611,6 +611,7 @@ Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 - [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
 - [count](https://github.com/influxdata/platform/tree/master/query#count) - counts the number of results
 - [first](https://github.com/influxdata/platform/tree/master/query#first) - returns the first result of the query
+- [group](https://github.com/influxdata/platform/tree/master/query#group) - groups results by a user-specified set of tags
 - [last](https://github.com/influxdata/platform/tree/master/query#last) - returns the last result of the query
 - [limit](https://github.com/influxdata/platform/tree/master/query#limit) - restricts the number of rows returned in the results
 - [max](https://github.com/influxdata/platform/tree/master/query#max) - returns the max value within the results

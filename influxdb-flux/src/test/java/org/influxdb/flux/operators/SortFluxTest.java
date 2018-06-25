@@ -76,6 +76,22 @@ class SortFluxTest {
     }
 
     @Test
+    void sortByColumnsAscending() {
+
+        List<String> sortBy = new ArrayList<>();
+        sortBy.add("region");
+        sortBy.add("host");
+
+        Flux flux = Flux
+                .from("telegraf")
+                .sort(sortBy, false);
+
+        String expected = "from(db:\"telegraf\") |> sort(cols: [\"region\", \"host\"], desc: false)";
+
+        Assertions.assertThat(flux.print()).isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
     void sortByParameters() {
 
         Flux flux = Flux
