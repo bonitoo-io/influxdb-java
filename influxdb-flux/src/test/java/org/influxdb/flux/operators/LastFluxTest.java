@@ -2,6 +2,7 @@ package org.influxdb.flux.operators;
 
 import org.assertj.core.api.Assertions;
 import org.influxdb.flux.Flux;
+import org.influxdb.flux.FluxChain;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -20,6 +21,20 @@ class LastFluxTest {
                 .last();
 
         Assertions.assertThat(flux.print()).isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> last()");
+    }
+
+    @Test
+    void lastByParameter() {
+
+        Flux flux = Flux
+                .from("telegraf")
+                .last("parameter");
+
+        FluxChain fluxChain = new FluxChain()
+                .addParameter("parameter", true);
+
+        Assertions.assertThat(flux.print(fluxChain))
+                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> last(useStartTime: true)");
     }
 
     @Test

@@ -31,6 +31,10 @@ public final class FirstFlux extends AbstractScalarFlux {
         super(source, useStartTime);
     }
 
+    public FirstFlux(@Nonnull final Flux source, @Nonnull final String useStartTimeParameter) {
+        super(source, useStartTimeParameter);
+    }
+
     @Nonnull
     @Override
     String operatorName() {

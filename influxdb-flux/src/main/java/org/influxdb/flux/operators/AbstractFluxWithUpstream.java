@@ -2,6 +2,7 @@ package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
+import org.influxdb.flux.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -35,4 +36,26 @@ abstract class AbstractFluxWithUpstream extends Flux {
      * @param fluxChain the incoming {@link FluxChain}, never null
      */
     abstract void appendAfterUpstream(@Nonnull final FluxChain fluxChain);
+
+    void appendParameterTo(@Nonnull final String parameterName,
+                           @Nonnull final FluxChain.FluxParameter parameter,
+                           @Nonnull final StringBuilder operator,
+                           @Nonnull final FluxChain fluxChain) {
+
+        Preconditions.checkNonEmptyString(parameterName, "Parameter name");
+        Objects.requireNonNull(parameter, "FluxParameter is required");
+        Objects.requireNonNull(operator, "Current operator");
+
+        if (parameter instanceof FluxChain.NotDefinedParameter) {
+            return;
+        }
+
+        Object parameterValue = parameter.value(fluxChain.getParameters());
+
+        // n: 5
+        operator
+                .append(parameterName)
+                .append(": ")
+                .append(parameterValue.toString());
+    }
 }

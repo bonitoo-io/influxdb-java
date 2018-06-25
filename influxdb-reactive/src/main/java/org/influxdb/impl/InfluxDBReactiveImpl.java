@@ -752,7 +752,6 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         });
     }
 
-    // TODO remove
     @Nonnull
     private List<Object> toDataPoints(@Nonnull final List<AbstractData> points,
                                       @Nonnull final List<AbstractData> notParsable) {

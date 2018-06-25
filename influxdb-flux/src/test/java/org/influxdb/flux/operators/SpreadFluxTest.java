@@ -2,6 +2,7 @@ package org.influxdb.flux.operators;
 
 import org.assertj.core.api.Assertions;
 import org.influxdb.flux.Flux;
+import org.influxdb.flux.FluxChain;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -20,6 +21,20 @@ class SpreadFluxTest {
                 .spread();
 
         Assertions.assertThat(flux.print()).isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> spread()");
+    }
+
+    @Test
+    void spreadByParameter() {
+
+        Flux flux = Flux
+                .from("telegraf")
+                .spread("parameter");
+
+        FluxChain fluxChain = new FluxChain()
+                .addParameter("parameter", true);
+
+        Assertions.assertThat(flux.print(fluxChain))
+                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> spread(useStartTime: true)");
     }
 
     @Test

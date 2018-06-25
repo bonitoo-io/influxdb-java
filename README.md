@@ -612,6 +612,7 @@ Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 - [count](https://github.com/influxdata/platform/tree/master/query#count) - counts the number of results
 - [first](https://github.com/influxdata/platform/tree/master/query#first) - returns the first result of the query
 - [last](https://github.com/influxdata/platform/tree/master/query#last) - returns the last result of the query
+- [limit](https://github.com/influxdata/platform/tree/master/query#limit) - restricts the number of rows returned in the results
 - [max](https://github.com/influxdata/platform/tree/master/query#max) - returns the max value within the results
 - [mean](https://github.com/influxdata/platform/tree/master/query#mean) - returns the mean of the values within the results
 - [min](https://github.com/influxdata/platform/tree/master/query#min) - returns the min value within the results
@@ -620,13 +621,24 @@ Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 - [stddev](https://github.com/influxdata/platform/tree/master/query#stddev) - standard Deviation of the results
 - [sum](https://github.com/influxdata/platform/tree/master/query#sum) - sum of the results
 
+#### Named parameters
+```java
+Map<String, Object> parameters = new HashMap<>();
+parameters.put("limitParameter", 5);
 
-#### Advanced Usage
+Flux flux = Flux
+    .from("telegraf")
+    .limit("limitParameter");
 
-##### Gzip's support 
+Flowable<Cpu> cpu = influxDBReactive.flux(flux, parameters, Cpu.class);
+```
+
+### Advanced Usage
+
+#### Gzip's support 
 Same as the non reactive client. For detail information see [documentation](#user-content-gzips-support-version-25-required).
 
-##### Check the status and version of InfluxDB instance
+#### Check the status and version of InfluxDB instance
 The InfluxDB HTTP API [ping](https://docs.influxdata.com/influxdb/latest/tools/api/#ping) endpoint provides ability 
 to check the status of your InfluxDB instance and your version of InfluxDB:
 

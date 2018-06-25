@@ -2,6 +2,8 @@ package org.influxdb.flux;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -13,7 +15,35 @@ public final class FluxChain {
 
     private final StringBuilder builder = new StringBuilder();
 
-    FluxChain() {
+    private Map<String, Object> parameters = new HashMap<>();
+
+    public FluxChain() {
+    }
+
+    /**
+     * Add the Flux parameter.
+     *
+     * @param name  the parameter name
+     * @param value the parameter value
+     * @return the current {@link FluxChain}
+     */
+    @Nonnull
+    public FluxChain addParameter(@Nonnull final String name, @Nonnull final Object value) {
+
+        Preconditions.checkNonEmptyString(name, "Parameter name");
+        Objects.requireNonNull(value, "Parameter value is required");
+
+        parameters.put(name, value);
+
+        return this;
+    }
+
+    /**
+     * @return get bound parameters
+     */
+    @Nonnull
+    public Map<String, Object> getParameters() {
+        return parameters;
     }
 
     /**
@@ -60,5 +90,53 @@ public final class FluxChain {
     @Nonnull
     String print() {
         return builder.toString();
+    }
+
+    /**
+     * The source of parameter value.
+     */
+    public interface FluxParameter<T> {
+
+        /**
+         * @return value of parameter
+         */
+        @Nonnull
+        T value(@Nonnull final Map<String, Object> parameters);
+    }
+
+    public static class BoundFluxParameter<T> implements FluxParameter<T> {
+
+        private final String parameterName;
+
+        public BoundFluxParameter(@Nonnull final String parameterName) {
+
+            Preconditions.checkNonEmptyString(parameterName, "Parameter name");
+
+            this.parameterName = parameterName;
+        }
+
+        @Nonnull
+        @Override
+        public T value(@Nonnull final Map<String, Object> parameters) {
+
+            Object parameterValue = parameters.get(parameterName);
+            // parameter must be defined
+            if (parameterValue == null) {
+                String message = String.format("The parameter '%s' is not defined.", parameterName);
+
+                throw new IllegalStateException(message);
+            }
+
+            //noinspection unchecked
+            return (T) parameterValue;
+        }
+    }
+
+    public static class NotDefinedParameter<T> implements FluxParameter<T> {
+        @Nonnull
+        @Override
+        public T value(@Nonnull final Map<String, Object> parameters) {
+            throw new IllegalStateException();
+        }
     }
 }

@@ -4,6 +4,7 @@ import org.influxdb.flux.operators.CountFlux;
 import org.influxdb.flux.operators.FirstFlux;
 import org.influxdb.flux.operators.FromFlux;
 import org.influxdb.flux.operators.LastFlux;
+import org.influxdb.flux.operators.LimitFlux;
 import org.influxdb.flux.operators.MaxFlux;
 import org.influxdb.flux.operators.MeanFlux;
 import org.influxdb.flux.operators.MinFlux;
@@ -28,7 +29,7 @@ import java.util.Objects;
  * <li>group - UNSUPPORTED</li>
  * <li>join - UNSUPPORTED</li>
  * <li>{@link LastFlux}</li>
- * <li>limit - UNSUPPORTED</li>
+ * <li>{@link LimitFlux}</li>
  * <li>map - UNSUPPORTED</li>
  * <li>{@link MaxFlux}</li>
  * <li>{@link MeanFlux}</li>
@@ -125,6 +126,21 @@ public abstract class Flux {
     }
 
     /**
+     * Counts the number of results.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link CountFlux}
+     */
+    @Nonnull
+    public Flux count(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new CountFlux(this, useStartTimeParameterName);
+    }
+
+    /**
      * Returns the first result of the query.
      *
      * @return {@link FirstFlux}
@@ -143,6 +159,21 @@ public abstract class Flux {
     @Nonnull
     public Flux first(final boolean useStartTime) {
         return new FirstFlux(this, useStartTime);
+    }
+
+    /**
+     * Returns the first result of the query.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link FirstFlux}
+     */
+    @Nonnull
+    public Flux first(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new FirstFlux(this, useStartTimeParameterName);
     }
 
     /**
@@ -167,6 +198,49 @@ public abstract class Flux {
     }
 
     /**
+     * Returns the last result of the query.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link LastFlux}
+     */
+    @Nonnull
+    public Flux last(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new LastFlux(this, useStartTimeParameterName);
+    }
+
+    /**
+     * Restricts the number of rows returned in the results.
+     *
+     * @param numberOfResults The number of results
+     * @return {@link LimitFlux}
+     */
+    @Nonnull
+    public Flux limit(final int numberOfResults) {
+
+        Preconditions.checkPositiveNumber(numberOfResults, "Number of results");
+
+        return new LimitFlux(this, numberOfResults);
+    }
+
+    /**
+     * Restricts the number of rows returned in the results.
+     *
+     * @param numberOfResultsParameterName The parameter name for the number of results
+     * @return {@link LimitFlux}
+     */
+    @Nonnull
+    public Flux limit(@Nonnull final String numberOfResultsParameterName) {
+
+        Preconditions.checkNonEmptyString(numberOfResultsParameterName, "NumberOfResults");
+
+        return new LimitFlux(this, numberOfResultsParameterName);
+    }
+
+    /**
      * Returns the max value within the results.
      *
      * @return {@link MaxFlux}
@@ -185,6 +259,21 @@ public abstract class Flux {
     @Nonnull
     public Flux max(final boolean useStartTime) {
         return new MaxFlux(this, useStartTime);
+    }
+
+    /**
+     * Returns the max value within the results.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link MaxFlux}
+     */
+    @Nonnull
+    public Flux max(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new MaxFlux(this, useStartTimeParameterName);
     }
 
     /**
@@ -209,6 +298,21 @@ public abstract class Flux {
     }
 
     /**
+     * Returns the mean of the values within the results.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link MeanFlux}
+     */
+    @Nonnull
+    public Flux mean(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new MeanFlux(this, useStartTimeParameterName);
+    }
+
+    /**
      * Returns the min value within the results.
      *
      * @return {@link MinFlux}
@@ -227,6 +331,21 @@ public abstract class Flux {
     @Nonnull
     public Flux min(final boolean useStartTime) {
         return new MinFlux(this, useStartTime);
+    }
+
+    /**
+     * Returns the min value within the results.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link MinFlux}
+     */
+    @Nonnull
+    public Flux min(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new MinFlux(this, useStartTimeParameterName);
     }
 
     /**
@@ -251,6 +370,21 @@ public abstract class Flux {
     }
 
     /**
+     * Skew of the results.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link SkewFlux}
+     */
+    @Nonnull
+    public Flux skew(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new SkewFlux(this, useStartTimeParameterName);
+    }
+
+    /**
      * Difference between min and max values.
      *
      * @return {@link SpreadFlux}
@@ -269,6 +403,21 @@ public abstract class Flux {
     @Nonnull
     public Flux spread(final boolean useStartTime) {
         return new SpreadFlux(this, useStartTime);
+    }
+
+    /**
+     * Difference between min and max values.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link SpreadFlux}
+     */
+    @Nonnull
+    public Flux spread(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new SpreadFlux(this, useStartTimeParameterName);
     }
 
     /**
@@ -293,6 +442,21 @@ public abstract class Flux {
     }
 
     /**
+     * Standard Deviation of the results.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link StddevFlux}
+     */
+    @Nonnull
+    public Flux stddev(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new StddevFlux(this, useStartTimeParameterName);
+    }
+
+    /**
      * Sum of the results.
      *
      * @return {@link SumFlux}
@@ -314,6 +478,21 @@ public abstract class Flux {
     }
 
     /**
+     * Sum of the results.
+     *
+     * @param useStartTimeParameterName The parameter name for the use the start time as the timestamp of
+     *                                  the resulting aggregate
+     * @return {@link SumFlux}
+     */
+    @Nonnull
+    public Flux sum(@Nonnull final String useStartTimeParameterName) {
+
+        Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
+
+        return new SumFlux(this, useStartTimeParameterName);
+    }
+
+    /**
      * Append the actual operator to {@link FluxChain}.
      *
      * @param fluxChain the incoming {@link FluxChain}, never null
@@ -327,7 +506,20 @@ public abstract class Flux {
      */
     @Nonnull
     public String print() {
-        FluxChain fluxChain = new FluxChain();
+        return print(new FluxChain());
+    }
+
+    /**
+     * Create the Flux script that can be executed in {@code fluxd}.
+     *
+     * @param fluxChain parameter source
+     * @return Flux script
+     */
+    @Nonnull
+    public String print(@Nonnull final FluxChain fluxChain) {
+
+        Objects.requireNonNull(fluxChain, "FluxChain is required");
+
         appendActual(fluxChain);
         return fluxChain.print();
     }

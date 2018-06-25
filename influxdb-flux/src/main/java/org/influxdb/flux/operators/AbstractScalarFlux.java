@@ -2,6 +2,7 @@ package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
+import org.influxdb.flux.Preconditions;
 
 import javax.annotation.Nonnull;
 
@@ -10,15 +11,24 @@ import javax.annotation.Nonnull;
  */
 abstract class AbstractScalarFlux extends AbstractFluxWithUpstream {
 
-    private Boolean useStartTime;
+    private FluxChain.FluxParameter<Boolean> useStartTime;
 
     AbstractScalarFlux(@Nonnull final Flux source) {
         super(source);
+        this.useStartTime = new FluxChain.NotDefinedParameter<>();
     }
 
     AbstractScalarFlux(@Nonnull final Flux source, final boolean useStartTime) {
         super(source);
-        this.useStartTime = useStartTime;
+        this.useStartTime = (m) -> useStartTime;
+    }
+
+    public AbstractScalarFlux(@Nonnull final Flux source, @Nonnull final String useStartTimeParameter) {
+        super(source);
+
+        Preconditions.checkNonEmptyString(useStartTimeParameter, "Use Start Time");
+
+        this.useStartTime = new FluxChain.BoundFluxParameter<>(useStartTimeParameter);
     }
 
     /**
@@ -38,9 +48,7 @@ abstract class AbstractScalarFlux extends AbstractFluxWithUpstream {
         //
         //
         // useStartTime: false
-        if (useStartTime != null) {
-            count.append("useStartTime: ").append(useStartTime.toString().toLowerCase());
-        }
+        appendParameterTo("useStartTime", useStartTime, count, fluxChain);
         //
         // )
         //
