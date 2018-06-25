@@ -5,7 +5,7 @@ import org.influxdb.flux.Flux;
 import javax.annotation.Nonnull;
 
 /**
- * <a href="https://github.com/influxdata/platform/tree/master/query#count">count</a> - Counts the number of results.
+ * <a href="https://github.com/influxdata/platform/tree/master/query#skew">skew</a> - Skew of the results.
  *
  * <h3>Options</h3>
  * <ul>
@@ -14,25 +14,25 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db:"telegraf") |&gt; count()
+ *     from(db: "telegraf") |&gt; range(start: -30m, stop: -15m) |&gt; skew()
  * </pre>
  *
- * @author Jakub Bednar (bednar@github) (22/06/2018 11:06)
+ * @author Jakub Bednar (bednar@github) (25/06/2018 10:06)
  * @since 3.0.0
  */
-public final class CountFlux extends AbstractScalarFlux {
+public final class SkewFlux extends AbstractScalarFlux {
 
-    public CountFlux(@Nonnull final Flux source) {
+    public SkewFlux(@Nonnull final Flux source) {
         super(source);
     }
 
-    public CountFlux(@Nonnull final Flux source, final boolean useStartTime) {
+    public SkewFlux(@Nonnull final Flux source, final boolean useStartTime) {
         super(source, useStartTime);
     }
 
     @Nonnull
     @Override
     String operatorName() {
-        return "count";
+        return "skew";
     }
 }

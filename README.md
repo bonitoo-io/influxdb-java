@@ -591,8 +591,9 @@ Flowable.merge(cpu, mem)
     });
 ```
 
-#### Flux - Influx data language
-The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute. The `InfluxDBReactive` support the `Flux` by `org.influxdb.flux.Flux`.
+### Flux - Influx data language
+The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute.
+The `InfluxDBReactive` support the `Flux` by `org.influxdb.flux.Flux`:
 ```java
 //  from(db:"telegraf")
 //      |> filter(fn: (r) => r["_measurement"] == "cpu" AND r["_field"] == "usage_user")
@@ -606,9 +607,18 @@ Flux flux = Flux.from("telegraf")
     
 Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 ```
-##### Supported Functions
-- [from](https://github.com/influxdata/platform/tree/master/query#from) - Starting point for all queires. Get data from the specified database.
-- [count](https://github.com/influxdata/platform/tree/master/query#count) - Counts the number of results.
+#### Supported Functions
+- [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
+- [count](https://github.com/influxdata/platform/tree/master/query#count) - counts the number of results
+- [first](https://github.com/influxdata/platform/tree/master/query#first) - returns the first result of the query
+- [last](https://github.com/influxdata/platform/tree/master/query#last) - returns the last result of the query
+- [max](https://github.com/influxdata/platform/tree/master/query#max) - returns the max value within the results
+- [mean](https://github.com/influxdata/platform/tree/master/query#mean) - returns the mean of the values within the results
+- [min](https://github.com/influxdata/platform/tree/master/query#min) - returns the min value within the results
+- [skew](https://github.com/influxdata/platform/tree/master/query#skew) - skew of the results
+- [spread](https://github.com/influxdata/platform/tree/master/query#spread) - difference between min and max values
+- [stddev](https://github.com/influxdata/platform/tree/master/query#stddev) - standard Deviation of the results
+- [sum](https://github.com/influxdata/platform/tree/master/query#sum) - sum of the results
 
 
 #### Advanced Usage

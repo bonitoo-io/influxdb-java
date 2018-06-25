@@ -1,0 +1,46 @@
+package org.influxdb.flux.operators;
+
+import org.assertj.core.api.Assertions;
+import org.influxdb.flux.Flux;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+
+/**
+ * @author Jakub Bednar (bednar@github) (25/06/2018 09:58)
+ */
+@RunWith(JUnitPlatform.class)
+class MeanFluxTest {
+
+    @Test
+    void mean() {
+
+        Flux flux = Flux
+                .from("telegraf")
+                .mean();
+
+        Assertions.assertThat(flux.print()).isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> mean()");
+    }
+
+    @Test
+    void useStartTimeFalse() {
+
+        Flux flux = Flux
+                .from("telegraf")
+                .mean(false);
+
+        Assertions.assertThat(flux.print())
+                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> mean(useStartTime: false)");
+    }
+
+    @Test
+    void useStartTimeTrue() {
+
+        Flux flux = Flux
+                .from("telegraf")
+                .mean(true);
+
+        Assertions.assertThat(flux.print())
+                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> mean(useStartTime: true)");
+    }
+}

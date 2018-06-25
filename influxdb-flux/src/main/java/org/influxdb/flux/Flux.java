@@ -1,7 +1,16 @@
 package org.influxdb.flux;
 
 import org.influxdb.flux.operators.CountFlux;
+import org.influxdb.flux.operators.FirstFlux;
 import org.influxdb.flux.operators.FromFlux;
+import org.influxdb.flux.operators.LastFlux;
+import org.influxdb.flux.operators.MaxFlux;
+import org.influxdb.flux.operators.MeanFlux;
+import org.influxdb.flux.operators.MinFlux;
+import org.influxdb.flux.operators.SkewFlux;
+import org.influxdb.flux.operators.SpreadFlux;
+import org.influxdb.flux.operators.StddevFlux;
+import org.influxdb.flux.operators.SumFlux;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -15,23 +24,23 @@ import java.util.Objects;
  * <li>{@link FromFlux}</li>
  * <li>{@link CountFlux}</li>
  * <li>filter - UNSUPPORTED</li>
- * <li>first - UNSUPPORTED</li>
+ * <li>{@link FirstFlux}</li>
  * <li>group - UNSUPPORTED</li>
  * <li>join - UNSUPPORTED</li>
- * <li>last - UNSUPPORTED</li>
+ * <li>{@link LastFlux}</li>
  * <li>limit - UNSUPPORTED</li>
  * <li>map - UNSUPPORTED</li>
- * <li>max - UNSUPPORTED</li>
- * <li>mean - UNSUPPORTED</li>
- * <li>min - UNSUPPORTED</li>
+ * <li>{@link MaxFlux}</li>
+ * <li>{@link MeanFlux}</li>
+ * <li>{@link MinFlux}</li>
  * <li>range - UNSUPPORTED</li>
  * <li>sample - UNSUPPORTED</li>
  * <li>set - UNSUPPORTED</li>
- * <li>skew - UNSUPPORTED</li>
+ * <li>{@link SkewFlux}</li>
  * <li>sort - UNSUPPORTED</li>
- * <li>spread - UNSUPPORTED</li>
- * <li>stddev - UNSUPPORTED</li>
- * <li>sum - UNSUPPORTED</li>
+ * <li>{@link SpreadFlux}</li>
+ * <li>{@link StddevFlux}</li>
+ * <li>{@link SumFlux}</li>
  * <li>toBool - UNSUPPORTED</li>
  * <li>toInt - UNSUPPORTED</li>
  * <li>toFloat - UNSUPPORTED</li>
@@ -113,6 +122,195 @@ public abstract class Flux {
     @Nonnull
     public Flux count(final boolean useStartTime) {
         return new CountFlux(this, useStartTime);
+    }
+
+    /**
+     * Returns the first result of the query.
+     *
+     * @return {@link FirstFlux}
+     */
+    @Nonnull
+    public Flux first() {
+        return new FirstFlux(this);
+    }
+
+    /**
+     * Returns the first result of the query.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link FirstFlux}
+     */
+    @Nonnull
+    public Flux first(final boolean useStartTime) {
+        return new FirstFlux(this, useStartTime);
+    }
+
+    /**
+     * Returns the last result of the query.
+     *
+     * @return {@link LastFlux}
+     */
+    @Nonnull
+    public Flux last() {
+        return new LastFlux(this);
+    }
+
+    /**
+     * Returns the last result of the query.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link LastFlux}
+     */
+    @Nonnull
+    public Flux last(final boolean useStartTime) {
+        return new LastFlux(this, useStartTime);
+    }
+
+    /**
+     * Returns the max value within the results.
+     *
+     * @return {@link MaxFlux}
+     */
+    @Nonnull
+    public Flux max() {
+        return new MaxFlux(this);
+    }
+
+    /**
+     * Returns the max value within the results.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link MaxFlux}
+     */
+    @Nonnull
+    public Flux max(final boolean useStartTime) {
+        return new MaxFlux(this, useStartTime);
+    }
+
+    /**
+     * Returns the mean of the values within the results.
+     *
+     * @return {@link MeanFlux}
+     */
+    @Nonnull
+    public Flux mean() {
+        return new MeanFlux(this);
+    }
+
+    /**
+     * Returns the mean of the values within the results.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link MeanFlux}
+     */
+    @Nonnull
+    public Flux mean(final boolean useStartTime) {
+        return new MeanFlux(this, useStartTime);
+    }
+
+    /**
+     * Returns the min value within the results.
+     *
+     * @return {@link MinFlux}
+     */
+    @Nonnull
+    public Flux min() {
+        return new MinFlux(this);
+    }
+
+    /**
+     * Returns the min value within the results.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link MinFlux}
+     */
+    @Nonnull
+    public Flux min(final boolean useStartTime) {
+        return new MinFlux(this, useStartTime);
+    }
+
+    /**
+     * Skew of the results.
+     *
+     * @return {@link SkewFlux}
+     */
+    @Nonnull
+    public Flux skew() {
+        return new SkewFlux(this);
+    }
+
+    /**
+     * Skew of the results.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link SkewFlux}
+     */
+    @Nonnull
+    public Flux skew(final boolean useStartTime) {
+        return new SkewFlux(this, useStartTime);
+    }
+
+    /**
+     * Difference between min and max values.
+     *
+     * @return {@link SpreadFlux}
+     */
+    @Nonnull
+    public Flux spread() {
+        return new SpreadFlux(this);
+    }
+
+    /**
+     * Difference between min and max values.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link SpreadFlux}
+     */
+    @Nonnull
+    public Flux spread(final boolean useStartTime) {
+        return new SpreadFlux(this, useStartTime);
+    }
+
+    /**
+     * Standard Deviation of the results.
+     *
+     * @return {@link StddevFlux}
+     */
+    @Nonnull
+    public Flux stddev() {
+        return new StddevFlux(this);
+    }
+
+    /**
+     * Standard Deviation of the results.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link StddevFlux}
+     */
+    @Nonnull
+    public Flux stddev(final boolean useStartTime) {
+        return new StddevFlux(this, useStartTime);
+    }
+
+    /**
+     * Sum of the results.
+     *
+     * @return {@link SumFlux}
+     */
+    @Nonnull
+    public Flux sum() {
+        return new SumFlux(this);
+    }
+
+    /**
+     * Sum of the results.
+     *
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return {@link SumFlux}
+     */
+    @Nonnull
+    public Flux sum(final boolean useStartTime) {
+        return new SumFlux(this, useStartTime);
     }
 
     /**
