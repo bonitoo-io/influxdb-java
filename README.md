@@ -591,6 +591,26 @@ Flowable.merge(cpu, mem)
     });
 ```
 
+#### Flux - Influx data language
+The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute. The `InfluxDBReactive` support the `Flux` by `org.influxdb.flux.Flux`.
+```java
+//  from(db:"telegraf")
+//      |> filter(fn: (r) => r["_measurement"] == "cpu" AND r["_field"] == "usage_user")
+//      |> range(start:-170h)
+//      |> sum()'
+
+Flux flux = Flux.from("telegraf")
+    .filter(...)
+    .range(...)
+    .sum()
+    
+Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
+```
+##### Supported Functions
+- [from](https://github.com/influxdata/platform/tree/master/query#from) - Starting point for all queires. Get data from the specified database.
+- [count](https://github.com/influxdata/platform/tree/master/query#count) - Counts the number of results.
+
+
 #### Advanced Usage
 
 ##### Gzip's support 
@@ -635,6 +655,7 @@ Starting with version 3.0 is influxdb-java split into following modules:
 
 * influxdb-core - core client library backward compatible with 2.X (artifactId is `influxdb-java`)
 * influxdb-reactive - reactive client library based on RxJava
+* influxdb-flux - support for the Flux - Functional Language for defining a query to execute
 * influxdb-jmx - jmx monitoring of client performance, connection pool, number of calls
 
 You can also add dependency `influxdb-java` to your project using BOM  "Bill Of Materials".     
