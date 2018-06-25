@@ -622,6 +622,9 @@ Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 - [spread](https://github.com/influxdata/platform/tree/master/query#spread) - difference between min and max values
 - [stddev](https://github.com/influxdata/platform/tree/master/query#stddev) - standard Deviation of the results
 - [sum](https://github.com/influxdata/platform/tree/master/query#sum) - sum of the results
+- [toBool](https://github.com/influxdata/platform/tree/master/query#tobool) - convert a value to a bool
+- [toInt](https://github.com/influxdata/platform/tree/master/query#toint) - convert a value to a int
+- [toFloat](https://github.com/influxdata/platform/tree/master/query#tofloat) - convert a value to a float
 
 #### Named parameters
 ```java

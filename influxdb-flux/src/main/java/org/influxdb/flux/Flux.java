@@ -14,6 +14,9 @@ import org.influxdb.flux.operators.SortFlux;
 import org.influxdb.flux.operators.SpreadFlux;
 import org.influxdb.flux.operators.StddevFlux;
 import org.influxdb.flux.operators.SumFlux;
+import org.influxdb.flux.operators.ToBoolFlux;
+import org.influxdb.flux.operators.ToFloatFlux;
+import org.influxdb.flux.operators.ToIntFlux;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -45,9 +48,9 @@ import java.util.Objects;
  * <li>{@link SpreadFlux}</li>
  * <li>{@link StddevFlux}</li>
  * <li>{@link SumFlux}</li>
- * <li>toBool - UNSUPPORTED</li>
- * <li>toInt - UNSUPPORTED</li>
- * <li>toFloat - UNSUPPORTED</li>
+ * <li>{@link ToBoolFlux}</li>
+ * <li>{@link ToIntFlux}</li>
+ * <li>{@link ToFloatFlux}</li>
  * <li>toDuration - UNSUPPORTED</li>
  * <li>toString - UNSUPPORTED</li>
  * <li>toTime - UNSUPPORTED</li>
@@ -745,6 +748,36 @@ public abstract class Flux {
         Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
 
         return new SumFlux(this, useStartTimeParameterName);
+    }
+
+    /**
+     * Convert a value to a bool.
+     *
+     * @return {@link ToBoolFlux}
+     */
+    @Nonnull
+    public Flux toBool() {
+        return new ToBoolFlux(this);
+    }
+
+    /**
+     * Convert a value to a int.
+     *
+     * @return {@link ToIntFlux}
+     */
+    @Nonnull
+    public Flux toInt() {
+        return new ToIntFlux(this);
+    }
+
+    /**
+     * Convert a value to a float.
+     *
+     * @return {@link ToFloatFlux}
+     */
+    @Nonnull
+    public Flux toFloat() {
+        return new ToFloatFlux(this);
     }
 
     /**
