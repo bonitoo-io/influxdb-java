@@ -40,20 +40,20 @@ abstract class AbstractScalarFlux extends AbstractFluxWithUpstream {
     @Override
     protected final void appendAfterUpstream(@Nonnull final FluxChain fluxChain) {
 
-        StringBuilder count = new StringBuilder();
+        StringBuilder operator = new StringBuilder();
         //
         // count(
         //
-        count.append(operatorName()).append("(");
+        operator.append(operatorName()).append("(");
         //
         //
         // useStartTime: false
-        appendParameterTo("useStartTime", useStartTime, count, fluxChain);
+        appendParameters(operator, fluxChain, new NamedParameter("useStartTime", useStartTime));
         //
         // )
         //
-        count.append(")");
+        operator.append(")");
 
-        fluxChain.append(count);
+        fluxChain.append(operator);
     }
 }

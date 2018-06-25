@@ -5,7 +5,10 @@ import org.influxdb.flux.FluxChain;
 import org.influxdb.flux.Preconditions;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Abstract base class for operators that take an upstream source of {@link Flux}.
@@ -37,25 +40,76 @@ abstract class AbstractFluxWithUpstream extends Flux {
      */
     abstract void appendAfterUpstream(@Nonnull final FluxChain fluxChain);
 
-    void appendParameterTo(@Nonnull final String parameterName,
-                           @Nonnull final FluxChain.FluxParameter parameter,
-                           @Nonnull final StringBuilder operator,
-                           @Nonnull final FluxChain fluxChain) {
+    void appendParameters(@Nonnull final StringBuilder operator,
+                          @Nonnull final FluxChain fluxChain,
+                          @Nonnull final NamedParameter... parameters) {
 
-        Preconditions.checkNonEmptyString(parameterName, "Parameter name");
-        Objects.requireNonNull(parameter, "FluxParameter is required");
-        Objects.requireNonNull(operator, "Current operator");
+        boolean wasAppended = false;
+        for (NamedParameter named : parameters) {
 
-        if (parameter instanceof FluxChain.NotDefinedParameter) {
-            return;
+            wasAppended = appendParameterTo(named, operator, fluxChain, wasAppended);
+        }
+    }
+
+    class NamedParameter {
+
+        private String name;
+        private FluxChain.FluxParameter parameter;
+
+        NamedParameter(@Nonnull final String name, @Nonnull final FluxChain.FluxParameter parameter) {
+
+            Preconditions.checkNonEmptyString(name, "Parameter name");
+            Objects.requireNonNull(parameter, "FluxParameter is required");
+
+            this.name = name;
+            this.parameter = parameter;
+        }
+    }
+
+    /**
+     * @return {@link Boolean#TRUE} if was appended parameter
+     */
+    private boolean appendParameterTo(@Nonnull final NamedParameter namedParameter,
+                                      @Nonnull final StringBuilder operator,
+                                      @Nonnull final FluxChain fluxChain,
+                                      final boolean wasAppendParameter) {
+
+        if (namedParameter.parameter instanceof FluxChain.NotDefinedParameter) {
+            return wasAppendParameter;
         }
 
-        Object parameterValue = parameter.value(fluxChain.getParameters());
+        Object parameterValue = namedParameter.parameter.value(fluxChain.getParameters());
+
+        // array to collection
+        if (parameterValue.getClass().isArray()) {
+            parameterValue = Arrays.asList((Object[]) parameterValue);
+        }
+
+        // collection to delimited string ["one", "two", "three"]
+        if (parameterValue instanceof Collection) {
+
+            Collection collection = (Collection) parameterValue;
+            if (collection.isEmpty()) {
+                return wasAppendParameter;
+            }
+
+            parameterValue = collection.stream()
+                    .map(host -> "\"" + host + "\"")
+                    .collect(Collectors.joining(", ", "[", "]"));
+        }
+
+        // delimit previously appended parameter
+        if (wasAppendParameter) {
+            operator.append(", ");
+        }
 
         // n: 5
         operator
-                .append(parameterName)
+                .append(namedParameter.name)
                 .append(": ")
                 .append(parameterValue.toString());
+
+        return true;
     }
+
 }

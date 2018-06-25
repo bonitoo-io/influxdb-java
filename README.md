@@ -617,6 +617,7 @@ Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 - [mean](https://github.com/influxdata/platform/tree/master/query#mean) - returns the mean of the values within the results
 - [min](https://github.com/influxdata/platform/tree/master/query#min) - returns the min value within the results
 - [skew](https://github.com/influxdata/platform/tree/master/query#skew) - skew of the results
+- [sort](https://github.com/influxdata/platform/tree/master/query#sort) - sorts the results by the specified columns
 - [spread](https://github.com/influxdata/platform/tree/master/query#spread) - difference between min and max values
 - [stddev](https://github.com/influxdata/platform/tree/master/query#stddev) - standard Deviation of the results
 - [sum](https://github.com/influxdata/platform/tree/master/query#sum) - sum of the results

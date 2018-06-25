@@ -9,11 +9,13 @@ import org.influxdb.flux.operators.MaxFlux;
 import org.influxdb.flux.operators.MeanFlux;
 import org.influxdb.flux.operators.MinFlux;
 import org.influxdb.flux.operators.SkewFlux;
+import org.influxdb.flux.operators.SortFlux;
 import org.influxdb.flux.operators.SpreadFlux;
 import org.influxdb.flux.operators.StddevFlux;
 import org.influxdb.flux.operators.SumFlux;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -38,7 +40,7 @@ import java.util.Objects;
  * <li>sample - UNSUPPORTED</li>
  * <li>set - UNSUPPORTED</li>
  * <li>{@link SkewFlux}</li>
- * <li>sort - UNSUPPORTED</li>
+ * <li>{@link SortFlux}</li>
  * <li>{@link SpreadFlux}</li>
  * <li>{@link StddevFlux}</li>
  * <li>{@link SumFlux}</li>
@@ -53,7 +55,8 @@ import java.util.Objects;
  * <li>window - UNSUPPORTED</li>
  * <li>toHttp - UNSUPPORTED</li>
  * <li>toKafka - UNSUPPORTED</li>
- * <li>own - UNSUPPORTED</li>
+ * <li>byString - UNSUPPORTED</li>
+ * <li>byInstance - UNSUPPORTED</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (22/06/2018 10:16)
@@ -382,6 +385,87 @@ public abstract class Flux {
         Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
 
         return new SkewFlux(this, useStartTimeParameterName);
+    }
+
+    /**
+     * Sorts the results by the specified columns Default sort is ascending.
+     *
+     * @param desc use the descending sorting
+     * @return {@link SortFlux}
+     */
+    @Nonnull
+    public Flux sort(final boolean desc) {
+        return new SortFlux(this, desc);
+    }
+
+    /**
+     * Sorts the results by the specified columns Default sort is ascending.
+     *
+     * @param columns columns used to sort
+     * @return {@link SortFlux}
+     */
+    @Nonnull
+    public Flux sort(@Nonnull final String[] columns) {
+        Objects.requireNonNull(columns, "Columns are required");
+
+        return new SortFlux(this, Arrays.asList(columns));
+    }
+
+    /**
+     * Sorts the results by the specified columns Default sort is ascending.
+     *
+     * @param columns columns used to sort
+     * @return {@link SortFlux}
+     */
+    @Nonnull
+    public Flux sort(@Nonnull final Collection<String> columns) {
+        Objects.requireNonNull(columns, "Columns are required");
+
+        return new SortFlux(this, columns);
+    }
+
+    /**
+     * Sorts the results by the specified columns Default sort is ascending.
+     *
+     * @param columns columns used to sort
+     * @param desc    use the descending sorting
+     * @return {@link SortFlux}
+     */
+    @Nonnull
+    public Flux sort(@Nonnull final String[] columns, final boolean desc) {
+        Objects.requireNonNull(columns, "Columns are required");
+
+        return new SortFlux(this, Arrays.asList(columns), desc);
+    }
+
+    /**
+     * Sorts the results by the specified columns Default sort is ascending.
+     *
+     * @param columns columns used to sort
+     * @param desc    use the descending sorting
+     * @return {@link SortFlux}
+     */
+    @Nonnull
+    public Flux sort(@Nonnull final Collection<String> columns, final boolean desc) {
+        Objects.requireNonNull(columns, "Columns are required");
+
+        return new SortFlux(this, columns, desc);
+    }
+
+    /**
+     * Sorts the results by the specified columns Default sort is ascending.
+     *
+     * @param columnsParameterName The parameter name for the columns used to sort
+     * @param descParameterName    The parameter name for the use the descending sorting
+     * @return {@link SortFlux}
+     */
+    @Nonnull
+    public Flux sort(@Nonnull final String columnsParameterName, @Nonnull final String descParameterName) {
+
+        Preconditions.checkNonEmptyString(columnsParameterName, "Columns");
+        Preconditions.checkNonEmptyString(descParameterName, "desc");
+
+        return new SortFlux(this, descParameterName, columnsParameterName);
     }
 
     /**

@@ -55,7 +55,7 @@ public final class LimitFlux extends AbstractFluxWithUpstream {
         //
         //
         // n: 5
-        appendParameterTo("n", numberOfResults, limit, fluxChain);
+        appendParameters(limit, fluxChain, new NamedParameter("n", numberOfResults));
         //
         // )
         //
