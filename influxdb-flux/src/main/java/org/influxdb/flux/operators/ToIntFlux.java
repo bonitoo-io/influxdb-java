@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
  * <pre>
  *     from(db: "telegraf") |&gt; filter(fn:(r) =&gt; r._measurement == "mem" and r._field == "used") |&gt; toInt()
  * </pre>
+ *
  * @author Jakub Bednar (bednar@github) (25/06/2018 16:06)
  */
 public final class ToIntFlux extends AbstractConvertFlux {

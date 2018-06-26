@@ -625,6 +625,10 @@ Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 - [toBool](https://github.com/influxdata/platform/tree/master/query#tobool) - convert a value to a bool
 - [toInt](https://github.com/influxdata/platform/tree/master/query#toint) - convert a value to a int
 - [toFloat](https://github.com/influxdata/platform/tree/master/query#tofloat) - convert a value to a float
+- [toDuration](https://github.com/influxdata/platform/tree/master/query#toduration) - convert a value to a duration
+- [toString](https://github.com/influxdata/platform/tree/master/query#tostring) - convert a value to a string
+- [toTime](https://github.com/influxdata/platform/tree/master/query#totime) - convert a value to a time
+- [toUInt](https://github.com/influxdata/platform/tree/master/query#touint) - convert a value to a uint
 
 #### Named parameters
 ```java

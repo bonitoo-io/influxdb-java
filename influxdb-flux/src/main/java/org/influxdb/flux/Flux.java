@@ -15,8 +15,12 @@ import org.influxdb.flux.operators.SpreadFlux;
 import org.influxdb.flux.operators.StddevFlux;
 import org.influxdb.flux.operators.SumFlux;
 import org.influxdb.flux.operators.ToBoolFlux;
+import org.influxdb.flux.operators.ToDurationFlux;
 import org.influxdb.flux.operators.ToFloatFlux;
 import org.influxdb.flux.operators.ToIntFlux;
+import org.influxdb.flux.operators.ToStringFlux;
+import org.influxdb.flux.operators.ToTimeFlux;
+import org.influxdb.flux.operators.ToUIntFlux;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -51,11 +55,10 @@ import java.util.Objects;
  * <li>{@link ToBoolFlux}</li>
  * <li>{@link ToIntFlux}</li>
  * <li>{@link ToFloatFlux}</li>
- * <li>toDuration - UNSUPPORTED</li>
- * <li>toString - UNSUPPORTED</li>
- * <li>toTime - UNSUPPORTED</li>
- * <li>toUInt - UNSUPPORTED</li>
- * <li>toUInt - UNSUPPORTED</li>
+ * <li>{@link ToDurationFlux}</li>
+ * <li>{@link ToStringFlux}</li>
+ * <li>{@link ToTimeFlux}</li>
+ * <li>{@link ToUIntFlux}</li>
  * <li>window - UNSUPPORTED</li>
  * <li>toHttp - UNSUPPORTED</li>
  * <li>toKafka - UNSUPPORTED</li>
@@ -778,6 +781,46 @@ public abstract class Flux {
     @Nonnull
     public Flux toFloat() {
         return new ToFloatFlux(this);
+    }
+
+    /**
+     * Convert a value to a duration.
+     *
+     * @return {@link ToDurationFlux}
+     */
+    @Nonnull
+    public Flux toDuration() {
+        return new ToDurationFlux(this);
+    }
+
+    /**
+     * Convert a value to a string.
+     *
+     * @return {@link ToStringFlux}
+     */
+    @Nonnull
+    public Flux toStringConvert() {
+        return new ToStringFlux(this);
+    }
+
+    /**
+     * Convert a value to a time.
+     *
+     * @return {@link ToTimeFlux}
+     */
+    @Nonnull
+    public Flux toTime() {
+        return new ToTimeFlux(this);
+    }
+
+    /**
+     * Convert a value to a uint.
+     *
+     * @return {@link ToUIntFlux}
+     */
+    @Nonnull
+    public Flux toUInt() {
+        return new ToUIntFlux(this);
     }
 
     /**
