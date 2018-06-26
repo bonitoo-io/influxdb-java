@@ -22,8 +22,7 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
     @Test
     void successFluxResponseEvent() {
 
-        MockResponse response = createResponse();
-        fluxServer.enqueue(response);
+        fluxServer.enqueue(createResponse());
 
         TestObserver<FluxSuccessEvent> listener = fluxReactive
                 .listenEvents(FluxSuccessEvent.class)
@@ -42,6 +41,23 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
 
             return true;
         });
+    }
+
+    @Test
+    void parsingToFluxResult() {
+
+        fluxServer.enqueue(createResponse());
+
+        Flowable<FluxResult> results = fluxReactive.flux(Flux.from("flux_database"));
+        results
+                .take(1)
+                .test()
+                .assertValueCount(1)
+                .assertValue(fluxResult -> {
+
+                    Assertions.assertThat(fluxResult).isNotNull();
+                    return true;
+                });
     }
 
     @Nonnull
