@@ -593,19 +593,24 @@ Flowable.merge(cpu, mem)
 
 ### Flux - Influx data language
 The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute.
-The `InfluxDBReactive` support the `Flux` by `org.influxdb.flux.Flux`.
-```java
-//  from(db:"telegraf")
-//      |> filter(fn: (r) => r["_measurement"] == "cpu" AND r["_field"] == "usage_user")
-//      |> range(start:-170h)
-//      |> sum()'
+The `InfluxDBReactive` had to be configured by `FluxOptions` for support Flux querying.
 
-Flux flux = Flux.from("telegraf")
-    .filter(...)
-    .range(-170L, TimeUnit.HOURS)
-    .sum()
-    
-Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
+#### Flux configuration
+- `url` -  the url to connect to Flux
+- `orgID` - the organization id required by Flux 
+
+```java
+FluxOptions fluxOptions = FluxOptions.builder()
+    .url("http://localhost:8093")
+    .orgID("0")
+    .build();
+
+// Reactive client
+InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, fluxOptions);
+
+...
+
+influxDBReactive.close();
 ```
 #### Supported Functions
 - [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
@@ -643,6 +648,20 @@ Flux flux = Flux
 Flowable<Cpu> cpu = influxDBReactive.flux(flux, parameters, Cpu.class);
 ```
 
+#### Examples
+```java
+//  from(db:"telegraf")
+//      |> filter(fn: (r) => r["_measurement"] == "cpu" AND r["_field"] == "usage_user")
+//      |> range(start:-170h)
+//      |> sum()'
+
+Flux flux = Flux.from("telegraf")
+    .filter(...)
+    .range(-170L, TimeUnit.HOURS)
+    .sum()
+    
+Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
+```
 ### Advanced Usage
 
 #### Gzip's support 

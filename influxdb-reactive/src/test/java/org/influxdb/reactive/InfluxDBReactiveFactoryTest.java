@@ -1,7 +1,9 @@
 package org.influxdb.reactive;
 
 import org.assertj.core.api.Assertions;
+import org.influxdb.BatchOptions;
 import org.influxdb.InfluxDBOptions;
+import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -31,7 +33,7 @@ class InfluxDBReactiveFactoryTest {
                 .database("reactive_measurements")
                 .build();
 
-        Assertions.assertThatThrownBy(() -> InfluxDBReactiveFactory.connect(options, null))
+        Assertions.assertThatThrownBy(() -> InfluxDBReactiveFactory.connect(options, (BatchOptionsReactive) null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("BatchOptionsReactive is required");
     }

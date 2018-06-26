@@ -210,7 +210,7 @@ public final class InfluxDBOptions {
         /**
          * Set the url to connect to InfluxDB.
          *
-         * @param url the url to connect to InfluxDB. Is must be defined.
+         * @param url the url to connect to InfluxDB. It must be defined.
          * @return {@code this}
          * @since 3.0.0
          */
