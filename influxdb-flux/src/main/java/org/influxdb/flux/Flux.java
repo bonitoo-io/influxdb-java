@@ -9,6 +9,7 @@ import org.influxdb.flux.operators.LimitFlux;
 import org.influxdb.flux.operators.MaxFlux;
 import org.influxdb.flux.operators.MeanFlux;
 import org.influxdb.flux.operators.MinFlux;
+import org.influxdb.flux.operators.RangeFlux;
 import org.influxdb.flux.operators.SkewFlux;
 import org.influxdb.flux.operators.SortFlux;
 import org.influxdb.flux.operators.SpreadFlux;
@@ -23,9 +24,11 @@ import org.influxdb.flux.operators.ToTimeFlux;
 import org.influxdb.flux.operators.ToUIntFlux;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#basic-syntax">Flux</a> -
@@ -34,9 +37,15 @@ import java.util.Objects;
  * <ul>
  * <li>{@link FromFlux}</li>
  * <li>{@link CountFlux}</li>
+ * <li>covariance - SPEC</li>
+ * <li>cumulativeSum - SPEC</li>
+ * <li>derivative - SPEC</li>
+ * <li>difference - SPEC</li>
+ * <li>distinct - SPEC</li>
  * <li>filter - UNSUPPORTED</li>
  * <li>{@link FirstFlux}</li>
  * <li>{@link GroupFlux}</li>
+ * <li>integral - SPEC</li>
  * <li>join - UNSUPPORTED</li>
  * <li>{@link LastFlux}</li>
  * <li>{@link LimitFlux}</li>
@@ -44,12 +53,15 @@ import java.util.Objects;
  * <li>{@link MaxFlux}</li>
  * <li>{@link MeanFlux}</li>
  * <li>{@link MinFlux}</li>
- * <li>range - UNSUPPORTED</li>
+ * <li>percentile - SPEC</li>
+ * <li>{@link RangeFlux}</li>
  * <li>sample - UNSUPPORTED</li>
  * <li>set - UNSUPPORTED</li>
+ * <li>shift - SPEC</li>
  * <li>{@link SkewFlux}</li>
  * <li>{@link SortFlux}</li>
  * <li>{@link SpreadFlux}</li>
+ * <li>stateTracking - SPEC</li>
  * <li>{@link StddevFlux}</li>
  * <li>{@link SumFlux}</li>
  * <li>{@link ToBoolFlux}</li>
@@ -60,6 +72,7 @@ import java.util.Objects;
  * <li>{@link ToTimeFlux}</li>
  * <li>{@link ToUIntFlux}</li>
  * <li>window - UNSUPPORTED</li>
+ * <li>yield - SPEC</li>
  * <li>toHttp - UNSUPPORTED</li>
  * <li>toKafka - UNSUPPORTED</li>
  * <li>byString - UNSUPPORTED</li>
@@ -526,6 +539,98 @@ public abstract class Flux {
         Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
 
         return new MinFlux(this, useStartTimeParameterName);
+    }
+
+    /**
+     * Filters the results by time boundaries.
+     *
+     * @param start Specifies the oldest time to be included in the results
+     * @return {@link RangeFlux}
+     */
+    @Nonnull
+    public Flux range(@Nonnull final Instant start) {
+        Objects.requireNonNull(start, "Start is required");
+
+        return new RangeFlux(this, start);
+    }
+
+    /**
+     * Filters the results by time boundaries.
+     *
+     * @param start Specifies the oldest time to be included in the results
+     * @param stop  Specifies the exclusive newest time to be included in the results
+     * @return {@link RangeFlux}
+     */
+    @Nonnull
+    public Flux range(@Nonnull final Instant start, @Nonnull final Instant stop) {
+        Objects.requireNonNull(start, "Start is required");
+        Objects.requireNonNull(stop, "Stop is required");
+
+        return new RangeFlux(this, start, stop);
+    }
+
+    /**
+     * Filters the results by time boundaries.
+     *
+     * @param start Specifies the oldest time to be included in the results
+     * @param unit  a {@code TimeUnit} determining how to interpret the {@code start} parameter
+     * @return {@link RangeFlux}
+     */
+    @Nonnull
+    public Flux range(@Nonnull final Long start, @Nonnull final TimeUnit unit) {
+        Objects.requireNonNull(start, "Start is required");
+        Objects.requireNonNull(unit, "TimeUnit is required");
+
+        return new RangeFlux(this, start, unit);
+    }
+
+    /**
+     * Filters the results by time boundaries.
+     *
+     * @param start Specifies the oldest time to be included in the results
+     * @param unit  a {@code TimeUnit} determining how to interpret the {@code start} and {@code stop} parameter
+     * @return {@link RangeFlux}
+     */
+    @Nonnull
+    public Flux range(@Nonnull final Long start, @Nonnull final Long stop, @Nonnull final TimeUnit unit) {
+        Objects.requireNonNull(start, "Start is required");
+        Objects.requireNonNull(stop, "Stop is required");
+        Objects.requireNonNull(unit, "TimeUnit is required");
+
+        return new RangeFlux(this, start, stop, unit);
+    }
+
+    /**
+     * Filters the results by time boundaries.
+     *
+     * @param startParameterName The parameter name for Specifies the oldest time to be included in the results.
+     *                           The parameter value had to be a {@link Instant}.
+     * @return {@link RangeFlux}
+     */
+    @Nonnull
+    public Flux range(@Nonnull final String startParameterName) {
+
+        Preconditions.checkNonEmptyString(startParameterName, "Start parameter name");
+
+        return new RangeFlux(this, startParameterName);
+    }
+
+    /**
+     * Filters the results by time boundaries.
+     *
+     * @param startParameterName The parameter name for Specifies the oldest time to be included in the results.
+     *                           The parameter value had to be a {@link Instant}.
+     * @param stopParameterName  The parameter name for Specifies the exclusive newest
+     *                           time to be included in the results. The parameter value had to be a {@link Instant}.
+     * @return {@link RangeFlux}
+     */
+    @Nonnull
+    public Flux range(@Nonnull final String startParameterName, @Nonnull final String stopParameterName) {
+
+        Preconditions.checkNonEmptyString(startParameterName, "Start parameter name");
+        Preconditions.checkNonEmptyString(stopParameterName, "Stop parameter name");
+
+        return new RangeFlux(this, startParameterName, stopParameterName);
     }
 
     /**

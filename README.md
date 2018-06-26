@@ -593,7 +593,7 @@ Flowable.merge(cpu, mem)
 
 ### Flux - Influx data language
 The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute.
-The `InfluxDBReactive` support the `Flux` by `org.influxdb.flux.Flux`:
+The `InfluxDBReactive` support the `Flux` by `org.influxdb.flux.Flux`.
 ```java
 //  from(db:"telegraf")
 //      |> filter(fn: (r) => r["_measurement"] == "cpu" AND r["_field"] == "usage_user")
@@ -602,7 +602,7 @@ The `InfluxDBReactive` support the `Flux` by `org.influxdb.flux.Flux`:
 
 Flux flux = Flux.from("telegraf")
     .filter(...)
-    .range(...)
+    .range(-170L, TimeUnit.HOURS)
     .sum()
     
 Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
@@ -617,6 +617,7 @@ Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 - [max](https://github.com/influxdata/platform/tree/master/query#max) - returns the max value within the results
 - [mean](https://github.com/influxdata/platform/tree/master/query#mean) - returns the mean of the values within the results
 - [min](https://github.com/influxdata/platform/tree/master/query#min) - returns the min value within the results
+- [range](https://github.com/influxdata/platform/tree/master/query#range) - filters the results by time boundaries
 - [skew](https://github.com/influxdata/platform/tree/master/query#skew) - skew of the results
 - [sort](https://github.com/influxdata/platform/tree/master/query#sort) - sorts the results by the specified columns
 - [spread](https://github.com/influxdata/platform/tree/master/query#spread) - difference between min and max values

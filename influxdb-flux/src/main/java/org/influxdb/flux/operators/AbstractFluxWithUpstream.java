@@ -5,9 +5,13 @@ import org.influxdb.flux.FluxChain;
 import org.influxdb.flux.Preconditions;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -18,6 +22,10 @@ import java.util.stream.Collectors;
 abstract class AbstractFluxWithUpstream extends Flux {
 
     Flux source;
+
+    private DateTimeFormatter dataFormat = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd'T'HH:mm:ss.nnnnnnnnn'Z'")
+            .withZone(ZoneId.of("UTC"));
 
     AbstractFluxWithUpstream(@Nonnull final Flux source) {
 
@@ -66,6 +74,16 @@ abstract class AbstractFluxWithUpstream extends Flux {
         }
     }
 
+    class TimeInterval {
+        private Long interval;
+        private TimeUnit unit;
+
+        TimeInterval(@Nonnull final Long interval, @Nonnull final TimeUnit unit) {
+            this.interval = interval;
+            this.unit = unit;
+        }
+    }
+
     /**
      * @return {@link Boolean#TRUE} if was appended parameter
      */
@@ -98,6 +116,16 @@ abstract class AbstractFluxWithUpstream extends Flux {
                     .collect(Collectors.joining(", ", "[", "]"));
         }
 
+        if (parameterValue instanceof Instant) {
+            parameterValue = dataFormat.format((Instant) parameterValue);
+        }
+
+        if (parameterValue instanceof TimeInterval) {
+            String timeInterval = ((TimeInterval) parameterValue).interval.toString();
+            timeInterval += toTimePrecision(((TimeInterval) parameterValue).unit);
+            parameterValue = timeInterval;
+        }
+
         // delimit previously appended parameter
         if (wasAppendParameter) {
             operator.append(", ");
@@ -112,4 +140,27 @@ abstract class AbstractFluxWithUpstream extends Flux {
         return true;
     }
 
+
+    // TODO reuse from core - new module?
+    @Nonnull
+    private String toTimePrecision(@Nonnull final TimeUnit timeUnit) {
+        Objects.requireNonNull(timeUnit, "TimeUnit is required");
+
+        switch (timeUnit) {
+            case HOURS:
+                return "h";
+            case MINUTES:
+                return "m";
+            case SECONDS:
+                return "s";
+            case MILLISECONDS:
+                return "ms";
+            case MICROSECONDS:
+                return "u";
+            case NANOSECONDS:
+                return "n";
+            default:
+                throw new IllegalArgumentException("time precision must be one of");
+        }
+    }
 }
