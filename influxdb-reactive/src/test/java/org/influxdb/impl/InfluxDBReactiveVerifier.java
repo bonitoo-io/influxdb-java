@@ -2,13 +2,13 @@ package org.influxdb.impl;
 
 import org.assertj.core.api.Assertions;
 import org.influxdb.reactive.InfluxDBReactive;
-import org.influxdb.reactive.event.BackpressureEvent;
-import org.influxdb.reactive.event.QueryParsedResponseEvent;
-import org.influxdb.reactive.event.UnhandledErrorEvent;
-import org.influxdb.reactive.event.WriteErrorEvent;
-import org.influxdb.reactive.event.WritePartialEvent;
-import org.influxdb.reactive.event.WriteSuccessEvent;
-import org.influxdb.reactive.event.WriteUDPEvent;
+import org.influxdb.reactive.events.BackpressureEvent;
+import org.influxdb.reactive.events.QueryParsedResponseEvent;
+import org.influxdb.reactive.events.UnhandledErrorEvent;
+import org.influxdb.reactive.events.WriteErrorEvent;
+import org.influxdb.reactive.events.WritePartialEvent;
+import org.influxdb.reactive.events.WriteSuccessEvent;
+import org.influxdb.reactive.events.WriteUDPEvent;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;

@@ -1,5 +1,6 @@
 package org.influxdb.flux.options;
 
+import okhttp3.OkHttpClient;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
@@ -17,12 +18,14 @@ public final class FluxOptions {
 
     private final String url;
     private final String orgID;
+    private OkHttpClient.Builder okHttpClient;
 
     private FluxOptions(@Nonnull final Builder builder) {
         Objects.requireNonNull(builder, "FluxOptions.Builder is required");
 
         url = builder.url;
         orgID = builder.orgID;
+        okHttpClient = builder.okHttpClient;
     }
 
     /**
@@ -47,6 +50,16 @@ public final class FluxOptions {
     }
 
     /**
+     * @return HTTP client to use for communication with Flux
+     * @see FluxOptions.Builder#okHttpClient(OkHttpClient.Builder)
+     * @since 3.0.0
+     */
+    @Nonnull
+    public OkHttpClient.Builder getOkHttpClient() {
+        return okHttpClient;
+    }
+
+    /**
      * Creates a builder instance.
      *
      * @return a builder
@@ -67,6 +80,7 @@ public final class FluxOptions {
 
         private String url;
         private String orgID;
+        private OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
 
         /**
          * Set the url to connect to Flux.
@@ -93,6 +107,20 @@ public final class FluxOptions {
         public Builder orgID(@Nonnull final String orgID) {
             Preconditions.checkNonEmptyString(orgID, "orgID");
             this.orgID = orgID;
+            return this;
+        }
+
+        /**
+         * Set the HTTP client to use for communication with Flux.
+         *
+         * @param okHttpClient the HTTP client to use.
+         * @return {@code this}
+         * @since 3.0.0
+         */
+        @Nonnull
+        public Builder okHttpClient(@Nonnull final OkHttpClient.Builder okHttpClient) {
+            Objects.requireNonNull(okHttpClient, "OkHttpClient.Builder is required");
+            this.okHttpClient = okHttpClient;
             return this;
         }
 

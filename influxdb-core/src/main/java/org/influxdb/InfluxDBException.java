@@ -2,6 +2,12 @@ package org.influxdb;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import okhttp3.ResponseBody;
+import retrofit2.HttpException;
+
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * A wrapper for various exceptions caused while interacting with InfluxDB.
@@ -182,5 +188,23 @@ public class InfluxDBException extends RuntimeException {
     } catch (Exception e) {
       return new InfluxDBException(errorBody);
     }
+  }
+
+  @Nonnull
+  public static InfluxDBException buildExceptionForThrowable(@Nonnull final Throwable throwable) {
+    Objects.requireNonNull(throwable, "Throwable is required");
+
+    if (throwable instanceof HttpException) {
+
+      try (ResponseBody errorBody = ((HttpException) throwable).response().errorBody()) {
+        if (errorBody != null) {
+          return InfluxDBException.buildExceptionForErrorState(errorBody.string());
+        }
+      } catch (IOException e) {
+        return new InfluxDBException(e);
+      }
+    }
+
+    return new InfluxDBException(throwable);
   }
 }

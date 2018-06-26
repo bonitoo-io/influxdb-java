@@ -1,4 +1,4 @@
-package org.influxdb.reactive.event;
+package org.influxdb.reactive.events;
 
 import okio.BufferedSource;
 import org.influxdb.dto.QueryResult;
@@ -48,7 +48,7 @@ public class QueryParsedResponseEvent extends AbstractInfluxEvent {
     }
 
     @Override
-    protected void logEvent() {
+    public void logEvent() {
 
         LOG.log(Level.FINEST, "Chunk response parsed to {0}", queryResult);
     }

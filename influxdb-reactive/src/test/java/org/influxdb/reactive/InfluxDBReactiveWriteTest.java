@@ -11,7 +11,7 @@ import org.influxdb.InfluxDBException;
 import org.influxdb.InfluxDBMapperException;
 import org.influxdb.dto.Point;
 import org.influxdb.impl.AbstractInfluxDBReactiveTest;
-import org.influxdb.reactive.event.UnhandledErrorEvent;
+import org.influxdb.reactive.events.UnhandledErrorEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

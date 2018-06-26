@@ -26,15 +26,15 @@ import org.influxdb.dto.Pong;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.InfluxDBReactive;
-import org.influxdb.reactive.event.AbstractInfluxEvent;
-import org.influxdb.reactive.event.AbstractWriteEvent;
-import org.influxdb.reactive.event.BackpressureEvent;
-import org.influxdb.reactive.event.QueryParsedResponseEvent;
-import org.influxdb.reactive.event.UnhandledErrorEvent;
-import org.influxdb.reactive.event.WriteErrorEvent;
-import org.influxdb.reactive.event.WritePartialEvent;
-import org.influxdb.reactive.event.WriteSuccessEvent;
-import org.influxdb.reactive.event.WriteUDPEvent;
+import org.influxdb.reactive.events.AbstractInfluxEvent;
+import org.influxdb.reactive.events.AbstractWriteEvent;
+import org.influxdb.reactive.events.BackpressureEvent;
+import org.influxdb.reactive.events.QueryParsedResponseEvent;
+import org.influxdb.reactive.events.UnhandledErrorEvent;
+import org.influxdb.reactive.events.WriteErrorEvent;
+import org.influxdb.reactive.events.WritePartialEvent;
+import org.influxdb.reactive.events.WriteSuccessEvent;
+import org.influxdb.reactive.events.WriteUDPEvent;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.option.QueryOptions;
 import org.influxdb.reactive.option.WriteOptions;
@@ -84,7 +84,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                                 @Nonnull final BatchOptionsReactive batchOptions) {
 
         this(options, batchOptions, Schedulers.newThread(), Schedulers.computation(), Schedulers.trampoline(),
-                Schedulers.trampoline(), null);
+                Schedulers.trampoline());
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
@@ -92,10 +92,9 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                          @Nonnull final Scheduler processorScheduler,
                          @Nonnull final Scheduler batchScheduler,
                          @Nonnull final Scheduler jitterScheduler,
-                         @Nonnull final Scheduler retryScheduler,
-                         @Nullable final InfluxDBServiceReactive influxDBService) {
+                         @Nonnull final Scheduler retryScheduler) {
 
-        super(InfluxDBServiceReactive.class, options, influxDBService, null);
+        super(InfluxDBServiceReactive.class, options, null, null);
 
         //
         // Options
@@ -438,7 +437,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                             // success response
                             this::chunkReader,
                             // error response
-                            throwable -> Observable.error(buildInfluxDBException(throwable)),
+                            throwable -> Observable.error(InfluxDBException.buildExceptionForThrowable(throwable)),
                             // end of response
                             Observable::empty)
                     .toFlowable(BackpressureStrategy.BUFFER);
@@ -719,7 +718,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
             if (throwable instanceof HttpException) {
 
-                InfluxDBException influxDBException = buildInfluxDBException(throwable);
+                InfluxDBException influxDBException = InfluxDBException.buildExceptionForThrowable(throwable);
 
                 List<Object> dataPoints = points.call();
 
@@ -763,25 +762,6 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
                 .filter(dataPoint -> !notParsable.contains(dataPoint))
                 .map(AbstractData::getData)
                 .collect(Collectors.toList());
-    }
-
-    @Nonnull
-    private InfluxDBException buildInfluxDBException(@Nonnull final Throwable throwable) {
-
-        Objects.requireNonNull(throwable, "Throwable is required");
-
-        if (throwable instanceof HttpException) {
-
-            try (ResponseBody errorBody = ((HttpException) throwable).response().errorBody()) {
-                if (errorBody != null) {
-                    return InfluxDBException.buildExceptionForErrorState(errorBody.string());
-                }
-            } catch (IOException e) {
-                LOG.log(Level.SEVERE, "Build exception from error body fail", e);
-            }
-        }
-
-        return new InfluxDBException(throwable);
     }
 
     private int jitterDelay() {
@@ -838,6 +818,7 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
 
         Objects.requireNonNull(event, "Event is required");
 
+        event.logEvent();
         eventPublisher.onNext(event);
     }
 

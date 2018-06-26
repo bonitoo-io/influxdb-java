@@ -1,5 +1,6 @@
 package org.influxdb.flux.options;
 
+import okhttp3.OkHttpClient;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -20,6 +21,7 @@ class FluxOptionsTest {
 
         Assertions.assertThat(fluxOptions.getUrl()).isEqualTo("http://localhost:8093");
         Assertions.assertThat(fluxOptions.getOrgID()).isEqualTo("0");
+        Assertions.assertThat(fluxOptions.getOkHttpClient()).isNotNull();
     }
 
     @Test
@@ -40,5 +42,19 @@ class FluxOptionsTest {
         Assertions.assertThatThrownBy(fluxOptions::build)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("The organization id required by Flux has to be defined.");
+    }
+
+    @Test
+    void okHttpClientValue() {
+
+        OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
+
+        FluxOptions fluxOptions = FluxOptions.builder()
+                .url("http://localhost:8093")
+                .orgID("0")
+                .okHttpClient(okHttpClient)
+                .build();
+
+        Assertions.assertThat(fluxOptions.getOkHttpClient()).isEqualTo(okHttpClient);
     }
 }

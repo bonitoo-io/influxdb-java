@@ -1,4 +1,4 @@
-package org.influxdb.reactive.event;
+package org.influxdb.reactive.events;
 
 import org.influxdb.InfluxDBException;
 import org.influxdb.reactive.option.WriteOptions;
@@ -40,7 +40,7 @@ public class WritePartialEvent extends AbstractWriteEvent {
     }
 
     @Override
-    protected void logEvent() {
+    public void logEvent() {
         LOG.log(Level.FINEST, "Success response from InfluxDB");
     }
 }

@@ -617,7 +617,7 @@ influxDBReactive
     .subscribe(version -> System.out.println("InfluxDB version: " + version));
 ```
 
-## Flux - Influx data language
+## Flux - Influx Data Language (version 3.0+ required)
 The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute.
 The `FluxReactive` is reactive client that support the Flux Language.
 
@@ -628,6 +628,7 @@ The `FluxReactiveFactory` creates the reactive instance of a Flux client. The `F
 #### Flux configuration
 - `url` -  the url to connect to Flux
 - `orgID` - the organization id required by Flux 
+- `okHttpClient` - the HTTP client to use for communication with Flux (optional)
 
 ```java
 // Connection configuration
@@ -643,6 +644,11 @@ FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
 
 fluxReactive.close();
 ```
+
+### Events
+The `FluxReactive` produces events that allow user to be notified and react to this events:
+
+- `FluxSuccessEvent` - published when arrived the success response from Flux server
 
 ### Supported Functions
 - [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
@@ -702,6 +708,16 @@ Flux flux = Flux
     .limit("limitParameter");
 
 Flowable<Cpu> cpu = influxDBReactive.flux(flux, parameters, Cpu.class);
+```
+### Advanced Usage
+
+#### Gzip's support 
+Same as the non reactive client. For detail information see [documentation](#user-content-gzips-support-version-25-required).
+
+#### Log HTTP Request and Response
+The Requests and Responses can be logged by changing OkHttp LogLevel.
+```java
+fluxReactive.setLogLevel(HttpLoggingInterceptor.Level.HEADERS);
 ```
 
 ## Version

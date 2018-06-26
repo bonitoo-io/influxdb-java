@@ -1,4 +1,4 @@
-package org.influxdb.reactive.event;
+package org.influxdb.reactive.events;
 
 /**
  * Base event triggered by InfluxDBReactive client.
@@ -11,6 +11,6 @@ public abstract class AbstractInfluxEvent {
     /**
      * Log current event by {@link java.util.logging.Logger}.
      */
-    protected abstract void logEvent();
+    public abstract void logEvent();
 }
 

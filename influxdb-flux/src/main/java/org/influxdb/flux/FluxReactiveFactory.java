@@ -1,7 +1,7 @@
 package org.influxdb.flux;
 
-import org.influxdb.flux.impl.FluxReactiveImpl;
 import org.influxdb.flux.options.FluxOptions;
+import org.influxdb.impl.FluxReactiveImpl;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;

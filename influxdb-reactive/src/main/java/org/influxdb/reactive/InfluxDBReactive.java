@@ -10,7 +10,7 @@ import org.influxdb.dto.Point;
 import org.influxdb.dto.Pong;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
-import org.influxdb.reactive.event.AbstractInfluxEvent;
+import org.influxdb.reactive.events.AbstractInfluxEvent;
 import org.influxdb.reactive.option.QueryOptions;
 import org.influxdb.reactive.option.WriteOptions;
 import org.reactivestreams.Publisher;

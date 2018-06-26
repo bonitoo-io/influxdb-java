@@ -62,7 +62,7 @@ public abstract class AbstractInfluxDBReactiveTest {
 
         influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions,
                 Schedulers.trampoline(), this.batchScheduler, this.jitterScheduler,
-                this.retryScheduler, null);
+                this.retryScheduler);
 
         verifier = new InfluxDBReactiveVerifier(influxDBReactive);
 

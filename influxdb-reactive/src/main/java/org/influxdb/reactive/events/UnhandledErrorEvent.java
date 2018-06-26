@@ -1,4 +1,4 @@
-package org.influxdb.reactive.event;
+package org.influxdb.reactive.events;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -33,7 +33,7 @@ public class UnhandledErrorEvent extends AbstractInfluxEvent {
     }
 
     @Override
-    protected void logEvent() {
+    public void logEvent() {
         LOG.log(Level.SEVERE, "Unexpected error", throwable);
     }
 }

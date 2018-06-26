@@ -1,4 +1,4 @@
-package org.influxdb.reactive.event;
+package org.influxdb.reactive.events;
 
 import org.influxdb.reactive.option.WriteOptions;
 
@@ -24,7 +24,7 @@ public class WriteSuccessEvent extends AbstractWriteEvent {
     }
 
     @Override
-    protected void logEvent() {
+    public void logEvent() {
         LOG.log(Level.FINEST, "Success response from InfluxDB");
     }
 }

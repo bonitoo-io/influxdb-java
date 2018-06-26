@@ -41,6 +41,22 @@ public final class FluxChain {
     }
 
     /**
+     * Add the Flux parameters.
+     *
+     * @param parameters parameters
+     * @return the current {@link FluxChain}
+     */
+    @Nonnull
+    public FluxChain addParameters(@Nonnull final Map<String, Object> parameters) {
+
+        Objects.requireNonNull(parameters, "Parameters are required");
+
+        this.parameters.putAll(parameters);
+
+        return this;
+    }
+
+    /**
      * @return get bound parameters
      */
     @Nonnull

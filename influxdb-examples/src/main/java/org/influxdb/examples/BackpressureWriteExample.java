@@ -3,10 +3,10 @@ package org.influxdb.examples;
 import io.reactivex.functions.Consumer;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
-import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveFactory;
-import org.influxdb.reactive.event.BackpressureEvent;
+import org.influxdb.reactive.events.BackpressureEvent;
+import org.influxdb.reactive.option.BatchOptionsReactive;
 
 public class BackpressureWriteExample {
 

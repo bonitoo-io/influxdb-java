@@ -1,4 +1,4 @@
-package org.influxdb.reactive.event;
+package org.influxdb.reactive.events;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,7 +15,7 @@ public class BackpressureEvent extends AbstractInfluxEvent {
     private static final Logger LOG = Logger.getLogger(BackpressureEvent.class.getName());
 
     @Override
-    protected void logEvent() {
+    public void logEvent() {
         LOG.log(Level.WARNING, "Backpressure applied, try increase BatchOptionsReactive.bufferLimit");
     }
 }

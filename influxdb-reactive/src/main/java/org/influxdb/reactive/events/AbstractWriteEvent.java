@@ -1,4 +1,4 @@
-package org.influxdb.reactive.event;
+package org.influxdb.reactive.events;
 
 import org.influxdb.reactive.option.WriteOptions;
 
