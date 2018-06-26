@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:54)
  */
@@ -20,11 +22,8 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
     @Test
     void successFluxResponseEvent() {
 
-        String body = "{\"results\":[{\"statement_id\":0,\"series\":[{\"name\":\"h2o_feet\"," +
-                "\"tags\":{\"location\":\"coyote_creek\"},\"columns\":[\"time\",\"level description\",\"water_level\"],"
-                + "\"values\":[[\"1970-01-01T00:00:00.001Z\",\"below 3 feet\",2.927]]}]}]}";
-
-        fluxServer.enqueue(new MockResponse().setBody(body));
+        MockResponse response = createResponse();
+        fluxServer.enqueue(response);
 
         TestObserver<FluxSuccessEvent> listener = fluxReactive
                 .listenEvents(FluxSuccessEvent.class)
@@ -43,5 +42,24 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
 
             return true;
         });
+    }
+
+    @Nonnull
+    private MockResponse createResponse() {
+
+        String data = "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double\n"
+                + ",result,table,_start,_stop,_time,region,host,_value\n"
+                + ",mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43\n"
+                + ",mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25\n"
+                + ",mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62\n"
+                + ",mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,west,A,62.73\n"
+                + ",mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,west,B,12.83\n"
+                + ",mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,west,C,51.62";
+
+        MockResponse mockResponse = new MockResponse();
+        mockResponse.setHeader("Content-Type", "text/csv; charset=utf-8");
+        mockResponse.setHeader("Date", "Tue, 26 Jun 2018 13:15:01 GMT");
+
+        return mockResponse.setBody(data);
     }
 }
