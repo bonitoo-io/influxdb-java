@@ -2,7 +2,7 @@ package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
-import org.influxdb.flux.Preconditions;
+import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;

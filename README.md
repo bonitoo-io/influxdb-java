@@ -590,78 +590,6 @@ Flowable.merge(cpu, mem)
         
     });
 ```
-
-### Flux - Influx data language
-The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute.
-The `InfluxDBReactive` had to be configured by `FluxOptions` for support Flux querying.
-
-#### Flux configuration
-- `url` -  the url to connect to Flux
-- `orgID` - the organization id required by Flux 
-
-```java
-FluxOptions fluxOptions = FluxOptions.builder()
-    .url("http://localhost:8093")
-    .orgID("0")
-    .build();
-
-// Reactive client
-InfluxDBReactive influxDBReactive = InfluxDBReactiveFactory.connect(options, fluxOptions);
-
-...
-
-influxDBReactive.close();
-```
-#### Supported Functions
-- [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
-- [count](https://github.com/influxdata/platform/tree/master/query#count) - counts the number of results
-- [first](https://github.com/influxdata/platform/tree/master/query#first) - returns the first result of the query
-- [group](https://github.com/influxdata/platform/tree/master/query#group) - groups results by a user-specified set of tags
-- [last](https://github.com/influxdata/platform/tree/master/query#last) - returns the last result of the query
-- [limit](https://github.com/influxdata/platform/tree/master/query#limit) - restricts the number of rows returned in the results
-- [max](https://github.com/influxdata/platform/tree/master/query#max) - returns the max value within the results
-- [mean](https://github.com/influxdata/platform/tree/master/query#mean) - returns the mean of the values within the results
-- [min](https://github.com/influxdata/platform/tree/master/query#min) - returns the min value within the results
-- [range](https://github.com/influxdata/platform/tree/master/query#range) - filters the results by time boundaries
-- [skew](https://github.com/influxdata/platform/tree/master/query#skew) - skew of the results
-- [sort](https://github.com/influxdata/platform/tree/master/query#sort) - sorts the results by the specified columns
-- [spread](https://github.com/influxdata/platform/tree/master/query#spread) - difference between min and max values
-- [stddev](https://github.com/influxdata/platform/tree/master/query#stddev) - standard Deviation of the results
-- [sum](https://github.com/influxdata/platform/tree/master/query#sum) - sum of the results
-- [toBool](https://github.com/influxdata/platform/tree/master/query#tobool) - convert a value to a bool
-- [toInt](https://github.com/influxdata/platform/tree/master/query#toint) - convert a value to a int
-- [toFloat](https://github.com/influxdata/platform/tree/master/query#tofloat) - convert a value to a float
-- [toDuration](https://github.com/influxdata/platform/tree/master/query#toduration) - convert a value to a duration
-- [toString](https://github.com/influxdata/platform/tree/master/query#tostring) - convert a value to a string
-- [toTime](https://github.com/influxdata/platform/tree/master/query#totime) - convert a value to a time
-- [toUInt](https://github.com/influxdata/platform/tree/master/query#touint) - convert a value to a uint
-
-#### Named parameters
-```java
-Map<String, Object> parameters = new HashMap<>();
-parameters.put("limitParameter", 5);
-
-Flux flux = Flux
-    .from("telegraf")
-    .limit("limitParameter");
-
-Flowable<Cpu> cpu = influxDBReactive.flux(flux, parameters, Cpu.class);
-```
-
-#### Examples
-```java
-//  from(db:"telegraf")
-//      |> filter(fn: (r) => r["_measurement"] == "cpu" AND r["_field"] == "usage_user")
-//      |> range(start:-170h)
-//      |> sum()'
-
-Flux flux = Flux.from("telegraf")
-    .filter(...)
-    .range(-170L, TimeUnit.HOURS)
-    .sum()
-    
-Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
-```
 ### Advanced Usage
 
 #### Gzip's support 
@@ -689,7 +617,92 @@ influxDBReactive
     .subscribe(version -> System.out.println("InfluxDB version: " + version));
 ```
 
+## Flux - Influx data language
+The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute.
+The `FluxReactive` is reactive client that support the Flux Language.
 
+### Factory
+
+The `FluxReactiveFactory` creates the reactive instance of a Flux client. The `FluxReactive` client can be configured by `FluxOptions`.
+
+#### Flux configuration
+- `url` -  the url to connect to Flux
+- `orgID` - the organization id required by Flux 
+
+```java
+// Connection configuration
+FluxOptions fluxOptions = FluxOptions.builder()
+    .url("http://localhost:8093")
+    .orgID("0")
+    .build();
+
+// Reactive client
+FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
+
+...
+
+fluxReactive.close();
+```
+
+### Supported Functions
+- [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
+- [count](https://github.com/influxdata/platform/tree/master/query#count) - counts the number of results
+- [first](https://github.com/influxdata/platform/tree/master/query#first) - returns the first result of the query
+- [group](https://github.com/influxdata/platform/tree/master/query#group) - groups results by a user-specified set of tags
+- [last](https://github.com/influxdata/platform/tree/master/query#last) - returns the last result of the query
+- [limit](https://github.com/influxdata/platform/tree/master/query#limit) - restricts the number of rows returned in the results
+- [max](https://github.com/influxdata/platform/tree/master/query#max) - returns the max value within the results
+- [mean](https://github.com/influxdata/platform/tree/master/query#mean) - returns the mean of the values within the results
+- [min](https://github.com/influxdata/platform/tree/master/query#min) - returns the min value within the results
+- [range](https://github.com/influxdata/platform/tree/master/query#range) - filters the results by time boundaries
+- [skew](https://github.com/influxdata/platform/tree/master/query#skew) - skew of the results
+- [sort](https://github.com/influxdata/platform/tree/master/query#sort) - sorts the results by the specified columns
+- [spread](https://github.com/influxdata/platform/tree/master/query#spread) - difference between min and max values
+- [stddev](https://github.com/influxdata/platform/tree/master/query#stddev) - standard Deviation of the results
+- [sum](https://github.com/influxdata/platform/tree/master/query#sum) - sum of the results
+- [toBool](https://github.com/influxdata/platform/tree/master/query#tobool) - convert a value to a bool
+- [toInt](https://github.com/influxdata/platform/tree/master/query#toint) - convert a value to a int
+- [toFloat](https://github.com/influxdata/platform/tree/master/query#tofloat) - convert a value to a float
+- [toDuration](https://github.com/influxdata/platform/tree/master/query#toduration) - convert a value to a duration
+- [toString](https://github.com/influxdata/platform/tree/master/query#tostring) - convert a value to a string
+- [toTime](https://github.com/influxdata/platform/tree/master/query#totime) - convert a value to a time
+- [toUInt](https://github.com/influxdata/platform/tree/master/query#touint) - convert a value to a uint
+
+### Examples
+#### Query
+```java
+Flux flux = Flux.from("telegraf")
+    .range(-170L, TimeUnit.HOURS)
+    .limit(5)
+    
+Flowable<FluxResult> cpu = influxDBReactive.flux(flux);
+```
+
+#### Map results to the POJO
+```java
+//  from(db:"telegraf")
+//      |> filter(fn: (r) => r["_measurement"] == "cpu" AND r["_field"] == "usage_user")
+//      |> range(start:-170h)
+//      |> sum()'
+
+Flux flux = Flux.from("telegraf")
+    .filter(...)
+    .range(-170L, TimeUnit.HOURS)
+    .sum()
+    
+Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
+```
+#### Named parameters
+```java
+Map<String, Object> parameters = new HashMap<>();
+parameters.put("limitParameter", 5);
+
+Flux flux = Flux
+    .from("telegraf")
+    .limit("limitParameter");
+
+Flowable<Cpu> cpu = influxDBReactive.flux(flux, parameters, Cpu.class);
+```
 
 ## Version
 

@@ -20,12 +20,6 @@ class FluxOptionsTest {
 
         Assertions.assertThat(fluxOptions.getUrl()).isEqualTo("http://localhost:8093");
         Assertions.assertThat(fluxOptions.getOrgID()).isEqualTo("0");
-        Assertions.assertThat(fluxOptions.isNotDefined()).isFalse();
-    }
-
-    @Test
-    void notDefinedOptions() {
-        Assertions.assertThat(FluxOptions.NOT_DEFINED.isNotDefined()).isTrue();
     }
 
     @Test

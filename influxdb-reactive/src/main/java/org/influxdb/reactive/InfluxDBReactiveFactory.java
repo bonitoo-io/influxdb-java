@@ -1,7 +1,6 @@
 package org.influxdb.reactive;
 
 import org.influxdb.InfluxDBOptions;
-import org.influxdb.flux.options.FluxOptions;
 import org.influxdb.impl.InfluxDBReactiveImpl;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 
@@ -47,43 +46,6 @@ public final class InfluxDBReactiveFactory {
         Objects.requireNonNull(options, "InfluxDBOptions is required");
         Objects.requireNonNull(batchOptions, "BatchOptionsReactive is required");
 
-        return connect(options, batchOptions, FluxOptions.NOT_DEFINED);
-    }
-
-    /**
-     * Create a instance of the InfluxDB reactive client.
-     *
-     * @param options     the connection configuration
-     * @param fluxOptions the flux configuration
-     * @return 3.0.0
-     */
-    @Nonnull
-    public static InfluxDBReactive connect(@Nonnull final InfluxDBOptions options,
-                                           @Nonnull final FluxOptions fluxOptions) {
-
-        Objects.requireNonNull(options, "InfluxDBOptions is required");
-        Objects.requireNonNull(fluxOptions, "FluxOptions is required");
-
-        return connect(options, BatchOptionsReactive.DEFAULTS, fluxOptions);
-    }
-
-    /**
-     * Create a instance of the InfluxDB reactive client.
-     *
-     * @param options      the connection configuration
-     * @param batchOptions the batch configuration
-     * @param fluxOptions  the flux configuration
-     * @return 3.0.0
-     */
-    @Nonnull
-    public static InfluxDBReactive connect(@Nonnull final InfluxDBOptions options,
-                                           @Nonnull final BatchOptionsReactive batchOptions,
-                                           @Nonnull final FluxOptions fluxOptions) {
-
-        Objects.requireNonNull(options, "InfluxDBOptions is required");
-        Objects.requireNonNull(batchOptions, "BatchOptionsReactive is required");
-        Objects.requireNonNull(fluxOptions, "FluxOptions is required");
-
-        return new InfluxDBReactiveImpl(options, batchOptions, fluxOptions);
+        return new InfluxDBReactiveImpl(options, batchOptions);
     }
 }

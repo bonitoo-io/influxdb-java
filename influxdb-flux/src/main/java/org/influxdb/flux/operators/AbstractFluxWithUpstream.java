@@ -2,7 +2,8 @@ package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
-import org.influxdb.flux.Preconditions;
+import org.influxdb.impl.Preconditions;
+import org.influxdb.impl.TimeUtil;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -122,7 +123,7 @@ abstract class AbstractFluxWithUpstream extends Flux {
 
         if (parameterValue instanceof TimeInterval) {
             String timeInterval = ((TimeInterval) parameterValue).interval.toString();
-            timeInterval += toTimePrecision(((TimeInterval) parameterValue).unit);
+            timeInterval += TimeUtil.toTimePrecision(((TimeInterval) parameterValue).unit);
             parameterValue = timeInterval;
         }
 
@@ -138,29 +139,5 @@ abstract class AbstractFluxWithUpstream extends Flux {
                 .append(parameterValue.toString());
 
         return true;
-    }
-
-
-    // TODO reuse from core - new module?
-    @Nonnull
-    private String toTimePrecision(@Nonnull final TimeUnit timeUnit) {
-        Objects.requireNonNull(timeUnit, "TimeUnit is required");
-
-        switch (timeUnit) {
-            case HOURS:
-                return "h";
-            case MINUTES:
-                return "m";
-            case SECONDS:
-                return "s";
-            case MILLISECONDS:
-                return "ms";
-            case MICROSECONDS:
-                return "u";
-            case NANOSECONDS:
-                return "n";
-            default:
-                throw new IllegalArgumentException("time precision must be one of");
-        }
     }
 }

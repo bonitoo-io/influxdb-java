@@ -1,6 +1,6 @@
 package org.influxdb.flux.options;
 
-import org.influxdb.flux.Preconditions;
+import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -17,16 +17,6 @@ public final class FluxOptions {
 
     private final String url;
     private final String orgID;
-
-    /**
-     * Not defined FluxOptions.
-     */
-    public static final FluxOptions NOT_DEFINED = new FluxOptions();
-
-    private FluxOptions() {
-        url = null;
-        orgID = null;
-    }
 
     private FluxOptions(@Nonnull final Builder builder) {
         Objects.requireNonNull(builder, "FluxOptions.Builder is required");
@@ -54,13 +44,6 @@ public final class FluxOptions {
     @Nonnull
     public String getOrgID() {
         return orgID;
-    }
-
-    /**
-     * @return {@link Boolean#TRUE} if FluxOptions are not defined.
-     */
-    boolean isNotDefined() {
-        return url == null && orgID == null;
     }
 
     /**

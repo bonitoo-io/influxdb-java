@@ -1,5 +1,7 @@
 package org.influxdb.flux;
 
+import org.influxdb.impl.Preconditions;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;

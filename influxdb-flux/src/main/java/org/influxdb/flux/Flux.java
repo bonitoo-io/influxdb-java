@@ -22,6 +22,7 @@ import org.influxdb.flux.operators.ToIntFlux;
 import org.influxdb.flux.operators.ToStringFlux;
 import org.influxdb.flux.operators.ToTimeFlux;
 import org.influxdb.flux.operators.ToUIntFlux;
+import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;

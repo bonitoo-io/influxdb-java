@@ -7,7 +7,6 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
-import org.influxdb.flux.options.FluxOptions;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.option.BatchOptionsReactive;
 import org.junit.jupiter.api.AfterEach;
@@ -61,7 +60,7 @@ public abstract class AbstractInfluxDBReactiveTest {
         this.jitterScheduler = jitterScheduler;
         this.retryScheduler = retryScheduler;
 
-        influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions, FluxOptions.NOT_DEFINED,
+        influxDBReactive = new InfluxDBReactiveImpl(options, batchOptions,
                 Schedulers.trampoline(), this.batchScheduler, this.jitterScheduler,
                 this.retryScheduler, null);
 

@@ -25,7 +25,6 @@ import org.influxdb.dto.Point;
 import org.influxdb.dto.Pong;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
-import org.influxdb.flux.options.FluxOptions;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.event.AbstractInfluxEvent;
 import org.influxdb.reactive.event.AbstractWriteEvent;
@@ -74,7 +73,6 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     @Nullable
     private final WriteOptions defaultWriteOptions;
     private final QueryOptions defaultQueryOptions;
-    private final FluxOptions fluxOptions;
 
     private final InfluxDBResultMapper resultMapper;
 
@@ -85,20 +83,12 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
     public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                                 @Nonnull final BatchOptionsReactive batchOptions) {
 
-        this(options, batchOptions, FluxOptions.NOT_DEFINED);
-    }
-
-    public InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
-                                @Nonnull final BatchOptionsReactive batchOptions,
-                                @Nonnull final FluxOptions fluxOptions) {
-
-        this(options, batchOptions, fluxOptions, Schedulers.newThread(), Schedulers.computation(),
-                Schedulers.trampoline(), Schedulers.trampoline(), null);
+        this(options, batchOptions, Schedulers.newThread(), Schedulers.computation(), Schedulers.trampoline(),
+                Schedulers.trampoline(), null);
     }
 
     InfluxDBReactiveImpl(@Nonnull final InfluxDBOptions options,
                          @Nonnull final BatchOptionsReactive batchOptions,
-                         @Nonnull final FluxOptions fluxOptions,
                          @Nonnull final Scheduler processorScheduler,
                          @Nonnull final Scheduler batchScheduler,
                          @Nonnull final Scheduler jitterScheduler,
@@ -112,7 +102,6 @@ public class InfluxDBReactiveImpl extends AbstractInfluxDB<InfluxDBServiceReacti
         //
         this.options = options;
         this.batchOptions = batchOptions;
-        this.fluxOptions = fluxOptions;
         if (options.getDatabase() == null) {
             this.defaultWriteOptions = null;
         } else {
