@@ -14,6 +14,7 @@ import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
 import org.influxdb.flux.FluxReactive;
 import org.influxdb.flux.events.AbstractFluxEvent;
+import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.FluxResultMapper;
@@ -156,7 +157,15 @@ public class FluxReactiveImpl implements FluxReactive {
                             // success response
                             body -> chunkReader(query, this.fluxOptions, body),
                             // error response
-                            throwable -> Observable.error(InfluxDBException.buildExceptionForThrowable(throwable)),
+                            throwable -> (observer -> {
+
+                                InfluxDBException influxDBException = InfluxDBException
+                                        .buildExceptionForThrowable(throwable);
+
+                                // publish event
+                                publishEvent(new FluxErrorEvent(fluxOptions, query, influxDBException));
+                                observer.onError(influxDBException);
+                            }),
                             // end of response
                             Observable::empty)
                     .toFlowable(BackpressureStrategy.BUFFER);
@@ -248,7 +257,7 @@ public class FluxReactiveImpl implements FluxReactive {
                     if (fluxResult != null) {
 
                         subscriber.onNext(fluxResult);
-                        publish(new FluxSuccessEvent(options, query));
+                        publishEvent(new FluxSuccessEvent(options, query));
                     }
                 }
             } catch (IOException e) {
@@ -273,7 +282,7 @@ public class FluxReactiveImpl implements FluxReactive {
         });
     }
 
-    private <T extends AbstractFluxEvent> void publish(@Nonnull final T event) {
+    private <T extends AbstractFluxEvent> void publishEvent(@Nonnull final T event) {
 
         Objects.requireNonNull(event, "Event is required");
 

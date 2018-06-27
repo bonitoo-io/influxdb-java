@@ -649,6 +649,30 @@ fluxReactive.close();
 The `FluxReactive` produces events that allow user to be notified and react to this events:
 
 - `FluxSuccessEvent` - published when arrived the success response from Flux server
+- `FluxErrorEvent` - published when arrived the error response from Flux server
+
+#### Handling success response
+```java
+FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
+fluxReactive.listenEvents(FluxSuccessEvent.class).subscribe(event -> {
+
+    // handle success
+    
+    String query = event.getFluxQuery();
+    ...
+});
+```
+#### Handling error response
+```java
+FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
+fluxReactive.listenEvents(FluxErrorEvent.class).subscribe(event -> {
+    
+    // handle error
+    
+    InfluxDBException influxDBException = event.getException();
+    ...
+});
+```
 
 ### Supported Functions
 - [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
