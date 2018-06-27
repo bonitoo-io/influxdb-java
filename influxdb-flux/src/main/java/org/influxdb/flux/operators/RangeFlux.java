@@ -1,14 +1,11 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.flux.FluxChain;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,11 +38,11 @@ import java.util.Objects;
  */
 public final class RangeFlux extends AbstractParametrizedFlux {
 
-    private final FluxChain.FluxParameter<Instant> startInstant;
-    private final FluxChain.FluxParameter<Instant> stopInstant;
+    private final Parameter<Instant> startInstant;
+    private final Parameter<Instant> stopInstant;
 
-    private final FluxChain.FluxParameter<TimeInterval> startInterval;
-    private final FluxChain.FluxParameter<TimeInterval> stopInterval;
+    private final Parameter<TimeInterval> startInterval;
+    private final Parameter<TimeInterval> stopInterval;
 
     public RangeFlux(@Nonnull final Flux source, @Nonnull final Instant start) {
 
@@ -54,10 +51,10 @@ public final class RangeFlux extends AbstractParametrizedFlux {
         Objects.requireNonNull(start, "Start is required");
 
         this.startInstant = (m) -> start;
-        this.stopInstant = new FluxChain.NotDefinedParameter<>();
+        this.stopInstant = new NotDefinedParameter<>();
 
-        this.startInterval = new FluxChain.NotDefinedParameter<>();
-        this.stopInterval = new FluxChain.NotDefinedParameter<>();
+        this.startInterval = new NotDefinedParameter<>();
+        this.stopInterval = new NotDefinedParameter<>();
     }
 
     public RangeFlux(@Nonnull final Flux source, @Nonnull final Instant start, @Nonnull final Instant stop) {
@@ -70,8 +67,8 @@ public final class RangeFlux extends AbstractParametrizedFlux {
         this.startInstant = (m) -> start;
         this.stopInstant = (m) -> stop;
 
-        this.startInterval = new FluxChain.NotDefinedParameter<>();
-        this.stopInterval = new FluxChain.NotDefinedParameter<>();
+        this.startInterval = new NotDefinedParameter<>();
+        this.stopInterval = new NotDefinedParameter<>();
     }
 
     public RangeFlux(@Nonnull final Flux source, @Nonnull final String startParameterName) {
@@ -80,11 +77,11 @@ public final class RangeFlux extends AbstractParametrizedFlux {
 
         Preconditions.checkNonEmptyString(startParameterName, "Start parameter name");
 
-        this.startInstant = new FluxChain.BoundFluxParameter<>(startParameterName);
-        this.stopInstant = new FluxChain.NotDefinedParameter<>();
+        this.startInstant = new BoundParameter<>(startParameterName);
+        this.stopInstant = new NotDefinedParameter<>();
 
-        this.startInterval = new FluxChain.NotDefinedParameter<>();
-        this.stopInterval = new FluxChain.NotDefinedParameter<>();
+        this.startInterval = new NotDefinedParameter<>();
+        this.stopInterval = new NotDefinedParameter<>();
     }
 
     public RangeFlux(@Nonnull final Flux source,
@@ -96,11 +93,11 @@ public final class RangeFlux extends AbstractParametrizedFlux {
         Preconditions.checkNonEmptyString(startParameterName, "Start parameter name");
         Preconditions.checkNonEmptyString(stopParameterName, "Stop parameter name");
 
-        this.startInstant = new FluxChain.BoundFluxParameter<>(startParameterName);
-        this.stopInstant = new FluxChain.BoundFluxParameter<>(stopParameterName);
+        this.startInstant = new BoundParameter<>(startParameterName);
+        this.stopInstant = new BoundParameter<>(stopParameterName);
 
-        this.startInterval = new FluxChain.NotDefinedParameter<>();
-        this.stopInterval = new FluxChain.NotDefinedParameter<>();
+        this.startInterval = new NotDefinedParameter<>();
+        this.stopInterval = new NotDefinedParameter<>();
     }
 
     public RangeFlux(@Nonnull final Flux source, @Nonnull final Long start, @Nonnull final ChronoUnit unit) {
@@ -110,11 +107,11 @@ public final class RangeFlux extends AbstractParametrizedFlux {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(unit, "Stop is required");
 
-        this.startInstant = new FluxChain.NotDefinedParameter<>();
-        this.stopInstant = new FluxChain.NotDefinedParameter<>();
+        this.startInstant = new NotDefinedParameter<>();
+        this.stopInstant = new NotDefinedParameter<>();
 
         this.startInterval = (m) -> new TimeInterval(start, unit);
-        this.stopInterval = new FluxChain.NotDefinedParameter<>();
+        this.stopInterval = new NotDefinedParameter<>();
     }
 
     public RangeFlux(@Nonnull final Flux source, @Nonnull final Long start,
@@ -126,8 +123,8 @@ public final class RangeFlux extends AbstractParametrizedFlux {
         Objects.requireNonNull(stop, "Stop is required");
         Objects.requireNonNull(unit, "Stop is required");
 
-        this.startInstant = new FluxChain.NotDefinedParameter<>();
-        this.stopInstant = new FluxChain.NotDefinedParameter<>();
+        this.startInstant = new NotDefinedParameter<>();
+        this.stopInstant = new NotDefinedParameter<>();
 
         this.startInterval = (m) -> new TimeInterval(start, unit);
         this.stopInterval = (m) -> new TimeInterval(stop, unit);
@@ -141,14 +138,12 @@ public final class RangeFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    List<NamedParameter> getParameters() {
+    OperatorParameters getParameters() {
 
-        List<NamedParameter> parameters = new ArrayList<>();
-        parameters.add(new NamedParameter("start", startInstant));
-        parameters.add(new NamedParameter("start", startInterval));
-        parameters.add(new NamedParameter("stop", stopInstant));
-        parameters.add(new NamedParameter("stop", stopInterval));
-
-        return parameters;
+        return OperatorParameters
+                .of("start", startInstant)
+                .put("start", startInterval)
+                .put("stop", stopInstant)
+                .put("stop", stopInterval);
     }
 }

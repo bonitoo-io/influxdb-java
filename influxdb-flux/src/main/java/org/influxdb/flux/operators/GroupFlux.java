@@ -1,13 +1,10 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.flux.FluxChain;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -35,9 +32,9 @@ import java.util.Objects;
  */
 public final class GroupFlux extends AbstractParametrizedFlux {
 
-    private final FluxChain.FluxParameter<Collection<String>> groupBy;
-    private final FluxChain.FluxParameter<Collection<String>> keep;
-    private final FluxChain.FluxParameter<Collection<String>> except;
+    private final Parameter<Collection<String>> groupBy;
+    private final Parameter<Collection<String>> keep;
+    private final Parameter<Collection<String>> except;
 
     public enum GroupType {
         GROUP_BY,
@@ -58,9 +55,9 @@ public final class GroupFlux extends AbstractParametrizedFlux {
         this.keep = (m) -> keep;
         if (groupType.equals(GroupType.GROUP_BY)) {
             this.groupBy = (m) -> tags;
-            this.except = new FluxChain.NotDefinedParameter<>();
+            this.except = new NotDefinedParameter<>();
         } else {
-            this.groupBy = new FluxChain.NotDefinedParameter<>();
+            this.groupBy = new NotDefinedParameter<>();
             this.except = (m) -> tags;
         }
     }
@@ -74,12 +71,12 @@ public final class GroupFlux extends AbstractParametrizedFlux {
         Objects.requireNonNull(tags, "Tags are required");
         Objects.requireNonNull(groupType, "GroupType is required");
 
-        this.keep = new FluxChain.NotDefinedParameter<>();
+        this.keep = new NotDefinedParameter<>();
         if (groupType.equals(GroupType.GROUP_BY)) {
             this.groupBy = (m) -> tags;
-            this.except = new FluxChain.NotDefinedParameter<>();
+            this.except = new NotDefinedParameter<>();
         } else {
-            this.groupBy = new FluxChain.NotDefinedParameter<>();
+            this.groupBy = new NotDefinedParameter<>();
             this.except = (m) -> tags;
         }
     }
@@ -95,13 +92,13 @@ public final class GroupFlux extends AbstractParametrizedFlux {
         Preconditions.checkNonEmptyString(keepParameterName, "Keep parameter name");
         Objects.requireNonNull(groupType, "GroupType is required");
 
-        this.keep = new FluxChain.BoundFluxParameter<>(keepParameterName);
+        this.keep = new BoundParameter<>(keepParameterName);
         if (groupType.equals(GroupType.GROUP_BY)) {
-            this.groupBy = new FluxChain.BoundFluxParameter<>(tagParameterName);
-            this.except = new FluxChain.NotDefinedParameter<>();
+            this.groupBy = new BoundParameter<>(tagParameterName);
+            this.except = new NotDefinedParameter<>();
         } else {
-            this.groupBy = new FluxChain.NotDefinedParameter<>();
-            this.except = new FluxChain.BoundFluxParameter<>(tagParameterName);
+            this.groupBy = new NotDefinedParameter<>();
+            this.except = new BoundParameter<>(tagParameterName);
         }
     }
 
@@ -114,13 +111,13 @@ public final class GroupFlux extends AbstractParametrizedFlux {
         Preconditions.checkNonEmptyString(tagParameterName, "Tags parameter name");
         Objects.requireNonNull(groupType, "GroupType is required");
 
-        this.keep = new FluxChain.NotDefinedParameter<>();
+        this.keep = new NotDefinedParameter<>();
         if (groupType.equals(GroupType.GROUP_BY)) {
-            this.groupBy = new FluxChain.BoundFluxParameter<>(tagParameterName);
-            this.except = new FluxChain.NotDefinedParameter<>();
+            this.groupBy = new BoundParameter<>(tagParameterName);
+            this.except = new NotDefinedParameter<>();
         } else {
-            this.groupBy = new FluxChain.NotDefinedParameter<>();
-            this.except = new FluxChain.BoundFluxParameter<>(tagParameterName);
+            this.groupBy = new NotDefinedParameter<>();
+            this.except = new BoundParameter<>(tagParameterName);
         }
     }
 
@@ -132,13 +129,11 @@ public final class GroupFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    List<NamedParameter> getParameters() {
+    OperatorParameters getParameters() {
 
-        List<NamedParameter> parameters = new ArrayList<>();
-        parameters.add(new NamedParameter("by", groupBy));
-        parameters.add(new NamedParameter("except", except));
-        parameters.add(new NamedParameter("keep", keep));
-
-        return parameters;
+        return OperatorParameters
+                .of("by", groupBy)
+                .put("except", except)
+                .put("keep", keep);
     }
 }

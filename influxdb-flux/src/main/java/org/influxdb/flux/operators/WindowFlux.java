@@ -1,14 +1,11 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.flux.FluxChain;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#window">window</a> - Partitions the results by
@@ -38,17 +35,17 @@ import java.util.List;
  */
 public final class WindowFlux extends AbstractParametrizedFlux {
 
-    private final FluxChain.FluxParameter<TimeInterval> every;
-    private final FluxChain.FluxParameter<TimeInterval> period;
+    private final Parameter<TimeInterval> every;
+    private final Parameter<TimeInterval> period;
 
-    private final FluxChain.FluxParameter<Instant> startInstant;
-    private final FluxChain.FluxParameter<TimeInterval> startInterval;
+    private final Parameter<Instant> startInstant;
+    private final Parameter<TimeInterval> startInterval;
 
-    private final FluxChain.FluxParameter<TimeInterval> round;
+    private final Parameter<TimeInterval> round;
 
-    private final FluxChain.FluxParameter<String> timeColumn;
-    private final FluxChain.FluxParameter<String> startCol;
-    private final FluxChain.FluxParameter<String> stopCol;
+    private final Parameter<String> timeColumn;
+    private final Parameter<String> startCol;
+    private final Parameter<String> stopCol;
 
 
     public WindowFlux(@Nonnull final Flux source,
@@ -69,12 +66,12 @@ public final class WindowFlux extends AbstractParametrizedFlux {
         this.every = (m) -> new TimeInterval(every, everyUnit);
         this.period = (m) -> new TimeInterval(period, periodUnit);
         this.startInterval = (m) -> new TimeInterval(start, startUnit);
-        this.startInstant = new FluxChain.NotDefinedParameter<>();
+        this.startInstant = new NotDefinedParameter<>();
         this.round = (m) -> new TimeInterval(round, roundUnit);
 
-        this.timeColumn = new FluxChain.EscapeStringParameter(timeColumn);
-        this.startCol = new FluxChain.EscapeStringParameter(startCol);
-        this.stopCol = new FluxChain.EscapeStringParameter(stopCol);
+        this.timeColumn = new StringParameter(timeColumn);
+        this.startCol = new StringParameter(startCol);
+        this.stopCol = new StringParameter(stopCol);
     }
 
     public WindowFlux(@Nonnull final Flux source,
@@ -93,13 +90,13 @@ public final class WindowFlux extends AbstractParametrizedFlux {
 
         this.every = (m) -> new TimeInterval(every, everyUnit);
         this.period = (m) -> new TimeInterval(period, periodUnit);
-        this.startInterval = new FluxChain.NotDefinedParameter<>();
+        this.startInterval = new NotDefinedParameter<>();
         this.startInstant = (m) -> start;
         this.round = (m) -> new TimeInterval(round, roundUnit);
 
-        this.timeColumn = new FluxChain.EscapeStringParameter(timeColumn);
-        this.startCol = new FluxChain.EscapeStringParameter(startCol);
-        this.stopCol = new FluxChain.EscapeStringParameter(stopCol);
+        this.timeColumn = new StringParameter(timeColumn);
+        this.startCol = new StringParameter(startCol);
+        this.stopCol = new StringParameter(stopCol);
     }
 
     @Nonnull
@@ -110,18 +107,16 @@ public final class WindowFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    List<NamedParameter> getParameters() {
+    OperatorParameters getParameters() {
 
-        List<NamedParameter> parameters = new ArrayList<>();
-        parameters.add(new NamedParameter("every", every));
-        parameters.add(new NamedParameter("period", period));
-        parameters.add(new NamedParameter("start", startInterval));
-        parameters.add(new NamedParameter("start", startInstant));
-        parameters.add(new NamedParameter("round", round));
-        parameters.add(new NamedParameter("column", timeColumn));
-        parameters.add(new NamedParameter("startCol", startCol));
-        parameters.add(new NamedParameter("stopCol", stopCol));
-
-        return parameters;
+        return OperatorParameters
+                .of("every", every)
+                .put("period", period)
+                .put("start", startInterval)
+                .put("start", startInstant)
+                .put("round", round)
+                .put("column", timeColumn)
+                .put("startCol", startCol)
+                .put("stopCol", stopCol);
     }
 }

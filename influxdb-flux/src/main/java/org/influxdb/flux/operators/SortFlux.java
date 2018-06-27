@@ -1,13 +1,10 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.flux.FluxChain;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,14 +38,14 @@ import java.util.Objects;
  */
 public final class SortFlux extends AbstractParametrizedFlux {
 
-    private final FluxChain.FluxParameter<Boolean> desc;
-    private final FluxChain.FluxParameter<Collection<String>> columns;
+    private final Parameter<Boolean> desc;
+    private final Parameter<Collection<String>> columns;
 
     public SortFlux(@Nonnull final Flux source, final boolean desc) {
         super(source);
 
         this.desc = (m) -> desc;
-        this.columns = new FluxChain.NotDefinedParameter<>();
+        this.columns = new NotDefinedParameter<>();
     }
 
     public SortFlux(@Nonnull final Flux source, @Nonnull final Collection<String> columns) {
@@ -56,7 +53,7 @@ public final class SortFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(columns, "Columns are required");
 
-        this.desc = new FluxChain.NotDefinedParameter<>();
+        this.desc = new NotDefinedParameter<>();
         this.columns = (m) -> columns;
     }
 
@@ -78,8 +75,8 @@ public final class SortFlux extends AbstractParametrizedFlux {
         Preconditions.checkNonEmptyString(descParameterName, "Sort of results");
         Preconditions.checkNonEmptyString(colsParameterName, "Columns");
 
-        this.desc = new FluxChain.BoundFluxParameter<>(descParameterName);
-        this.columns = new FluxChain.BoundFluxParameter<>(colsParameterName);
+        this.desc = new BoundParameter<>(descParameterName);
+        this.columns = new BoundParameter<>(colsParameterName);
     }
 
     @Nonnull
@@ -90,12 +87,8 @@ public final class SortFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    List<NamedParameter> getParameters() {
+    OperatorParameters getParameters() {
 
-        List<NamedParameter> parameters = new ArrayList<>();
-        parameters.add(new NamedParameter("cols", columns));
-        parameters.add(new NamedParameter("desc", desc));
-
-        return parameters;
+        return OperatorParameters.of("cols", columns).put("desc", desc);
     }
 }

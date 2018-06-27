@@ -12,8 +12,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -41,9 +41,11 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
         //
         // parameters: false
         boolean wasAppended = false;
-        for (NamedParameter named : getParameters()) {
 
-            wasAppended = appendParameterTo(named, operator, fluxChain, wasAppended);
+        OperatorParameters parameters = getParameters();
+        for (String name : parameters.keys()) {
+
+            wasAppended = appendParameterTo(name, parameters.get(name), operator, fluxChain, wasAppended);
         }
         //
         // )
@@ -63,21 +65,22 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
      * @return get parameters of operator
      */
     @Nonnull
-    abstract List<NamedParameter> getParameters();
+    abstract OperatorParameters getParameters();
 
     /**
      * @return {@link Boolean#TRUE} if was appended parameter
      */
-    private boolean appendParameterTo(@Nonnull final NamedParameter namedParameter,
+    private boolean appendParameterTo(@Nonnull final String name,
+                                      @Nonnull final Parameter parameter,
                                       @Nonnull final StringBuilder operator,
                                       @Nonnull final FluxChain fluxChain,
                                       final boolean wasAppendParameter) {
 
-        if (namedParameter.parameter instanceof FluxChain.NotDefinedParameter) {
+        if (parameter instanceof NotDefinedParameter) {
             return wasAppendParameter;
         }
 
-        Object parameterValue = namedParameter.parameter.value(fluxChain.getParameters());
+        Object parameterValue = parameter.value(fluxChain.getParameters());
         if (parameterValue == null) {
             return wasAppendParameter;
         }
@@ -119,26 +122,109 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
 
         // n: 5
         operator
-                .append(namedParameter.name)
+                .append(name)
                 .append(": ")
                 .append(parameterValue.toString());
 
         return true;
     }
 
+    static class OperatorParameters {
 
-    class NamedParameter {
+        private Map<String, Parameter> parameters = new LinkedHashMap<>();
 
-        private String name;
-        private FluxChain.FluxParameter parameter;
+        protected static OperatorParameters of(@Nonnull final String name, @Nonnull final Parameter parameter) {
+            return new OperatorParameters().put(name, parameter);
+        }
 
-        NamedParameter(@Nonnull final String name, @Nonnull final FluxChain.FluxParameter parameter) {
+        @Nonnull
+        OperatorParameters put(@Nonnull final String name, @Nonnull final Parameter parameter) {
 
-            Preconditions.checkNonEmptyString(name, "Parameter name");
-            Objects.requireNonNull(parameter, "FluxParameter is required");
+            if (!(parameter instanceof NotDefinedParameter)) {
+                parameters.put(name, parameter);
+            }
 
-            this.name = name;
-            this.parameter = parameter;
+            return this;
+        }
+
+        @Nonnull
+        Collection<String> keys() {
+            return parameters.keySet();
+        }
+
+        Parameter get(@Nonnull final String key) {
+            return parameters.get(key);
+        }
+    }
+
+    /**
+     * The source of parameter value.
+     */
+    interface Parameter<T> {
+
+        /**
+         * @param parameters bounded parameters
+         * @return value of parameter
+         */
+        @Nullable
+        T value(@Nonnull final Map<String, Object> parameters);
+    }
+
+
+    class BoundParameter<T> implements Parameter<T> {
+
+        private final String parameterName;
+
+        BoundParameter(@Nonnull final String parameterName) {
+
+            Preconditions.checkNonEmptyString(parameterName, "Parameter name");
+
+            this.parameterName = parameterName;
+        }
+
+        @Nonnull
+        @Override
+        public T value(@Nonnull final Map<String, Object> parameters) {
+
+            Object parameterValue = parameters.get(parameterName);
+            // parameter must be defined
+            if (parameterValue == null) {
+                String message = String.format("The parameter '%s' is not defined.", parameterName);
+
+                throw new IllegalStateException(message);
+            }
+
+            //noinspection unchecked
+            return (T) parameterValue;
+        }
+    }
+
+    class StringParameter implements Parameter<String> {
+
+        private final String value;
+
+        StringParameter(@Nullable final String value) {
+            this.value = value;
+        }
+
+        @Nullable
+        @Override
+        public String value(@Nonnull final Map<String, Object> parameters) {
+
+            if (value == null) {
+                return null;
+            }
+
+            return new StringBuilder().append("\"").append(value).append("\"").toString();
+        }
+    }
+
+    class NotDefinedParameter<T> implements Parameter<T> {
+
+        @Nonnull
+        @Override
+        public T value(@Nonnull final Map<String, Object> parameters) {
+            throw new IllegalStateException();
         }
     }
 

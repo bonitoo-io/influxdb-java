@@ -1,13 +1,9 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.flux.FluxChain;
-import org.influxdb.flux.FluxChain.FluxParameter;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#limit">limit</a> - Restricts the number of rows
@@ -28,7 +24,7 @@ import java.util.List;
  */
 public final class LimitFlux extends AbstractParametrizedFlux {
 
-    private final FluxParameter<Integer> numberOfResults;
+    private final Parameter<Integer> numberOfResults;
 
     public LimitFlux(@Nonnull final Flux source, @Nonnull final Integer numberOfResults) {
         super(source);
@@ -43,7 +39,7 @@ public final class LimitFlux extends AbstractParametrizedFlux {
 
         Preconditions.checkNonEmptyString(numberOfResultsParameter, "Number of results");
 
-        this.numberOfResults = new FluxChain.BoundFluxParameter<>(numberOfResultsParameter);
+        this.numberOfResults = new BoundParameter<>(numberOfResultsParameter);
     }
 
     @Nonnull
@@ -54,11 +50,8 @@ public final class LimitFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    List<NamedParameter> getParameters() {
+    OperatorParameters getParameters() {
 
-        List<NamedParameter> parameters = new ArrayList<>();
-        parameters.add(new NamedParameter("n", numberOfResults));
-
-        return parameters;
+        return OperatorParameters.of("n", numberOfResults);
     }
 }
