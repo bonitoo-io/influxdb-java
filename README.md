@@ -697,12 +697,13 @@ fluxReactive.listenEvents(FluxErrorEvent.class).subscribe(event -> {
 - [toString](https://github.com/influxdata/platform/tree/master/query#tostring) - convert a value to a string
 - [toTime](https://github.com/influxdata/platform/tree/master/query#totime) - convert a value to a time
 - [toUInt](https://github.com/influxdata/platform/tree/master/query#touint) - convert a value to a uint
+- [window](https://github.com/influxdata/platform/tree/master/query#window) - partitions the results by a given time range
 
 ### Examples
 #### Query
 ```java
 Flux flux = Flux.from("telegraf")
-    .range(-170L, TimeUnit.HOURS)
+    .range(-170L, ChronoUnit.HOURS)
     .limit(5)
     
 Flowable<FluxResult> cpu = influxDBReactive.flux(flux);
@@ -717,7 +718,7 @@ Flowable<FluxResult> cpu = influxDBReactive.flux(flux);
 
 Flux flux = Flux.from("telegraf")
     .filter(...)
-    .range(-170L, TimeUnit.HOURS)
+    .range(-170L, ChronoUnit.HOURS)
     .sum()
     
 Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);

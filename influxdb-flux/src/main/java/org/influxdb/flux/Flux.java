@@ -23,14 +23,15 @@ import org.influxdb.flux.operators.ToIntFlux;
 import org.influxdb.flux.operators.ToStringFlux;
 import org.influxdb.flux.operators.ToTimeFlux;
 import org.influxdb.flux.operators.ToUIntFlux;
+import org.influxdb.flux.operators.WindowFlux;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#basic-syntax">Flux</a> -
@@ -80,7 +81,7 @@ import java.util.concurrent.TimeUnit;
  * <li>yield - SPEC</li>
  * <li>toHttp - UNSUPPORTED</li>
  * <li>toKafka - UNSUPPORTED</li>
- * <li>byString - UNSUPPORTED</li>
+ * <li>{@link ExpressionFlux}</li>
  * <li>byInstance - UNSUPPORTED</li>
  * </ul>
  *
@@ -578,13 +579,13 @@ public abstract class Flux {
      * Filters the results by time boundaries.
      *
      * @param start Specifies the oldest time to be included in the results
-     * @param unit  a {@code TimeUnit} determining how to interpret the {@code start} parameter
+     * @param unit  a {@code ChronoUnit} determining how to interpret the {@code start} parameter
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public Flux range(@Nonnull final Long start, @Nonnull final TimeUnit unit) {
+    public Flux range(@Nonnull final Long start, @Nonnull final ChronoUnit unit) {
         Objects.requireNonNull(start, "Start is required");
-        Objects.requireNonNull(unit, "TimeUnit is required");
+        Objects.requireNonNull(unit, "ChronoUnit is required");
 
         return new RangeFlux(this, start, unit);
     }
@@ -593,14 +594,14 @@ public abstract class Flux {
      * Filters the results by time boundaries.
      *
      * @param start Specifies the oldest time to be included in the results
-     * @param unit  a {@code TimeUnit} determining how to interpret the {@code start} and {@code stop} parameter
+     * @param unit  a {@code ChronoUnit} determining how to interpret the {@code start} and {@code stop} parameter
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public Flux range(@Nonnull final Long start, @Nonnull final Long stop, @Nonnull final TimeUnit unit) {
+    public Flux range(@Nonnull final Long start, @Nonnull final Long stop, @Nonnull final ChronoUnit unit) {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(stop, "Stop is required");
-        Objects.requireNonNull(unit, "TimeUnit is required");
+        Objects.requireNonNull(unit, "ChronoUnit is required");
 
         return new RangeFlux(this, start, stop, unit);
     }
@@ -931,6 +932,280 @@ public abstract class Flux {
     @Nonnull
     public Flux toUInt() {
         return new ToUIntFlux(this);
+    }
+
+    /**
+     * Partitions the results by a given time range.
+     *
+     * @param every     duration of time between windows
+     * @param everyUnit a {@code ChronoUnit} determining how to interpret the {@code every}
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window(@Nonnull final Long every,
+                       @Nonnull final ChronoUnit everyUnit) {
+
+        Objects.requireNonNull(every, "Every is required");
+        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
+
+        return new WindowFlux(this, every, everyUnit, null, null, null, null,
+                null, null, null, null, null);
+    }
+
+    /**
+     * Partitions the results by a given time range.
+     *
+     * @param every      duration of time between windows
+     * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
+     * @param period     duration of the windowed partition
+     * @param periodUnit a {@code ChronoUnit} determining how to interpret the {@code period}
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window(@Nonnull final Long every,
+                       @Nonnull final ChronoUnit everyUnit,
+                       @Nonnull final Long period,
+                       @Nonnull final ChronoUnit periodUnit) {
+
+        Objects.requireNonNull(every, "Every is required");
+        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
+
+        Objects.requireNonNull(period, "Period is required");
+        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
+
+        return new WindowFlux(this, every, everyUnit, period, periodUnit, null, null,
+                null, null, null, null, null);
+    }
+
+    /**
+     * Partitions the results by a given time range.
+     *
+     * @param every      duration of time between windows
+     * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
+     * @param period     duration of the windowed partition
+     * @param periodUnit a {@code ChronoUnit} determining how to interpret the {@code period}
+     * @param start      the time of the initial window partition
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window(@Nonnull final Long every,
+                       @Nonnull final ChronoUnit everyUnit,
+                       @Nonnull final Long period,
+                       @Nonnull final ChronoUnit periodUnit,
+                       @Nonnull final Instant start) {
+
+        Objects.requireNonNull(every, "Every is required");
+        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
+
+        Objects.requireNonNull(period, "Period is required");
+        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
+
+        Objects.requireNonNull(start, "Start is required");
+
+        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, null, null,
+                null, null, null);
+    }
+
+    /**
+     * Partitions the results by a given time range.
+     *
+     * @param every      duration of time between windows
+     * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
+     * @param period     duration of the windowed partition
+     * @param periodUnit a {@code ChronoUnit} determining how to interpret the {@code period}
+     * @param start      the time of the initial window partition
+     * @param startUnit  a {@code ChronoUnit} determining how to interpret the {@code start}
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window(@Nonnull final Long every,
+                       @Nonnull final ChronoUnit everyUnit,
+                       @Nonnull final Long period,
+                       @Nonnull final ChronoUnit periodUnit,
+                       @Nonnull final Long start,
+                       @Nonnull final ChronoUnit startUnit) {
+
+        Objects.requireNonNull(every, "Every is required");
+        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
+
+        Objects.requireNonNull(period, "Period is required");
+        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
+
+        Objects.requireNonNull(start, "Start is required");
+        Objects.requireNonNull(startUnit, "Start ChronoUnit is required");
+
+        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, startUnit, null,
+                null, null, null, null);
+    }
+
+    /**
+     * Partitions the results by a given time range.
+     *
+     * @param every      duration of time between windows
+     * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
+     * @param period     duration of the windowed partition
+     * @param periodUnit a {@code ChronoUnit} determining how to interpret the {@code period}
+     * @param start      the time of the initial window partition
+     * @param startUnit  a {@code ChronoUnit} determining how to interpret the {@code start}
+     * @param round      rounds a window's bounds to the nearest duration
+     * @param roundUnit  a {@code ChronoUnit} determining how to interpret the {@code round}
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window(@Nonnull final Long every,
+                       @Nonnull final ChronoUnit everyUnit,
+                       @Nonnull final Long period,
+                       @Nonnull final ChronoUnit periodUnit,
+                       @Nonnull final Long start,
+                       @Nonnull final ChronoUnit startUnit,
+                       @Nonnull final Long round,
+                       @Nonnull final ChronoUnit roundUnit) {
+
+        Objects.requireNonNull(every, "Every is required");
+        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
+
+        Objects.requireNonNull(period, "Period is required");
+        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
+
+        Objects.requireNonNull(start, "Start is required");
+        Objects.requireNonNull(startUnit, "Start ChronoUnit is required");
+
+        Objects.requireNonNull(round, "Round is required");
+        Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
+
+        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, startUnit, round,
+                roundUnit, null, null, null);
+    }
+
+    /**
+     * Partitions the results by a given time range.
+     *
+     * @param every      duration of time between windows
+     * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
+     * @param period     duration of the windowed partition
+     * @param periodUnit a {@code ChronoUnit} determining how to interpret the {@code period}
+     * @param start      the time of the initial window partition
+     * @param round      rounds a window's bounds to the nearest duration
+     * @param roundUnit  a {@code ChronoUnit} determining how to interpret the {@code round}
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window(@Nonnull final Long every,
+                       @Nonnull final ChronoUnit everyUnit,
+                       @Nonnull final Long period,
+                       @Nonnull final ChronoUnit periodUnit,
+                       @Nonnull final Instant start,
+                       @Nonnull final Long round,
+                       @Nonnull final ChronoUnit roundUnit) {
+
+        Objects.requireNonNull(every, "Every is required");
+        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
+
+        Objects.requireNonNull(period, "Period is required");
+        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
+
+        Objects.requireNonNull(start, "Start is required");
+
+        Objects.requireNonNull(round, "Round is required");
+        Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
+
+        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, round, roundUnit,
+                null, null, null);
+    }
+
+    /**
+     * Partitions the results by a given time range.
+     *
+     * @param every      duration of time between windows
+     * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
+     * @param period     duration of the windowed partition
+     * @param periodUnit a {@code ChronoUnit} determining how to interpret the {@code period}
+     * @param start      the time of the initial window partition
+     * @param startUnit  a {@code ChronoUnit} determining how to interpret the {@code start}
+     * @param round      rounds a window's bounds to the nearest duration
+     * @param roundUnit  a {@code ChronoUnit} determining how to interpret the {@code round}
+     * @param timeColumn name of the time column to use
+     * @param startCol   name of the column containing the window start time
+     * @param stopCol    name of the column containing the window stop time
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window(@Nonnull final Long every,
+                       @Nonnull final ChronoUnit everyUnit,
+                       @Nonnull final Long period,
+                       @Nonnull final ChronoUnit periodUnit,
+                       @Nonnull final Long start,
+                       @Nonnull final ChronoUnit startUnit,
+                       @Nonnull final Long round,
+                       @Nonnull final ChronoUnit roundUnit,
+                       @Nonnull final String timeColumn,
+                       @Nonnull final String startCol,
+                       @Nonnull final String stopCol) {
+
+        Objects.requireNonNull(every, "Every is required");
+        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
+
+        Objects.requireNonNull(period, "Period is required");
+        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
+
+        Objects.requireNonNull(start, "Start is required");
+        Objects.requireNonNull(startUnit, "Start ChronoUnit is required");
+
+        Objects.requireNonNull(round, "Round is required");
+        Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
+
+        Preconditions.checkNonEmptyString(timeColumn, "Time column");
+        Preconditions.checkNonEmptyString(startCol, "Start column");
+        Preconditions.checkNonEmptyString(stopCol, "Stop column");
+
+        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, startUnit, round, roundUnit,
+                timeColumn, startCol, stopCol);
+    }
+
+    /**
+     * Partitions the results by a given time range.
+     *
+     * @param every      duration of time between windows
+     * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
+     * @param period     duration of the windowed partition
+     * @param periodUnit a {@code ChronoUnit} determining how to interpret the {@code period}
+     * @param start      the time of the initial window partition
+     * @param round      rounds a window's bounds to the nearest duration
+     * @param roundUnit  a {@code ChronoUnit} determining how to interpret the {@code round}
+     * @param timeColumn name of the time column to use
+     * @param startCol   name of the column containing the window start time
+     * @param stopCol    name of the column containing the window stop time
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window(@Nonnull final Long every,
+                       @Nonnull final ChronoUnit everyUnit,
+                       @Nonnull final Long period,
+                       @Nonnull final ChronoUnit periodUnit,
+                       @Nonnull final Instant start,
+                       @Nonnull final Long round,
+                       @Nonnull final ChronoUnit roundUnit,
+                       @Nonnull final String timeColumn,
+                       @Nonnull final String startCol,
+                       @Nonnull final String stopCol) {
+
+        Objects.requireNonNull(every, "Every is required");
+        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
+
+        Objects.requireNonNull(period, "Period is required");
+        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
+
+        Objects.requireNonNull(start, "Start is required");
+
+        Objects.requireNonNull(round, "Round is required");
+        Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
+
+        Preconditions.checkNonEmptyString(timeColumn, "Time column");
+        Preconditions.checkNonEmptyString(startCol, "Start column");
+        Preconditions.checkNonEmptyString(stopCol, "Stop column");
+
+        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, round, roundUnit,
+                timeColumn, startCol, stopCol);
     }
 
     /**

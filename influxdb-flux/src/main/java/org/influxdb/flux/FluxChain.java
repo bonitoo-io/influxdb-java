@@ -119,9 +119,10 @@ public final class FluxChain {
          * @param parameters bounded parameters
          * @return value of parameter
          */
-        @Nonnull
+        @Nullable
         T value(@Nonnull final Map<String, Object> parameters);
     }
+
 
     public static class BoundFluxParameter<T> implements FluxParameter<T> {
 
@@ -148,6 +149,26 @@ public final class FluxChain {
 
             //noinspection unchecked
             return (T) parameterValue;
+        }
+    }
+
+    public static class EscapeStringParameter implements FluxParameter<String> {
+
+        private final String value;
+
+        public EscapeStringParameter(@Nullable final String value) {
+            this.value = value;
+        }
+
+        @Nullable
+        @Override
+        public String value(@Nonnull final Map<String, Object> parameters) {
+
+            if (value == null) {
+                return null;
+            }
+
+            return new StringBuilder().append("\"").append(value).append("\"").toString();
         }
     }
 

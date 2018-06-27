@@ -8,7 +8,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
+import java.time.temporal.ChronoUnit;
 
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 07:23)
@@ -45,7 +45,7 @@ class RangeFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .range(15L, TimeUnit.SECONDS);
+                .range(15L, ChronoUnit.SECONDS);
 
         Assertions.assertThat(flux.print())
                 .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> range(start: 15s)");
@@ -56,7 +56,7 @@ class RangeFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .range(-33L, TimeUnit.HOURS);
+                .range(-33L, ChronoUnit.HOURS);
 
         Assertions.assertThat(flux.print())
                 .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> range(start: -33h)");
@@ -67,7 +67,7 @@ class RangeFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .range(15L, 44L, TimeUnit.NANOSECONDS);
+                .range(15L, 44L, ChronoUnit.NANOS);
 
         Assertions.assertThat(flux.print())
                 .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> range(start: 15n, stop: 44n)");

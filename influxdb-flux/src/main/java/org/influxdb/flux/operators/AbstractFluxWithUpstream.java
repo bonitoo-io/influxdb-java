@@ -3,16 +3,16 @@ package org.influxdb.flux.operators;
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
 import org.influxdb.impl.Preconditions;
-import org.influxdb.impl.TimeUtil;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -76,12 +76,63 @@ abstract class AbstractFluxWithUpstream extends Flux {
     }
 
     class TimeInterval {
+        public static final int HOURS_IN_HALF_DAY = 12;
         private Long interval;
-        private TimeUnit unit;
+        private ChronoUnit chronoUnit;
 
-        TimeInterval(@Nonnull final Long interval, @Nonnull final TimeUnit unit) {
+        TimeInterval(@Nullable final Long interval, @Nullable final ChronoUnit chronoUnit) {
             this.interval = interval;
-            this.unit = unit;
+            this.chronoUnit = chronoUnit;
+        }
+
+        @Nullable
+        String value() {
+
+            if (interval == null || chronoUnit == null) {
+                return null;
+            }
+
+            String unit;
+            Long calculatedInterval = interval;
+            switch (chronoUnit) {
+                case NANOS:
+                    unit = "n";
+                    break;
+                case MICROS:
+                    unit = "u";
+                    break;
+                case MILLIS:
+                    unit = "ms";
+                    break;
+                case SECONDS:
+                    unit = "s";
+                    break;
+                case MINUTES:
+                    unit = "m";
+                    break;
+                case HOURS:
+                    unit = "h";
+                    break;
+                case HALF_DAYS:
+                    unit = "h";
+                    calculatedInterval = HOURS_IN_HALF_DAY * interval;
+                    break;
+                case DAYS:
+                    unit = "d";
+                    break;
+                case WEEKS:
+                    unit = "w";
+                    break;
+                default:
+                    String message = "Unit must be one of: "
+                            + "NANOS, MICROS, MILLIS, SECONDS, MINUTES, HOURS, HALF_DAYS, DAYS, WEEKS";
+
+                    throw new IllegalArgumentException(message);
+            }
+
+            return new StringBuilder()
+                    .append(calculatedInterval)
+                    .append(unit).toString();
         }
     }
 
@@ -98,6 +149,9 @@ abstract class AbstractFluxWithUpstream extends Flux {
         }
 
         Object parameterValue = namedParameter.parameter.value(fluxChain.getParameters());
+        if (parameterValue == null) {
+            return wasAppendParameter;
+        }
 
         // array to collection
         if (parameterValue.getClass().isArray()) {
@@ -122,9 +176,11 @@ abstract class AbstractFluxWithUpstream extends Flux {
         }
 
         if (parameterValue instanceof TimeInterval) {
-            String timeInterval = ((TimeInterval) parameterValue).interval.toString();
-            timeInterval += TimeUtil.toTimePrecision(((TimeInterval) parameterValue).unit);
-            parameterValue = timeInterval;
+            parameterValue = ((TimeInterval) parameterValue).value();
+        }
+
+        if (parameterValue == null) {
+            return wasAppendParameter;
         }
 
         // delimit previously appended parameter

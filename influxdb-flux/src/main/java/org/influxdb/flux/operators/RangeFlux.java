@@ -6,8 +6,8 @@ import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#range">range</a> - Filters the results by
@@ -101,7 +101,7 @@ public final class RangeFlux extends AbstractFluxWithUpstream {
         this.stopInterval = new FluxChain.NotDefinedParameter<>();
     }
 
-    public RangeFlux(@Nonnull final Flux source, @Nonnull final Long start, @Nonnull final TimeUnit unit) {
+    public RangeFlux(@Nonnull final Flux source, @Nonnull final Long start, @Nonnull final ChronoUnit unit) {
 
         super(source);
 
@@ -116,7 +116,7 @@ public final class RangeFlux extends AbstractFluxWithUpstream {
     }
 
     public RangeFlux(@Nonnull final Flux source, @Nonnull final Long start,
-                     @Nonnull final Long stop, @Nonnull final TimeUnit unit) {
+                     @Nonnull final Long stop, @Nonnull final ChronoUnit unit) {
 
         super(source);
 
