@@ -9,6 +9,7 @@ import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.impl.AbstractFluxReactiveTest;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -93,9 +94,57 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
                 });
     }
 
+    @Test
+    @Disabled
+    void parsingToPOJO() {
+
+        // saved: ServePerformance.create(1)
+        //
+        // insert server_performance,location=Area\ 1°\ 10'\ "20,production_usage=false cpu_usage=50.0,rackNumber=1i,server\ description="Server no. 1",upTime=10000i 1530079000001000000
+        //
+        String data =
+                "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n"
+                + "#partition,false,false,true,true,false,false,true,true,true,true\n"
+                + "#default,_result,,,,,,,,,\n"
+                + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
+                + ",,0,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,50,cpu_usage,server_performance,\"Area 1° 10' \"\"20\",false\n"
+                + "\n"
+                + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n"
+                + "#partition,false,false,true,true,false,false,true,true,true,true\n"
+                + "#default,_result,,,,,,,,,\n"
+                + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
+                + ",,1,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,1,rackNumber,server_performance,\"Area 1° 10' \"\"20\",false\n"
+                + "\n"
+                + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string\n"
+                + "#partition,false,false,true,true,false,false,true,true,true,true\n"
+                + "#default,_result,,,,,,,,,\n"
+                + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
+                + ",,2,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,Server no. 1,server description,server_performance,\"Area 1° 10' \"\"20\",false\n"
+                + "\n"
+                + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n"
+                + "#partition,false,false,true,true,false,false,true,true,true,true\n"
+                + "#default,_result,,,,,,,,,\n"
+                + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
+                + ",,3,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,10000,upTime,server_performance,\"Area 1° 10' \"\"20\",false";
+
+        fluxServer.enqueue(createResponse(data));
+
+        Flowable<ServePerformance> results = fluxReactive
+                .flux(Flux.from("flux_database").last(), ServePerformance.class);
+
+        results
+                .take(1)
+                .test()
+                .assertValueCount(1)
+                .assertValue(servePerformance -> {
+
+                    Assertions.assertThat(servePerformance).isEqualTo(ServePerformance.create(1));
+                    return true;
+                });
+    }
+
     @Nonnull
     private MockResponse createResponse() {
-
         String data = "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double\n"
                 + ",result,table,_start,_stop,_time,region,host,_value\n"
                 + ",mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43\n"
@@ -104,6 +153,12 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
                 + ",mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,west,A,62.73\n"
                 + ",mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,west,B,12.83\n"
                 + ",mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,west,C,51.62";
+
+        return createResponse(data);
+    }
+
+    @Nonnull
+    private MockResponse createResponse(final String data) {
 
         return new MockResponse()
                 .setHeader("Content-Type", "text/csv; charset=utf-8")

@@ -29,6 +29,12 @@ public class FluxResultMapper {
         Objects.requireNonNull(fluxResult, "FluxResults is required");
         Objects.requireNonNull(type, "Class type is required");
 
-        return new ArrayList<>();
+        List<T> results = new ArrayList<>();
+        try {
+            results.add(type.newInstance());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return results;
     }
 }
