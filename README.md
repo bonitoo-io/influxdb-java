@@ -733,6 +733,15 @@ Flux flux = Flux
 
 Flowable<Cpu> cpu = influxDBReactive.flux(flux, parameters, Cpu.class);
 ```
+#### Custom Flux expression
+```java
+Flux flux = Flux.from("telegraf")
+    .expression("map(fn: (r) => r._value * r._value)")
+    .expression("sum()");
+
+Flowable<FluxResult> results = influxDBReactive.flux(flux);
+```
+
 ### Advanced Usage
 
 #### Gzip's support 

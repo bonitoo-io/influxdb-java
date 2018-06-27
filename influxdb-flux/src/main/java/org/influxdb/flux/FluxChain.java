@@ -116,6 +116,7 @@ public final class FluxChain {
     public interface FluxParameter<T> {
 
         /**
+         * @param parameters bounded parameters
          * @return value of parameter
          */
         @Nonnull

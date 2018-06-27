@@ -1,6 +1,7 @@
 package org.influxdb.flux;
 
 import org.influxdb.flux.operators.CountFlux;
+import org.influxdb.flux.operators.ExpressionFlux;
 import org.influxdb.flux.operators.FirstFlux;
 import org.influxdb.flux.operators.FromFlux;
 import org.influxdb.flux.operators.GroupFlux;
@@ -34,6 +35,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#basic-syntax">Flux</a> -
  * Functional Language for defining a query to execute.
+ * <br>
+ * <a href="https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md">Flux Specification</a>
+ *
  * <h3>The operators:</h3>
  * <ul>
  * <li>{@link FromFlux}</li>
@@ -927,6 +931,20 @@ public abstract class Flux {
     @Nonnull
     public Flux toUInt() {
         return new ToUIntFlux(this);
+    }
+
+    /**
+     * Write the custom Flux expression.
+     *
+     * @param expression flux expression
+     * @return {@link ExpressionFlux}
+     */
+    @Nonnull
+    public ExpressionFlux expression(@Nonnull final String expression) {
+
+        Preconditions.checkNonEmptyString(expression, "Expression");
+
+        return new ExpressionFlux(this, expression);
     }
 
     /**
