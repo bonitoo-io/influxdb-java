@@ -1,6 +1,7 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
+import org.influxdb.flux.FluxChain.TimeInterval;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,6 +48,18 @@ public final class WindowFlux extends AbstractParametrizedFlux {
     private final Parameter<String> startCol;
     private final Parameter<String> stopCol;
 
+    public WindowFlux(@Nonnull final Flux flux) {
+        super(flux);
+
+        this.every = null;
+        this.period = null;
+        this.startInstant = null;
+        this.startInterval = null;
+        this.round = null;
+        this.timeColumn = null;
+        this.startCol = null;
+        this.stopCol = null;
+    }
 
     public WindowFlux(@Nonnull final Flux source,
                       @Nonnull final Long every,

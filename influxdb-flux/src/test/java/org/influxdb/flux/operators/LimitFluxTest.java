@@ -35,13 +35,14 @@ class LimitFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .limit("limit");
+                .limit()
+                .addNamedParameter("n", "limit");
 
         FluxChain fluxChain = new FluxChain()
-                .addParameter("limit", 5);
+                .addParameter("limit", 15);
 
         Assertions.assertThat(flux.print(fluxChain))
-                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> limit(n: 5)");
+                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> limit(n: 15)");
     }
 
     @Test

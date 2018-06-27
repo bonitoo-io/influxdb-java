@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
+import static org.influxdb.flux.FluxChain.TimeInterval;
+
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#range">range</a> - Filters the results by
  * time boundaries.

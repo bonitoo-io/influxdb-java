@@ -2,6 +2,7 @@ package org.influxdb.flux.operators;
 
 import org.assertj.core.api.Assertions;
 import org.influxdb.flux.Flux;
+import org.influxdb.flux.FluxChain;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -136,5 +137,28 @@ class WindowFluxTest {
                 + "startCol: \"superStart\", stopCol: \"totalEnd\")";
 
         Assertions.assertThat(flux.print()).isEqualToIgnoringWhitespace(expected);
+    }
+
+    @Test
+    void namedParameters() {
+
+        FluxChain fluxChain = new FluxChain()
+                .addParameter("every", 15, ChronoUnit.MINUTES)
+                .addParameter("period", 20L, ChronoUnit.SECONDS)
+                .addParameter("start", -50, ChronoUnit.DAYS)
+                .addParameter("round", 1L, ChronoUnit.HOURS);
+
+        Flux flux = Flux
+                .from("telegraf")
+                .window()
+                .addNamedParameter("every")
+                .addNamedParameter("period")
+                .addNamedParameter("start")
+                .addNamedParameter("round");
+
+        String expected = "from(db:\"telegraf\") |> "
+                + "window(every: 15m, period: 20s, start: -50d, round: 1h)";
+
+        Assertions.assertThat(flux.print(fluxChain)).isEqualToIgnoringWhitespace(expected);
     }
 }

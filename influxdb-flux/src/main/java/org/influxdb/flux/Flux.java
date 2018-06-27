@@ -31,6 +31,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -89,6 +91,8 @@ import java.util.Objects;
  * @since 3.0.0
  */
 public abstract class Flux {
+
+    private Map<String, String> namedParameters = new LinkedHashMap<>();
 
     /**
      * Get data from the specified database.
@@ -409,6 +413,20 @@ public abstract class Flux {
         Preconditions.checkNonEmptyString(useStartTimeParameterName, "UseStartTime");
 
         return new LastFlux(this, useStartTimeParameterName);
+    }
+
+    /**
+     * Restricts the number of rows returned in the results.
+     *
+     * The parameters had to be defined by {@link Flux#addNamedParameter(String)} or
+     * {@link Flux#addNamedParameter(String, String)}
+     *
+     * @return {@link LimitFlux}
+     */
+    @Nonnull
+    public Flux limit() {
+
+        return new LimitFlux(this);
     }
 
     /**
@@ -936,6 +954,19 @@ public abstract class Flux {
 
     /**
      * Partitions the results by a given time range.
+     * <p>
+     * The parameters had to be defined by {@link Flux#addNamedParameter(String)} or
+     * {@link Flux#addNamedParameter(String, String)}
+     *
+     * @return {@link WindowFlux}
+     */
+    @Nonnull
+    public Flux window() {
+        return new WindowFlux(this);
+    }
+
+    /**
+     * Partitions the results by a given time range.
      *
      * @param every     duration of time between windows
      * @param everyUnit a {@code ChronoUnit} determining how to interpret the {@code every}
@@ -1220,6 +1251,66 @@ public abstract class Flux {
         Preconditions.checkNonEmptyString(expression, "Expression");
 
         return new ExpressionFlux(this, expression);
+    }
+
+    /**
+     * Add named parameter to current operator.
+     *
+     * <pre>
+     *  FluxChain fluxChain = new FluxChain()
+     *      .addNamedParameter("every", 15, ChronoUnit.MINUTES)
+     *      .addNamedParameter("period", 20L, ChronoUnit.SECONDS)
+     *      .addNamedParameter("start", -50, ChronoUnit.DAYS)
+     *      .addNamedParameter("round", 1L, ChronoUnit.HOURS);
+     *
+     *  Flux flux = Flux.from("telegraf")
+     *      .window()
+     *      .addNamedParameter("every")
+     *      .addNamedParameter("period")
+     *      .addNamedParameter("start")
+     *      .addNamedParameter("round");
+     *
+     * flux.print(fluxChain);
+     * </pre>
+     *
+     * @param parameter name in Flux query and in bound parameters
+     * @return a current operator.
+     */
+    @Nonnull
+    public Flux addNamedParameter(@Nonnull final String parameter) {
+        return addNamedParameter(parameter, parameter);
+    }
+
+    /**
+     * Add named parameter to current operator.
+     *
+     * <pre>
+     * Flux flux = Flux
+     *      .from("telegraf")
+     *      .limit()
+     *      .addNamedParameter("n", "limit");
+     *
+     * FluxChain fluxChain = new FluxChain()
+     *      .addNamedParameter("limit", 15);
+     *
+     * flux.print(fluxChain);
+     * </pre>
+     *
+     * @param fluxName       name in Flux query
+     * @param namedParameter name in bound parameters
+     * @return a current operator
+     */
+    @Nonnull
+    public Flux addNamedParameter(@Nonnull final String fluxName, @Nonnull final String namedParameter) {
+
+        this.namedParameters.put(fluxName, namedParameter);
+
+        return this;
+    }
+
+    @Nonnull
+    protected Map<String, String> getNamedParameters() {
+        return namedParameters;
     }
 
     /**

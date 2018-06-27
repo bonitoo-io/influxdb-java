@@ -26,6 +26,12 @@ public final class LimitFlux extends AbstractParametrizedFlux {
 
     private final Parameter<Integer> numberOfResults;
 
+    public LimitFlux(@Nonnull final Flux flux) {
+        super(flux);
+
+        numberOfResults = null;
+    }
+
     public LimitFlux(@Nonnull final Flux source, @Nonnull final Integer numberOfResults) {
         super(source);
 

@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -43,6 +42,9 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
         boolean wasAppended = false;
 
         OperatorParameters parameters = getParameters();
+        getNamedParameters()
+                .forEach((fluxName, namedParameter) -> parameters.put(fluxName, new BoundParameter(namedParameter)));
+
         for (String name : parameters.keys()) {
 
             wasAppended = appendParameterTo(name, parameters.get(name), operator, fluxChain, wasAppended);
@@ -107,8 +109,8 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
             parameterValue = dataFormat.format((Instant) parameterValue);
         }
 
-        if (parameterValue instanceof TimeInterval) {
-            parameterValue = ((TimeInterval) parameterValue).value();
+        if (parameterValue instanceof FluxChain.TimeInterval) {
+            parameterValue = ((FluxChain.TimeInterval) parameterValue).value();
         }
 
         if (parameterValue == null) {
@@ -133,14 +135,14 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
 
         private Map<String, Parameter> parameters = new LinkedHashMap<>();
 
-        protected static OperatorParameters of(@Nonnull final String name, @Nonnull final Parameter parameter) {
+        protected static OperatorParameters of(@Nonnull final String name, @Nullable final Parameter parameter) {
             return new OperatorParameters().put(name, parameter);
         }
 
         @Nonnull
-        OperatorParameters put(@Nonnull final String name, @Nonnull final Parameter parameter) {
+        OperatorParameters put(@Nonnull final String name, @Nullable final Parameter parameter) {
 
-            if (!(parameter instanceof NotDefinedParameter)) {
+            if (parameter != null && !(parameter instanceof NotDefinedParameter)) {
                 parameters.put(name, parameter);
             }
 
@@ -169,7 +171,6 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
         @Nullable
         T value(@Nonnull final Map<String, Object> parameters);
     }
-
 
     class BoundParameter<T> implements Parameter<T> {
 
@@ -225,69 +226,6 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
         @Override
         public T value(@Nonnull final Map<String, Object> parameters) {
             throw new IllegalStateException();
-        }
-    }
-
-    class TimeInterval {
-
-        private static final int HOURS_IN_HALF_DAY = 12;
-
-        private Long interval;
-        private ChronoUnit chronoUnit;
-
-        TimeInterval(@Nullable final Long interval, @Nullable final ChronoUnit chronoUnit) {
-            this.interval = interval;
-            this.chronoUnit = chronoUnit;
-        }
-
-        @Nullable
-        String value() {
-
-            if (interval == null || chronoUnit == null) {
-                return null;
-            }
-
-            String unit;
-            Long calculatedInterval = interval;
-            switch (chronoUnit) {
-                case NANOS:
-                    unit = "n";
-                    break;
-                case MICROS:
-                    unit = "u";
-                    break;
-                case MILLIS:
-                    unit = "ms";
-                    break;
-                case SECONDS:
-                    unit = "s";
-                    break;
-                case MINUTES:
-                    unit = "m";
-                    break;
-                case HOURS:
-                    unit = "h";
-                    break;
-                case HALF_DAYS:
-                    unit = "h";
-                    calculatedInterval = HOURS_IN_HALF_DAY * interval;
-                    break;
-                case DAYS:
-                    unit = "d";
-                    break;
-                case WEEKS:
-                    unit = "w";
-                    break;
-                default:
-                    String message = "Unit must be one of: "
-                            + "NANOS, MICROS, MILLIS, SECONDS, MINUTES, HOURS, HALF_DAYS, DAYS, WEEKS";
-
-                    throw new IllegalArgumentException(message);
-            }
-
-            return new StringBuilder()
-                    .append(calculatedInterval)
-                    .append(unit).toString();
         }
     }
 }

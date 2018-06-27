@@ -726,11 +726,12 @@ Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
 #### Named parameters
 ```java
 Map<String, Object> parameters = new HashMap<>();
-parameters.put("limitParameter", 5);
+parameters.put("limit", 5);
 
 Flux flux = Flux
-    .from("telegraf")
-    .limit("limitParameter");
+     .from("telegraf")
+     .limit()
+     .addNamedParameter("n", "limit");
 
 Flowable<Cpu> cpu = influxDBReactive.flux(flux, parameters, Cpu.class);
 ```
