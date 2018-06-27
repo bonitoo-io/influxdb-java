@@ -24,11 +24,12 @@ class MinFluxTest {
     }
 
     @Test
-    void countByParameter() {
+    void minByParameter() {
 
         Flux flux = Flux
                 .from("telegraf")
-                .min("parameter");
+                .min()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

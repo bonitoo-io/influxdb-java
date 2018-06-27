@@ -35,10 +35,6 @@ public final class MeanFlux extends AbstractScalarFlux {
         super(source, useStartTime);
     }
 
-    public MeanFlux(@Nonnull final Flux source, @Nonnull final String useStartTimeParameter) {
-        super(source, useStartTimeParameter);
-    }
-
     @Nonnull
     @Override
     String operatorName() {

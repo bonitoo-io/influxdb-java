@@ -28,7 +28,8 @@ class MeanFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .mean("parameter");
+                .mean()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

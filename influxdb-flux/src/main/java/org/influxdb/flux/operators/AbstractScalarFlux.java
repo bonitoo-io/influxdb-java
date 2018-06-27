@@ -1,7 +1,6 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 
@@ -20,14 +19,6 @@ abstract class AbstractScalarFlux extends AbstractParametrizedFlux {
     AbstractScalarFlux(@Nonnull final Flux source, final boolean useStartTime) {
         super(source);
         this.useStartTime = (m) -> useStartTime;
-    }
-
-    public AbstractScalarFlux(@Nonnull final Flux source, @Nonnull final String useStartTimeParameter) {
-        super(source);
-
-        Preconditions.checkNonEmptyString(useStartTimeParameter, "Use Start Time");
-
-        this.useStartTime = new BoundParameter<>(useStartTimeParameter);
     }
 
     @Nonnull

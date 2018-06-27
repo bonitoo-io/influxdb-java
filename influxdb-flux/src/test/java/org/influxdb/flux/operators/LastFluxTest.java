@@ -28,7 +28,8 @@ class LastFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .last("parameter");
+                .last()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

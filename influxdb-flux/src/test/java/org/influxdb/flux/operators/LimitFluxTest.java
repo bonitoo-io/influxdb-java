@@ -48,7 +48,7 @@ class LimitFluxTest {
     @Test
     void limitByParameterMissing() {
 
-        Assertions.assertThatThrownBy(() -> Flux.from("telegraf").limit("limit").print())
+        Assertions.assertThatThrownBy(() -> Flux.from("telegraf").limit().addNamedParameter("limit").print())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("The parameter 'limit' is not defined.");
     }

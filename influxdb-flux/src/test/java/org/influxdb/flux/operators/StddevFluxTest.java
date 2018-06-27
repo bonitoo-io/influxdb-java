@@ -28,7 +28,8 @@ class StddevFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .stddev("parameter");
+                .stddev()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

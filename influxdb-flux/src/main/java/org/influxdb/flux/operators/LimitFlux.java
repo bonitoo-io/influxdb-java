@@ -40,14 +40,6 @@ public final class LimitFlux extends AbstractParametrizedFlux {
         this.numberOfResults = (map) -> numberOfResults;
     }
 
-    public LimitFlux(@Nonnull final Flux source, @Nonnull final String numberOfResultsParameter) {
-        super(source);
-
-        Preconditions.checkNonEmptyString(numberOfResultsParameter, "Number of results");
-
-        this.numberOfResults = new BoundParameter<>(numberOfResultsParameter);
-    }
-
     @Nonnull
     @Override
     String operatorName() {

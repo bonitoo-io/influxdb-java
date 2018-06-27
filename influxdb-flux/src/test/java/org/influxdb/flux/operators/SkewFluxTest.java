@@ -24,11 +24,12 @@ class SkewFluxTest {
     }
 
     @Test
-    void countByParameter() {
+    void skewByParameter() {
 
         Flux flux = Flux
                 .from("telegraf")
-                .skew("parameter");
+                .skew()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

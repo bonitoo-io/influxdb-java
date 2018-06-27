@@ -78,7 +78,8 @@ class RangeFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .range("startParameter");
+                .range()
+                .addNamedParameter("start", "startParameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("startParameter", Instant.ofEpochSecond(1_600_000));
@@ -92,7 +93,9 @@ class RangeFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .range("startParameter", "stopParameter");
+                .range()
+                .addNamedParameter("start", "startParameter")
+                .addNamedParameter("stop", "stopParameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("startParameter", Instant.ofEpochSecond(1_600_000))

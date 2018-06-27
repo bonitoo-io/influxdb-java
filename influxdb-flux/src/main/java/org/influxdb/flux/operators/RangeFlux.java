@@ -1,7 +1,6 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
@@ -46,6 +45,16 @@ public final class RangeFlux extends AbstractParametrizedFlux {
     private final Parameter<TimeInterval> startInterval;
     private final Parameter<TimeInterval> stopInterval;
 
+    public RangeFlux(@Nonnull final Flux flux) {
+        super(flux);
+
+        this.startInstant = null;
+        this.stopInstant = null;
+
+        this.startInterval = null;
+        this.stopInterval = null;
+    }
+
     public RangeFlux(@Nonnull final Flux source, @Nonnull final Instant start) {
 
         super(source);
@@ -68,35 +77,6 @@ public final class RangeFlux extends AbstractParametrizedFlux {
 
         this.startInstant = (m) -> start;
         this.stopInstant = (m) -> stop;
-
-        this.startInterval = new NotDefinedParameter<>();
-        this.stopInterval = new NotDefinedParameter<>();
-    }
-
-    public RangeFlux(@Nonnull final Flux source, @Nonnull final String startParameterName) {
-
-        super(source);
-
-        Preconditions.checkNonEmptyString(startParameterName, "Start parameter name");
-
-        this.startInstant = new BoundParameter<>(startParameterName);
-        this.stopInstant = new NotDefinedParameter<>();
-
-        this.startInterval = new NotDefinedParameter<>();
-        this.stopInterval = new NotDefinedParameter<>();
-    }
-
-    public RangeFlux(@Nonnull final Flux source,
-                     @Nonnull final String startParameterName,
-                     @Nonnull final String stopParameterName) {
-
-        super(source);
-
-        Preconditions.checkNonEmptyString(startParameterName, "Start parameter name");
-        Preconditions.checkNonEmptyString(stopParameterName, "Stop parameter name");
-
-        this.startInstant = new BoundParameter<>(startParameterName);
-        this.stopInstant = new BoundParameter<>(stopParameterName);
 
         this.startInterval = new NotDefinedParameter<>();
         this.stopInterval = new NotDefinedParameter<>();

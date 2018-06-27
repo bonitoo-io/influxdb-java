@@ -96,7 +96,9 @@ class SortFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .sort("columnsParameter", "descParameter");
+                .sort()
+                .addNamedParameter("cols", "columnsParameter")
+                .addNamedParameter("desc", "descParameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("columnsParameter", new String[]{"region", "tag"})

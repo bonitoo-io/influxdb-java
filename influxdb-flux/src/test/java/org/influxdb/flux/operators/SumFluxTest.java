@@ -24,11 +24,12 @@ class SumFluxTest {
     }
 
     @Test
-    void countByParameter() {
+    void sumByParameter() {
 
         Flux flux = Flux
                 .from("telegraf")
-                .sum("parameter");
+                .sum()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

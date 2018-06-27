@@ -28,7 +28,8 @@ class SpreadFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .spread("parameter");
+                .spread()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

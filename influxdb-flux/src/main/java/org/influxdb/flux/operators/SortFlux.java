@@ -1,7 +1,6 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -41,6 +40,13 @@ public final class SortFlux extends AbstractParametrizedFlux {
     private final Parameter<Boolean> desc;
     private final Parameter<Collection<String>> columns;
 
+    public SortFlux(@Nonnull final Flux flux) {
+        super(flux);
+
+        this.desc = null;
+        this.columns = null;
+    }
+
     public SortFlux(@Nonnull final Flux source, final boolean desc) {
         super(source);
 
@@ -64,19 +70,6 @@ public final class SortFlux extends AbstractParametrizedFlux {
 
         this.desc = (m) -> desc;
         this.columns = (m) -> columns;
-    }
-
-
-    public SortFlux(@Nonnull final Flux source,
-                    @Nonnull final String descParameterName,
-                    @Nonnull final String colsParameterName) {
-        super(source);
-
-        Preconditions.checkNonEmptyString(descParameterName, "Sort of results");
-        Preconditions.checkNonEmptyString(colsParameterName, "Columns");
-
-        this.desc = new BoundParameter<>(descParameterName);
-        this.columns = new BoundParameter<>(colsParameterName);
     }
 
     @Nonnull

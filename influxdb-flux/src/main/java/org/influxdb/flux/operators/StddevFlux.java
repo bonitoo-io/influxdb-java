@@ -32,10 +32,6 @@ public final class StddevFlux extends AbstractScalarFlux {
         super(source, useStartTime);
     }
 
-    public StddevFlux(@Nonnull final Flux source, @Nonnull final String useStartTimeParameter) {
-        super(source, useStartTimeParameter);
-    }
-
     @Nonnull
     @Override
     String operatorName() {

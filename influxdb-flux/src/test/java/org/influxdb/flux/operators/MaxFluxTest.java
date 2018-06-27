@@ -28,7 +28,8 @@ class MaxFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .max("parameter");
+                .max()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

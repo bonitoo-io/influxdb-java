@@ -28,7 +28,8 @@ class CountFluxTest {
 
         Flux flux = Flux
                 .from("telegraf")
-                .count("parameter");
+                .count()
+                .addNamedParameter("useStartTime", "parameter");
 
         FluxChain fluxChain = new FluxChain()
                 .addParameter("parameter", true);

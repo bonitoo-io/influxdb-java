@@ -30,10 +30,6 @@ public final class SumFlux extends AbstractScalarFlux {
         super(source, useStartTime);
     }
 
-    public SumFlux(@Nonnull final Flux source, @Nonnull final String useStartTimeParameter) {
-        super(source, useStartTimeParameter);
-    }
-
     @Nonnull
     @Override
     String operatorName() {
