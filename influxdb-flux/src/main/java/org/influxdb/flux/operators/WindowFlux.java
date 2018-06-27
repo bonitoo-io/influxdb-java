@@ -7,6 +7,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#window">window</a> - Partitions the results by
@@ -34,7 +36,7 @@ import java.time.temporal.ChronoUnit;
  * @author Jakub Bednar (bednar@github) (27/06/2018 12:01)
  * @since 3.0.0
  */
-public final class WindowFlux extends AbstractFluxWithUpstream {
+public final class WindowFlux extends AbstractParametrizedFlux {
 
     private final FluxChain.FluxParameter<TimeInterval> every;
     private final FluxChain.FluxParameter<TimeInterval> period;
@@ -100,31 +102,26 @@ public final class WindowFlux extends AbstractFluxWithUpstream {
         this.stopCol = new FluxChain.EscapeStringParameter(stopCol);
     }
 
+    @Nonnull
     @Override
-    void appendAfterUpstream(@Nonnull final FluxChain fluxChain) {
+    String operatorName() {
+        return "window";
+    }
 
-        StringBuilder window = new StringBuilder();
-        //
-        // range(
-        //
-        window.append("window(");
-        //
-        //
-        // every: 1m, period: 1h, start: -4h, round: 1s
-        appendParameters(window, fluxChain,
-                new NamedParameter("every", every),
-                new NamedParameter("period", period),
-                new NamedParameter("start", startInterval),
-                new NamedParameter("start", startInstant),
-                new NamedParameter("round", round),
-                new NamedParameter("column", timeColumn),
-                new NamedParameter("startCol", startCol),
-                new NamedParameter("stopCol", stopCol));
-        //
-        // )
-        //
-        window.append(")");
+    @Nonnull
+    @Override
+    List<NamedParameter> getParameters() {
 
-        fluxChain.append(window);
+        List<NamedParameter> parameters = new ArrayList<>();
+        parameters.add(new NamedParameter("every", every));
+        parameters.add(new NamedParameter("period", period));
+        parameters.add(new NamedParameter("start", startInterval));
+        parameters.add(new NamedParameter("start", startInstant));
+        parameters.add(new NamedParameter("round", round));
+        parameters.add(new NamedParameter("column", timeColumn));
+        parameters.add(new NamedParameter("startCol", startCol));
+        parameters.add(new NamedParameter("stopCol", stopCol));
+
+        return parameters;
     }
 }

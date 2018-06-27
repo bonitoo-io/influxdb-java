@@ -5,11 +5,13 @@ import org.influxdb.flux.FluxChain;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Jakub Bednar (bednar@github) (25/06/2018 09:32)
  */
-abstract class AbstractScalarFlux extends AbstractFluxWithUpstream {
+abstract class AbstractScalarFlux extends AbstractParametrizedFlux {
 
     private FluxChain.FluxParameter<Boolean> useStartTime;
 
@@ -31,29 +33,13 @@ abstract class AbstractScalarFlux extends AbstractFluxWithUpstream {
         this.useStartTime = new FluxChain.BoundFluxParameter<>(useStartTimeParameter);
     }
 
-    /**
-     * @return name of operator
-     */
     @Nonnull
-    abstract String operatorName();
-
     @Override
-    protected final void appendAfterUpstream(@Nonnull final FluxChain fluxChain) {
+    List<NamedParameter> getParameters() {
 
-        StringBuilder operator = new StringBuilder();
-        //
-        // count(
-        //
-        operator.append(operatorName()).append("(");
-        //
-        //
-        // useStartTime: false
-        appendParameters(operator, fluxChain, new NamedParameter("useStartTime", useStartTime));
-        //
-        // )
-        //
-        operator.append(")");
+        List<NamedParameter> namedParameters = new ArrayList<>();
+        namedParameters.add(new NamedParameter("useStartTime", useStartTime));
 
-        fluxChain.append(operator);
+        return namedParameters;
     }
 }

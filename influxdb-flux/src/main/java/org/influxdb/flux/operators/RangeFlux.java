@@ -7,6 +7,8 @@ import org.influxdb.impl.Preconditions;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -37,7 +39,7 @@ import java.util.Objects;
  * @author Jakub Bednar (bednar@github) (26/06/2018 07:04)
  * @since 3.0.0
  */
-public final class RangeFlux extends AbstractFluxWithUpstream {
+public final class RangeFlux extends AbstractParametrizedFlux {
 
     private final FluxChain.FluxParameter<Instant> startInstant;
     private final FluxChain.FluxParameter<Instant> stopInstant;
@@ -131,28 +133,22 @@ public final class RangeFlux extends AbstractFluxWithUpstream {
         this.stopInterval = (m) -> new TimeInterval(stop, unit);
     }
 
+    @Nonnull
     @Override
-    void appendAfterUpstream(@Nonnull final FluxChain fluxChain) {
+    String operatorName() {
+        return "range";
+    }
 
-        StringBuilder range = new StringBuilder();
-        //
-        // range(
-        //
-        range.append("range(");
-        //
-        //
-        // start: 2018-05-23T13:09:22.885021542Z
-        // stop: -15m
-        appendParameters(range, fluxChain,
-                new NamedParameter("start", startInstant),
-                new NamedParameter("start", startInterval),
-                new NamedParameter("stop", stopInstant),
-                new NamedParameter("stop", stopInterval));
-        //
-        // )
-        //
-        range.append(")");
+    @Nonnull
+    @Override
+    List<NamedParameter> getParameters() {
 
-        fluxChain.append(range);
+        List<NamedParameter> parameters = new ArrayList<>();
+        parameters.add(new NamedParameter("start", startInstant));
+        parameters.add(new NamedParameter("start", startInterval));
+        parameters.add(new NamedParameter("stop", stopInstant));
+        parameters.add(new NamedParameter("stop", stopInterval));
+
+        return parameters;
     }
 }

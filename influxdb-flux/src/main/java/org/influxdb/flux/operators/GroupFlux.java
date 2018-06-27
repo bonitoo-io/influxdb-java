@@ -5,7 +5,9 @@ import org.influxdb.flux.FluxChain;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,7 +33,7 @@ import java.util.Objects;
  * @author Jakub Bednar (bednar@github) (25/06/2018 14:56)
  * @since 3.0.0
  */
-public final class GroupFlux extends AbstractFluxWithUpstream {
+public final class GroupFlux extends AbstractParametrizedFlux {
 
     private final FluxChain.FluxParameter<Collection<String>> groupBy;
     private final FluxChain.FluxParameter<Collection<String>> keep;
@@ -122,27 +124,21 @@ public final class GroupFlux extends AbstractFluxWithUpstream {
         }
     }
 
+    @Nonnull
     @Override
-    void appendAfterUpstream(@Nonnull final FluxChain fluxChain) {
-        StringBuilder group = new StringBuilder();
-        //
-        // group(
-        //
-        group.append("group(");
-        //
-        //
-        // by: ["tag_a", "tag_b"]
-        // except: ["tag_a"]
-        // keep:["tag_c"]
-        appendParameters(group, fluxChain,
-                new NamedParameter("by", groupBy),
-                new NamedParameter("except", except),
-                new NamedParameter("keep", keep));
-        //
-        // )
-        //
-        group.append(")");
+    String operatorName() {
+        return "group";
+    }
 
-        fluxChain.append(group);
+    @Nonnull
+    @Override
+    List<NamedParameter> getParameters() {
+
+        List<NamedParameter> parameters = new ArrayList<>();
+        parameters.add(new NamedParameter("by", groupBy));
+        parameters.add(new NamedParameter("except", except));
+        parameters.add(new NamedParameter("keep", keep));
+
+        return parameters;
     }
 }

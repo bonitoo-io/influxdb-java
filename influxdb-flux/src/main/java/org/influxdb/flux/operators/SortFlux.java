@@ -5,7 +5,9 @@ import org.influxdb.flux.FluxChain;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -37,7 +39,7 @@ import java.util.Objects;
  * @author Jakub Bednar (bednar@github) (25/06/2018 13:20)
  * @since 3.0.0
  */
-public final class SortFlux extends AbstractFluxWithUpstream {
+public final class SortFlux extends AbstractParametrizedFlux {
 
     private final FluxChain.FluxParameter<Boolean> desc;
     private final FluxChain.FluxParameter<Collection<String>> columns;
@@ -80,26 +82,20 @@ public final class SortFlux extends AbstractFluxWithUpstream {
         this.columns = new FluxChain.BoundFluxParameter<>(colsParameterName);
     }
 
+    @Nonnull
     @Override
-    void appendAfterUpstream(@Nonnull final FluxChain fluxChain) {
+    String operatorName() {
+        return "sort";
+    }
 
-        StringBuilder sort = new StringBuilder();
-        //
-        // sort(
-        //
-        sort.append("sort(");
-        //
-        //
-        // cols: ["region", "host", "value"]
-        // desc: true
-        appendParameters(sort, fluxChain,
-                new NamedParameter("cols", columns),
-                new NamedParameter("desc", desc));
-        //
-        // )
-        //
-        sort.append(")");
+    @Nonnull
+    @Override
+    List<NamedParameter> getParameters() {
 
-        fluxChain.append(sort);
+        List<NamedParameter> parameters = new ArrayList<>();
+        parameters.add(new NamedParameter("cols", columns));
+        parameters.add(new NamedParameter("desc", desc));
+
+        return parameters;
     }
 }

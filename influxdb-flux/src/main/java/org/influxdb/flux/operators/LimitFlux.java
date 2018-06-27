@@ -6,6 +6,8 @@ import org.influxdb.flux.FluxChain.FluxParameter;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#limit">limit</a> - Restricts the number of rows
@@ -24,7 +26,7 @@ import javax.annotation.Nonnull;
  * @author Jakub Bednar (bednar@github) (25/06/2018 11:22)
  * @since 3.0.0
  */
-public final class LimitFlux extends AbstractFluxWithUpstream {
+public final class LimitFlux extends AbstractParametrizedFlux {
 
     private final FluxParameter<Integer> numberOfResults;
 
@@ -44,23 +46,19 @@ public final class LimitFlux extends AbstractFluxWithUpstream {
         this.numberOfResults = new FluxChain.BoundFluxParameter<>(numberOfResultsParameter);
     }
 
+    @Nonnull
     @Override
-    void appendAfterUpstream(@Nonnull final FluxChain fluxChain) {
+    String operatorName() {
+        return "limit";
+    }
 
-        StringBuilder limit = new StringBuilder();
-        //
-        // limit(
-        //
-        limit.append("limit(");
-        //
-        //
-        // n: 5
-        appendParameters(limit, fluxChain, new NamedParameter("n", numberOfResults));
-        //
-        // )
-        //
-        limit.append(")");
+    @Nonnull
+    @Override
+    List<NamedParameter> getParameters() {
 
-        fluxChain.append(limit);
+        List<NamedParameter> parameters = new ArrayList<>();
+        parameters.add(new NamedParameter("n", numberOfResults));
+
+        return parameters;
     }
 }
