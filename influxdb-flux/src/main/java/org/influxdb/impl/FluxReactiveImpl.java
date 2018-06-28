@@ -108,14 +108,14 @@ public class FluxReactiveImpl implements FluxReactive {
 
     @Override
     public <M> Flowable<M> flux(@Nonnull final Publisher<Flux> fluxStream,
-                                @Nonnull final Map<String, Object> parameters,
+                                @Nonnull final Map<String, Object> properties,
                                 @Nonnull final Class<M> measurementType) {
 
         Objects.requireNonNull(fluxStream, "Flux stream is required");
-        Objects.requireNonNull(parameters, "Parameters are required");
+        Objects.requireNonNull(properties, "Parameters are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
 
-        return flux(fluxStream, parameters)
+        return flux(fluxStream, properties)
                 .map(fluxResults -> mapper.toPOJO(fluxResults, measurementType))
                 .concatMap(Flowable::fromIterable);
     }
@@ -129,19 +129,19 @@ public class FluxReactiveImpl implements FluxReactive {
     }
 
     @Override
-    public Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final Map<String, Object> parameters) {
+    public Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final Map<String, Object> properties) {
 
         Objects.requireNonNull(flux, "Flux is required");
-        Objects.requireNonNull(parameters, "Parameters are required");
+        Objects.requireNonNull(properties, "Parameters are required");
 
-        return flux(Flowable.just(flux), parameters);
+        return flux(Flowable.just(flux), properties);
     }
 
     @Override
     public Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> fluxStream,
-                                     @Nonnull final Map<String, Object> parameters) {
+                                     @Nonnull final Map<String, Object> properties) {
         Objects.requireNonNull(fluxStream, "Flux stream is required");
-        Objects.requireNonNull(parameters, "Parameters are required");
+        Objects.requireNonNull(properties, "Parameters are required");
 
         return Flowable.fromPublisher(fluxStream).concatMap((Function<Flux, Publisher<FluxResult>>) flux -> {
 
@@ -149,7 +149,7 @@ public class FluxReactiveImpl implements FluxReactive {
             // Parameters
             //
             String orgID = this.fluxOptions.getOrgID();
-            String query = flux.print(new FluxChain().addParameters(parameters));
+            String query = flux.print(new FluxChain().addParameters(properties));
 
             return fluxService
                     .query(query, orgID)

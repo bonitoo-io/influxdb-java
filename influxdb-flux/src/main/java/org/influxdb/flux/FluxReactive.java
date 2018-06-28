@@ -47,14 +47,14 @@ public interface FluxReactive {
      * Execute a Flux against the Flux service.
      *
      * @param fluxStream      the flux query to execute
-     * @param parameters      named parameters
+     * @param properties      named properties
      * @param measurementType The type of the measurement (POJO)
      * @param <M>             The type of the measurement (POJO)
      * @return {@link Flowable} emitting a {@link FluxResult} mapped to {@code measurementType} which are matched
      * the query or {@link Flowable#empty()} if none found.
      */
     <M> Flowable<M> flux(@Nonnull final Publisher<Flux> fluxStream,
-                         @Nonnull final Map<String, Object> parameters,
+                         @Nonnull final Map<String, Object> properties,
                          @Nonnull final Class<M> measurementType);
 
     /**
@@ -70,21 +70,21 @@ public interface FluxReactive {
      * Execute a Flux against the Flux service.
      *
      * @param flux       the flux query to execute
-     * @param parameters named parameters
+     * @param properties named properties
      * @return {@link Flowable} emitting a {@link FluxResult} which are matched the query or
      * {@link Flowable#empty()} if none found.
      */
-    Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final Map<String, Object> parameters);
+    Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final Map<String, Object> properties);
 
     /**
      * Execute a Flux against the Flux service.
      *
      * @param fluxStream the flux query to execute
-     * @param parameters named parameters
+     * @param properties named properties
      * @return {@link Flowable} emitting a {@link FluxResult} which are matched the query or
      * {@link Flowable#empty()} if none found.
      */
-    Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> fluxStream, @Nonnull final Map<String, Object> parameters);
+    Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> fluxStream, @Nonnull final Map<String, Object> properties);
 
     /**
      * Listen the events produced by {@link FluxReactive}.

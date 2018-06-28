@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
  * @author Jakub Bednar (bednar@github) (26/06/2018 06:37)
  * @since 3.0.0
  */
-public final class ToTimeFlux extends AbstractConvertFlux {
+public final class ToTimeFlux extends AbstractParametrizedFlux {
 
     public ToTimeFlux(@Nonnull final Flux source) {
         super(source);

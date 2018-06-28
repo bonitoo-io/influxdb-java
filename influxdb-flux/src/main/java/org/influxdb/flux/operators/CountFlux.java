@@ -20,14 +20,10 @@ import javax.annotation.Nonnull;
  * @author Jakub Bednar (bednar@github) (22/06/2018 11:06)
  * @since 3.0.0
  */
-public final class CountFlux extends AbstractScalarFlux {
+public final class CountFlux extends AbstractParametrizedFlux {
 
     public CountFlux(@Nonnull final Flux source) {
         super(source);
-    }
-
-    public CountFlux(@Nonnull final Flux source, final boolean useStartTime) {
-        super(source, useStartTime);
     }
 
     @Nonnull

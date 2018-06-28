@@ -25,14 +25,10 @@ import javax.annotation.Nonnull;
  * @author Jakub Bednar (bednar@github) (25/06/2018 09:55)
  * @since 3.0.0
  */
-public final class MeanFlux extends AbstractScalarFlux {
+public final class MeanFlux extends AbstractParametrizedFlux {
 
     public MeanFlux(@Nonnull final Flux source) {
         super(source);
-    }
-
-    public MeanFlux(@Nonnull final Flux source, final boolean useStartTime) {
-        super(source, useStartTime);
     }
 
     @Nonnull

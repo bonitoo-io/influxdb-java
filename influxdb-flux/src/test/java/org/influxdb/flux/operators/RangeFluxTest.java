@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 07:23)
@@ -70,7 +71,7 @@ class RangeFluxTest {
                 .range(15L, 44L, ChronoUnit.NANOS);
 
         Assertions.assertThat(flux.print())
-                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> range(start: 15n, stop: 44n)");
+                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> range(start: 15ns, stop: 44ns)");
     }
 
     @Test
@@ -79,12 +80,12 @@ class RangeFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .range()
-                .addNamedParameter("start", "startParameter");
+                .addPropertyNamed("start", "startParameter");
 
-        FluxChain fluxChain = new FluxChain()
-                .addParameter("startParameter", Instant.ofEpochSecond(1_600_000));
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("startParameter", Instant.ofEpochSecond(1_600_000));
 
-        Assertions.assertThat(flux.print(fluxChain))
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters)))
                 .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> range(start: 1970-01-19T12:26:40.000000000Z)");
     }
 
@@ -94,16 +95,16 @@ class RangeFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .range()
-                .addNamedParameter("start", "startParameter")
-                .addNamedParameter("stop", "stopParameter");
+                .addPropertyNamed("start", "startParameter")
+                .addPropertyNamed("stop", "stopParameter");
 
-        FluxChain fluxChain = new FluxChain()
-                .addParameter("startParameter", Instant.ofEpochSecond(1_600_000))
-                .addParameter("stopParameter", Instant.ofEpochSecond(1_800_000));
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("startParameter", Instant.ofEpochSecond(1_600_000));
+        parameters.put("stopParameter", Instant.ofEpochSecond(1_800_000));
 
         String expected = "from(db:\"telegraf\") |> "
                 + "range(start: 1970-01-19T12:26:40.000000000Z, stop: 1970-01-21T20:00:00.000000000Z)";
 
-        Assertions.assertThat(flux.print(fluxChain)).isEqualToIgnoringWhitespace(expected);
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters))).isEqualToIgnoringWhitespace(expected);
     }
 }

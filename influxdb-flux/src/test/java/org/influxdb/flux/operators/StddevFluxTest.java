@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
+import java.util.HashMap;
+
 /**
  * @author Jakub Bednar (bednar@github) (25/06/2018 10:18)
  */
@@ -29,12 +31,12 @@ class StddevFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .stddev()
-                .addNamedParameter("useStartTime", "parameter");
+                .addPropertyNamed("useStartTime", "parameter");
 
-        FluxChain fluxChain = new FluxChain()
-                .addParameter("parameter", true);
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("parameter", true);
 
-        Assertions.assertThat(flux.print(fluxChain))
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters)))
                 .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> stddev(useStartTime: true)");
     }
 

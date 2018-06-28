@@ -617,7 +617,7 @@ influxDBReactive
     .subscribe(version -> System.out.println("InfluxDB version: " + version));
 ```
 
-## Flux - Influx Data Language (version 3.0+ required)
+## Flux - Data Scripting Language (version 3.0+ required)
 The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute.
 The `FluxReactive` is reactive client that support the Flux Language.
 
@@ -674,7 +674,47 @@ fluxReactive.listenEvents(FluxErrorEvent.class).subscribe(event -> {
 });
 ```
 
+### Functions properties
+There are three possibilities how to add properties to the functions.
+
+#### Use build-in constructor
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .window(15L, ChronoUnit.MINUTES, 20L, ChronoUnit.SECONDS)
+    .sum();
+
+Flowable<FluxResult> results = fluxReactive.flux(flux);
+```
+#### Specify the property value
+```java
+Flux.from("telegraf")
+    .window()
+        .addPropertyValue("every", 15L, ChronoUnit.MINUTES)
+        .addPropertyValue("period", 20L, ChronoUnit.SECONDS)
+    .sum();
+
+Flowable<FluxResult> results = fluxReactive.flux(flux);
+```
+#### Use named properties
+```java
+Map<String, Object> properties = new HashMap<>();
+properties.put("every", new TimeInterval(15L, ChronoUnit.MINUTES));
+properties.put("period", new TimeInterval(20L, ChronoUnit.SECONDS));
+
+Flux flux = Flux
+    .from("telegraf")
+    .window()
+        .addPropertyNamed("every")
+        .addPropertyNamed("period")
+    .sum();
+
+Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
+```
+
 ### Supported Functions
+
+
 - [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
 - [count](https://github.com/influxdata/platform/tree/master/query#count) - counts the number of results
 - [first](https://github.com/influxdata/platform/tree/master/query#first) - returns the first result of the query
@@ -706,7 +746,7 @@ Flux flux = Flux.from("telegraf")
     .range(-170L, ChronoUnit.HOURS)
     .limit(5)
     
-Flowable<FluxResult> cpu = influxDBReactive.flux(flux);
+Flowable<FluxResult> cpu = fluxReactive.flux(flux);
 ```
 
 #### Map results to the POJO
@@ -721,27 +761,16 @@ Flux flux = Flux.from("telegraf")
     .range(-170L, ChronoUnit.HOURS)
     .sum()
     
-Flowable<Cpu> cpu = influxDBReactive.flux(flux, Cpu.class);
+Flowable<Cpu> cpu = fluxReactive.flux(flux, Cpu.class);
 ```
-#### Named parameters
-```java
-Map<String, Object> parameters = new HashMap<>();
-parameters.put("limit", 5);
 
-Flux flux = Flux
-     .from("telegraf")
-     .limit()
-     .addNamedParameter("n", "limit");
-
-Flowable<Cpu> cpu = influxDBReactive.flux(flux, parameters, Cpu.class);
-```
 #### Custom Flux expression
 ```java
 Flux flux = Flux.from("telegraf")
     .expression("map(fn: (r) => r._value * r._value)")
     .expression("sum()");
 
-Flowable<FluxResult> results = influxDBReactive.flux(flux);
+Flowable<FluxResult> results = fluxReactive.flux(flux);
 ```
 
 ### Advanced Usage
@@ -770,7 +799,7 @@ Starting with version 3.0 is influxdb-java split into following modules:
 
 * influxdb-core - core client library backward compatible with 2.X (artifactId is `influxdb-java`)
 * influxdb-reactive - reactive client library based on RxJava
-* influxdb-flux - support for the Flux - Functional Language for defining a query to execute
+* influxdb-flux - support for the Flux - Data Scripting Language
 * influxdb-jmx - jmx monitoring of client performance, connection pool, number of calls
 
 You can also add dependency `influxdb-java` to your project using BOM  "Bill Of Materials".     

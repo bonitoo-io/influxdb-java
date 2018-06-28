@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
+import java.util.HashMap;
+
 /**
  * @author Jakub Bednar (bednar@github) (25/06/2018 11:55)
  */
@@ -36,19 +38,19 @@ class LimitFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .limit()
-                .addNamedParameter("n", "limit");
+                .addPropertyNamed("n", "limit");
 
-        FluxChain fluxChain = new FluxChain()
-                .addParameter("limit", 15);
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("limit", 15);
 
-        Assertions.assertThat(flux.print(fluxChain))
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters)))
                 .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> limit(n: 15)");
     }
 
     @Test
     void limitByParameterMissing() {
 
-        Assertions.assertThatThrownBy(() -> Flux.from("telegraf").limit().addNamedParameter("limit").print())
+        Assertions.assertThatThrownBy(() -> Flux.from("telegraf").limit().addPropertyNamed("limit").print())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("The parameter 'limit' is not defined.");
     }

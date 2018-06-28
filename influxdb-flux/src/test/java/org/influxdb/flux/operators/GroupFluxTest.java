@@ -8,6 +8,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -53,14 +54,15 @@ class GroupFluxTest {
     @Test
     void groupByParameter() {
 
-        FluxChain chain = new FluxChain()
-                .addParameter("groupByParameter", new String[]{"region", "zip"});
-
         Flux flux = Flux
                 .from("telegraf")
-                .groupBy("groupByParameter");
+                .group()
+                .addPropertyNamed("by", "groupByParameter");
 
-        Assertions.assertThat(flux.print(chain))
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("groupByParameter", new String[]{"region", "zip"});
+
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters)))
                 .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> group(by: [\"region\", \"zip\"])");
     }
 
@@ -90,17 +92,19 @@ class GroupFluxTest {
     @Test
     void groupByKeepParameter() {
 
-        FluxChain chain = new FluxChain()
-                .addParameter("groupByParameter", new String[]{"region", "zip"})
-                .addParameter("keepByParameter", new String[]{"server", "price"});
-
         Flux flux = Flux
                 .from("telegraf")
-                .groupBy("groupByParameter", "keepByParameter");
+                .group()
+                .addPropertyNamed("by", "groupByParameter")
+                .addPropertyNamed("keep", "keepByParameter");
+
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("groupByParameter", new String[]{"region", "zip"});
+        parameters.put("keepByParameter", new String[]{"server", "price"});
 
         String expected = "from(db:\"telegraf\") |> group(by: [\"region\", \"zip\"], keep: [\"server\", \"price\"])";
 
-        Assertions.assertThat(flux.print(chain)).isEqualToIgnoringWhitespace(expected);
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters))).isEqualToIgnoringWhitespace(expected);
     }
 
     @Test
@@ -140,14 +144,15 @@ class GroupFluxTest {
     @Test
     void groupExceptParameter() {
 
-        FluxChain chain = new FluxChain()
-                .addParameter("groupExceptParameter", new String[]{"region", "zip"});
-
         Flux flux = Flux
                 .from("telegraf")
-                .groupExcept("groupExceptParameter");
+                .group()
+                .addPropertyNamed("except", "groupExceptParameter");
 
-        Assertions.assertThat(flux.print(chain))
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("groupExceptParameter", new String[]{"region", "zip"});
+
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters)))
                 .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> group(except: [\"region\", \"zip\"])");
     }
 
@@ -177,16 +182,18 @@ class GroupFluxTest {
     @Test
     void groupExceptKeepParameter() {
 
-        FluxChain chain = new FluxChain()
-                .addParameter("groupExceptParameter", new String[]{"region", "zip"})
-                .addParameter("keepExceptParameter", new String[]{"server", "price"});
-
         Flux flux = Flux
                 .from("telegraf")
-                .groupExcept("groupExceptParameter", "keepExceptParameter");
+                .group()
+                .addPropertyNamed("except", "groupExceptParameter")
+                .addPropertyNamed("keep", "keepExceptParameter");
+
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("groupExceptParameter", new String[]{"region", "zip"});
+        parameters.put("keepExceptParameter", new String[]{"server", "price"});
 
         String expected = "from(db:\"telegraf\") |> group(except: [\"region\", \"zip\"], keep: [\"server\", \"price\"])";
 
-        Assertions.assertThat(flux.print(chain)).isEqualToIgnoringWhitespace(expected);
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters))).isEqualToIgnoringWhitespace(expected);
     }
 }

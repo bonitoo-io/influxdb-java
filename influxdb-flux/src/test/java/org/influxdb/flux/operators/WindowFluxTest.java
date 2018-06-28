@@ -3,12 +3,14 @@ package org.influxdb.flux.operators;
 import org.assertj.core.api.Assertions;
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
+import org.influxdb.flux.operators.properties.TimeInterval;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 
 /**
  * @author Jakub Bednar (bednar@github) (27/06/2018 12:42)
@@ -99,7 +101,7 @@ class WindowFluxTest {
 
         String expected = "from(db:\"telegraf\") |> "
                 + "window(every: 15m, period: 20s, start: 1970-01-21T06:06:40.000000000Z, round: 1s)";
-        
+
         Assertions.assertThat(flux.print()).isEqualToIgnoringWhitespace(expected);
     }
 
@@ -142,23 +144,23 @@ class WindowFluxTest {
     @Test
     void namedParameters() {
 
-        FluxChain fluxChain = new FluxChain()
-                .addParameter("every", 15, ChronoUnit.MINUTES)
-                .addParameter("period", 20L, ChronoUnit.SECONDS)
-                .addParameter("start", -50, ChronoUnit.DAYS)
-                .addParameter("round", 1L, ChronoUnit.HOURS);
-
         Flux flux = Flux
                 .from("telegraf")
                 .window()
-                .addNamedParameter("every")
-                .addNamedParameter("period")
-                .addNamedParameter("start")
-                .addNamedParameter("round");
+                    .addPropertyNamed("every")
+                    .addPropertyNamed("period")
+                    .addPropertyNamed("start")
+                    .addPropertyNamed("round");
+
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("every", new TimeInterval(15L, ChronoUnit.MINUTES));
+        parameters.put("period", new TimeInterval(20L, ChronoUnit.SECONDS));
+        parameters.put("start", new TimeInterval(-50L, ChronoUnit.DAYS));
+        parameters.put("round", new TimeInterval(1L, ChronoUnit.HOURS));
 
         String expected = "from(db:\"telegraf\") |> "
                 + "window(every: 15m, period: 20s, start: -50d, round: 1h)";
 
-        Assertions.assertThat(flux.print(fluxChain)).isEqualToIgnoringWhitespace(expected);
+        Assertions.assertThat(flux.print(new FluxChain().addParameters(parameters))).isEqualToIgnoringWhitespace(expected);
     }
 }

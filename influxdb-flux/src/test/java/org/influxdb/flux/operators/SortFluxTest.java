@@ -8,6 +8,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -97,15 +98,17 @@ class SortFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .sort()
-                .addNamedParameter("cols", "columnsParameter")
-                .addNamedParameter("desc", "descParameter");
+                .addPropertyNamed("cols", "columnsParameter")
+                .addPropertyNamed("desc", "descParameter");
 
-        FluxChain fluxChain = new FluxChain()
-                .addParameter("columnsParameter", new String[]{"region", "tag"})
-                .addParameter("descParameter", false);
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("columnsParameter", new String[]{"region", "tag"});
+        parameters.put("descParameter", false);
 
         String expected = "from(db:\"telegraf\") |> sort(cols: [\"region\", \"tag\"], desc: false)";
 
-        Assertions.assertThat(flux.print(fluxChain)).isEqualToIgnoringWhitespace(expected);
+        Assertions
+                .assertThat(flux.print(new FluxChain().addParameters(parameters)))
+                .isEqualToIgnoringWhitespace(expected);
     }
 }

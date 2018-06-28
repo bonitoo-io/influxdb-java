@@ -21,14 +21,10 @@ import javax.annotation.Nonnull;
  * @author Jakub Bednar (bednar@github) (25/06/2018 09:28)
  * @since 3.0.0
  */
-public final class FirstFlux extends AbstractScalarFlux {
+public final class FirstFlux extends AbstractParametrizedFlux {
 
     public FirstFlux(@Nonnull final Flux source) {
         super(source);
-    }
-
-    public FirstFlux(@Nonnull final Flux source, final boolean useStartTime) {
-        super(source, useStartTime);
     }
 
     @Nonnull

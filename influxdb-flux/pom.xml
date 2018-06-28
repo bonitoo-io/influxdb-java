@@ -12,7 +12,7 @@
 
   <artifactId>influxdb-flux</artifactId>
 
-  <description>Support for the Flux - Functional Language for defining a query to execute</description>
+  <description>Support for the Flux - Data Scripting Language</description>
 
   <dependencies>
 

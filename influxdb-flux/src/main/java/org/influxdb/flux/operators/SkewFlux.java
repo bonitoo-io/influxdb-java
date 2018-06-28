@@ -20,14 +20,10 @@ import javax.annotation.Nonnull;
  * @author Jakub Bednar (bednar@github) (25/06/2018 10:06)
  * @since 3.0.0
  */
-public final class SkewFlux extends AbstractScalarFlux {
+public final class SkewFlux extends AbstractParametrizedFlux {
 
     public SkewFlux(@Nonnull final Flux source) {
         super(source);
-    }
-
-    public SkewFlux(@Nonnull final Flux source, final boolean useStartTime) {
-        super(source, useStartTime);
     }
 
     @Nonnull

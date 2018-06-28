@@ -24,20 +24,18 @@ import org.influxdb.flux.operators.ToStringFlux;
 import org.influxdb.flux.operators.ToTimeFlux;
 import org.influxdb.flux.operators.ToUIntFlux;
 import org.influxdb.flux.operators.WindowFlux;
+import org.influxdb.flux.operators.properties.OperatorProperties;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /**
- * <a href="https://github.com/influxdata/platform/tree/master/query#basic-syntax">Flux</a> -
- * Functional Language for defining a query to execute.
+ * <a href="https://github.com/influxdata/platform/tree/master/query#basic-syntax">Flux</a> - Data Scripting Language.
  * <br>
  * <a href="https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md">Flux Specification</a>
  *
@@ -92,7 +90,7 @@ import java.util.Objects;
  */
 public abstract class Flux {
 
-    private Map<String, String> namedParameters = new LinkedHashMap<>();
+    protected OperatorProperties operatorProperties = OperatorProperties.of();
 
     /**
      * Get data from the specified database.
@@ -155,7 +153,8 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux count(final boolean useStartTime) {
-        return new CountFlux(this, useStartTime);
+        return new CountFlux(this)
+                .addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
@@ -176,7 +175,22 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux first(final boolean useStartTime) {
-        return new FirstFlux(this, useStartTime);
+        return new FirstFlux(this)
+                .addPropertyValue("useStartTime", useStartTime);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     * <p>
+     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
+     * {@link Flux#addPropertyNamed(String, String)}.
+     *
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public Flux group() {
+
+        return new GroupFlux(this);
     }
 
     /**
@@ -189,7 +203,8 @@ public abstract class Flux {
     public Flux groupBy(@Nonnull final Collection<String> groupBy) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
-        return new GroupFlux(this, groupBy, GroupFlux.GroupType.GROUP_BY);
+        return new GroupFlux(this)
+                .addPropertyValue("by", groupBy);
     }
 
     /**
@@ -204,7 +219,9 @@ public abstract class Flux {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        return new GroupFlux(this, groupBy, keep, GroupFlux.GroupType.GROUP_BY);
+        return new GroupFlux(this)
+                .addPropertyValue("by", groupBy)
+                .addPropertyValue("keep", keep);
     }
 
     /**
@@ -217,7 +234,8 @@ public abstract class Flux {
     public Flux groupBy(@Nonnull final String[] groupBy) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
-        return new GroupFlux(this, Arrays.asList(groupBy), GroupFlux.GroupType.GROUP_BY);
+        return new GroupFlux(this)
+                .addPropertyValue("by", groupBy);
     }
 
     /**
@@ -232,36 +250,9 @@ public abstract class Flux {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        return new GroupFlux(this, Arrays.asList(groupBy), Arrays.asList(keep), GroupFlux.GroupType.GROUP_BY);
-    }
-
-    /**
-     * Groups results by a user-specified set of tags.
-     *
-     * @param groupByParameterName The parameter name for the group by these specific tag names.
-     * @return {@link GroupFlux}
-     */
-    @Nonnull
-    public Flux groupBy(@Nonnull final String groupByParameterName) {
-        Preconditions.checkNonEmptyString(groupByParameterName, "GroupBy parameter name");
-
-        return new GroupFlux(this, groupByParameterName, GroupFlux.GroupType.GROUP_BY);
-    }
-
-    /**
-     * Groups results by a user-specified set of tags.
-     *
-     * @param groupByParameterName The parameter name for the group by these specific tag names.
-     * @param keepParameterName    The parameter name for the Keep specific tag keys that
-     *                             were not in {@code groupBy} in the results.
-     * @return {@link GroupFlux}
-     */
-    @Nonnull
-    public Flux groupBy(@Nonnull final String groupByParameterName, @Nonnull final String keepParameterName) {
-        Preconditions.checkNonEmptyString(groupByParameterName, "GroupBy parameter name");
-        Preconditions.checkNonEmptyString(keepParameterName, "Keep parameter name");
-
-        return new GroupFlux(this, groupByParameterName, keepParameterName, GroupFlux.GroupType.GROUP_BY);
+        return new GroupFlux(this)
+                .addPropertyValue("by", groupBy)
+                .addPropertyValue("keep", keep);
     }
 
     /**
@@ -274,7 +265,8 @@ public abstract class Flux {
     public Flux groupExcept(@Nonnull final Collection<String> except) {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
 
-        return new GroupFlux(this, except, GroupFlux.GroupType.EXCEPT);
+        return new GroupFlux(this)
+                .addPropertyValue("except", except);
     }
 
     /**
@@ -289,7 +281,9 @@ public abstract class Flux {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        return new GroupFlux(this, except, keep, GroupFlux.GroupType.EXCEPT);
+        return new GroupFlux(this)
+                .addPropertyValue("except", except)
+                .addPropertyValue("keep", keep);
     }
 
     /**
@@ -302,7 +296,8 @@ public abstract class Flux {
     public Flux groupExcept(@Nonnull final String[] except) {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
 
-        return new GroupFlux(this, Arrays.asList(except), GroupFlux.GroupType.EXCEPT);
+        return new GroupFlux(this)
+                .addPropertyValue("except", except);
     }
 
     /**
@@ -317,36 +312,9 @@ public abstract class Flux {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        return new GroupFlux(this, Arrays.asList(except), Arrays.asList(keep), GroupFlux.GroupType.EXCEPT);
-    }
-
-    /**
-     * Groups results by a user-specified set of tags.
-     *
-     * @param exceptParameterName The parameter name for the Group by all but these tag keys Cannot be used.
-     * @return {@link GroupFlux}
-     */
-    @Nonnull
-    public Flux groupExcept(@Nonnull final String exceptParameterName) {
-        Preconditions.checkNonEmptyString(exceptParameterName, "GroupBy Except parameter name");
-
-        return new GroupFlux(this, exceptParameterName, GroupFlux.GroupType.EXCEPT);
-    }
-
-    /**
-     * Groups results by a user-specified set of tags.
-     *
-     * @param exceptParameterName The parameter name for the Group by all but these tag keys Cannot be used.
-     * @param keepParameterName   The parameter name for the Keep specific tag keys that
-     *                            were not in {@code groupBy} in the results.
-     * @return {@link GroupFlux}
-     */
-    @Nonnull
-    public Flux groupExcept(@Nonnull final String exceptParameterName, @Nonnull final String keepParameterName) {
-        Preconditions.checkNonEmptyString(exceptParameterName, "GroupBy Except parameter name");
-        Preconditions.checkNonEmptyString(keepParameterName, "Keep parameter name");
-
-        return new GroupFlux(this, exceptParameterName, keepParameterName, GroupFlux.GroupType.EXCEPT);
+        return new GroupFlux(this)
+                .addPropertyValue("except", except)
+                .addPropertyValue("keep", keep);
     }
 
     /**
@@ -367,14 +335,14 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux last(final boolean useStartTime) {
-        return new LastFlux(this, useStartTime);
+        return new LastFlux(this).addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
      * Restricts the number of rows returned in the results.
      * <p>
-     * The parameters had to be defined by {@link Flux#addNamedParameter(String)} or
-     * {@link Flux#addNamedParameter(String, String)}
+     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
+     * {@link Flux#addPropertyNamed(String, String)}
      *
      * @return {@link LimitFlux}
      */
@@ -395,7 +363,7 @@ public abstract class Flux {
 
         Preconditions.checkPositiveNumber(numberOfResults, "Number of results");
 
-        return new LimitFlux(this, numberOfResults);
+        return new LimitFlux(this).addPropertyValue("n", numberOfResults);
     }
 
     /**
@@ -416,7 +384,7 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux max(final boolean useStartTime) {
-        return new MaxFlux(this, useStartTime);
+        return new MaxFlux(this).addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
@@ -437,7 +405,7 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux mean(final boolean useStartTime) {
-        return new MeanFlux(this, useStartTime);
+        return new MeanFlux(this).addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
@@ -458,14 +426,14 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux min(final boolean useStartTime) {
-        return new MinFlux(this, useStartTime);
+        return new MinFlux(this).addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
      * Filters the results by time boundaries.
      * <p>
-     * The parameters had to be defined by {@link Flux#addNamedParameter(String)} or
-     * {@link Flux#addNamedParameter(String, String)}
+     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
+     * {@link Flux#addPropertyNamed(String, String)}
      *
      * @return {@link RangeFlux}
      */
@@ -485,7 +453,7 @@ public abstract class Flux {
     public Flux range(@Nonnull final Instant start) {
         Objects.requireNonNull(start, "Start is required");
 
-        return new RangeFlux(this, start);
+        return new RangeFlux(this).addPropertyValue("start", start);
     }
 
     /**
@@ -500,7 +468,9 @@ public abstract class Flux {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(stop, "Stop is required");
 
-        return new RangeFlux(this, start, stop);
+        return new RangeFlux(this)
+                .addPropertyValue("start", start)
+                .addPropertyValue("stop", stop);
     }
 
     /**
@@ -515,7 +485,8 @@ public abstract class Flux {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
 
-        return new RangeFlux(this, start, unit);
+        return new RangeFlux(this)
+                .addPropertyValue("start", start, unit);
     }
 
     /**
@@ -531,7 +502,9 @@ public abstract class Flux {
         Objects.requireNonNull(stop, "Stop is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
 
-        return new RangeFlux(this, start, stop, unit);
+        return new RangeFlux(this)
+                .addPropertyValue("start", start, unit)
+                .addPropertyValue("stop", stop, unit);
     }
 
     /**
@@ -552,7 +525,7 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux skew(final boolean useStartTime) {
-        return new SkewFlux(this, useStartTime);
+        return new SkewFlux(this).addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
@@ -573,7 +546,7 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux sort(final boolean desc) {
-        return new SortFlux(this, desc);
+        return new SortFlux(this).addPropertyValue("desc", desc);
     }
 
     /**
@@ -586,7 +559,7 @@ public abstract class Flux {
     public Flux sort(@Nonnull final String[] columns) {
         Objects.requireNonNull(columns, "Columns are required");
 
-        return new SortFlux(this, Arrays.asList(columns));
+        return new SortFlux(this).addPropertyValue("cols", columns);
     }
 
     /**
@@ -599,7 +572,7 @@ public abstract class Flux {
     public Flux sort(@Nonnull final Collection<String> columns) {
         Objects.requireNonNull(columns, "Columns are required");
 
-        return new SortFlux(this, columns);
+        return new SortFlux(this).addPropertyValue("cols", columns);
     }
 
     /**
@@ -613,7 +586,9 @@ public abstract class Flux {
     public Flux sort(@Nonnull final String[] columns, final boolean desc) {
         Objects.requireNonNull(columns, "Columns are required");
 
-        return new SortFlux(this, Arrays.asList(columns), desc);
+        return new SortFlux(this)
+                .addPropertyValue("cols", columns)
+                .addPropertyValue("desc", desc);
     }
 
     /**
@@ -627,7 +602,9 @@ public abstract class Flux {
     public Flux sort(@Nonnull final Collection<String> columns, final boolean desc) {
         Objects.requireNonNull(columns, "Columns are required");
 
-        return new SortFlux(this, columns, desc);
+        return new SortFlux(this)
+                .addPropertyValue("cols", columns)
+                .addPropertyValue("desc", desc);
     }
 
     /**
@@ -648,7 +625,7 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux spread(final boolean useStartTime) {
-        return new SpreadFlux(this, useStartTime);
+        return new SpreadFlux(this).addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
@@ -669,7 +646,7 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux stddev(final boolean useStartTime) {
-        return new StddevFlux(this, useStartTime);
+        return new StddevFlux(this).addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
@@ -690,7 +667,7 @@ public abstract class Flux {
      */
     @Nonnull
     public Flux sum(final boolean useStartTime) {
-        return new SumFlux(this, useStartTime);
+        return new SumFlux(this).addPropertyValue("useStartTime", useStartTime);
     }
 
     /**
@@ -766,8 +743,8 @@ public abstract class Flux {
     /**
      * Partitions the results by a given time range.
      * <p>
-     * The parameters had to be defined by {@link Flux#addNamedParameter(String)} or
-     * {@link Flux#addNamedParameter(String, String)}
+     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
+     * {@link Flux#addPropertyNamed(String, String)}
      *
      * @return {@link WindowFlux}
      */
@@ -790,8 +767,8 @@ public abstract class Flux {
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
 
-        return new WindowFlux(this, every, everyUnit, null, null, null, null,
-                null, null, null, null, null);
+        return new WindowFlux(this)
+                .addPropertyValue("every", every, everyUnit);
     }
 
     /**
@@ -815,8 +792,9 @@ public abstract class Flux {
         Objects.requireNonNull(period, "Period is required");
         Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
 
-        return new WindowFlux(this, every, everyUnit, period, periodUnit, null, null,
-                null, null, null, null, null);
+        return new WindowFlux(this)
+                .addPropertyValue("every", every, everyUnit)
+                .addPropertyValue("period", period, periodUnit);
     }
 
     /**
@@ -844,8 +822,10 @@ public abstract class Flux {
 
         Objects.requireNonNull(start, "Start is required");
 
-        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, null, null,
-                null, null, null);
+        return new WindowFlux(this)
+                .addPropertyValue("every", every, everyUnit)
+                .addPropertyValue("period", period, periodUnit)
+                .addPropertyValue("start", start);
     }
 
     /**
@@ -876,8 +856,10 @@ public abstract class Flux {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(startUnit, "Start ChronoUnit is required");
 
-        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, startUnit, null,
-                null, null, null, null);
+        return new WindowFlux(this)
+                .addPropertyValue("every", every, everyUnit)
+                .addPropertyValue("period", period, periodUnit)
+                .addPropertyValue("start", start, startUnit);
     }
 
     /**
@@ -915,8 +897,12 @@ public abstract class Flux {
         Objects.requireNonNull(round, "Round is required");
         Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
 
-        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, startUnit, round,
-                roundUnit, null, null, null);
+        return new WindowFlux(this)
+                .addPropertyValue("every", every, everyUnit)
+                .addPropertyValue("period", period, periodUnit)
+                .addPropertyValue("start", start, startUnit)
+                .addPropertyValue("round", round, roundUnit);
+
     }
 
     /**
@@ -951,8 +937,12 @@ public abstract class Flux {
         Objects.requireNonNull(round, "Round is required");
         Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
 
-        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, round, roundUnit,
-                null, null, null);
+        return new WindowFlux(this)
+                .addPropertyValue("every", every, everyUnit)
+                .addPropertyValue("period", period, periodUnit)
+                .addPropertyValue("start", start)
+                .addPropertyValue("round", round, roundUnit);
+
     }
 
     /**
@@ -1000,8 +990,15 @@ public abstract class Flux {
         Preconditions.checkNonEmptyString(startCol, "Start column");
         Preconditions.checkNonEmptyString(stopCol, "Stop column");
 
-        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, startUnit, round, roundUnit,
-                timeColumn, startCol, stopCol);
+        return new WindowFlux(this)
+                .addPropertyValue("every", every, everyUnit)
+                .addPropertyValue("period", period, periodUnit)
+                .addPropertyValue("start", start, startUnit)
+                .addPropertyValue("round", round, roundUnit)
+                .addPropertyValueString("column", timeColumn)
+                .addPropertyValueString("startCol", startCol)
+                .addPropertyValueString("stopCol", stopCol);
+
     }
 
     /**
@@ -1046,8 +1043,14 @@ public abstract class Flux {
         Preconditions.checkNonEmptyString(startCol, "Start column");
         Preconditions.checkNonEmptyString(stopCol, "Stop column");
 
-        return new WindowFlux(this, every, everyUnit, period, periodUnit, start, round, roundUnit,
-                timeColumn, startCol, stopCol);
+        return new WindowFlux(this)
+                .addPropertyValue("every", every, everyUnit)
+                .addPropertyValue("period", period, periodUnit)
+                .addPropertyValue("start", start)
+                .addPropertyValue("round", round, roundUnit)
+                .addPropertyValueString("column", timeColumn)
+                .addPropertyValueString("startCol", startCol)
+                .addPropertyValueString("stopCol", stopCol);
     }
 
     /**
@@ -1065,63 +1068,139 @@ public abstract class Flux {
     }
 
     /**
-     * Add named parameter to current operator.
+     * Add named property to current operator.
      *
      * <pre>
      *  FluxChain fluxChain = new FluxChain()
-     *      .addNamedParameter("every", 15, ChronoUnit.MINUTES)
-     *      .addNamedParameter("period", 20L, ChronoUnit.SECONDS)
-     *      .addNamedParameter("start", -50, ChronoUnit.DAYS)
-     *      .addNamedParameter("round", 1L, ChronoUnit.HOURS);
+     *      .addPropertyNamed("every", 15, ChronoUnit.MINUTES)
+     *      .addPropertyNamed("period", 20L, ChronoUnit.SECONDS)
+     *      .addPropertyNamed("start", -50, ChronoUnit.DAYS)
+     *      .addPropertyNamed("round", 1L, ChronoUnit.HOURS);
      *
      *  Flux flux = Flux.from("telegraf")
      *      .window()
-     *      .addNamedParameter("every")
-     *      .addNamedParameter("period")
-     *      .addNamedParameter("start")
-     *      .addNamedParameter("round");
+     *          .addPropertyNamed("every")
+     *          .addPropertyNamed("period")
+     *          .addPropertyNamed("start")
+     *          .addPropertyNamed("round")
+     *      .sum();
      *
      * flux.print(fluxChain);
      * </pre>
      *
-     * @param parameter name in Flux query and in bound parameters
+     * @param property name in Flux query and in named properties
      * @return a current operator.
      */
     @Nonnull
-    public Flux addNamedParameter(@Nonnull final String parameter) {
-        return addNamedParameter(parameter, parameter);
+    public Flux addPropertyNamed(@Nonnull final String property) {
+        return addPropertyNamed(property, property);
     }
 
     /**
-     * Add named parameter to current operator.
+     * Add named property to current operator.
      *
      * <pre>
      * Flux flux = Flux
      *      .from("telegraf")
      *      .limit()
-     *      .addNamedParameter("n", "limit");
+     *          .addPropertyNamed("n", "limit")
+     *      .sum();
      *
      * FluxChain fluxChain = new FluxChain()
-     *      .addNamedParameter("limit", 15);
+     *      .addPropertyNamed("limit", 15);
      *
      * flux.print(fluxChain);
      * </pre>
      *
-     * @param fluxName       name in Flux query
-     * @param namedParameter name in bound parameters
+     * @param fluxName      name in Flux query
+     * @param namedProperty name in named properties
      * @return a current operator
      */
     @Nonnull
-    public Flux addNamedParameter(@Nonnull final String fluxName, @Nonnull final String namedParameter) {
+    public Flux addPropertyNamed(@Nonnull final String fluxName, @Nonnull final String namedProperty) {
 
-        this.namedParameters.put(fluxName, namedParameter);
+        Preconditions.checkNonEmptyString(fluxName, "Flux property name");
+        Preconditions.checkNonEmptyString(namedProperty, "Named property");
+
+        this.operatorProperties.putPropertyNamed(fluxName, namedProperty);
 
         return this;
     }
 
+    /**
+     * Add property value to current operator.
+     *
+     * <pre>
+     * Flux flux = Flux
+     *      .from("telegraf")
+     *      .limit()
+     *          .addPropertyValue("n", 5)
+     *      .sum();
+     * </pre>
+     *
+     * @param propertyName name in Flux query
+     * @param value        value of property. If null than ignored.
+     * @return a current operator
+     */
     @Nonnull
-    protected Map<String, String> getNamedParameters() {
-        return namedParameters;
+    public Flux addPropertyValue(@Nonnull final String propertyName, @Nullable final Object value) {
+
+        Preconditions.checkNonEmptyString(propertyName, "Flux property name");
+
+        this.operatorProperties.putPropertyValue(propertyName, value);
+
+        return this;
+    }
+
+    /**
+     * Add string property value to current operator that will be quoted (value =&gt; "value").
+     *
+     * <pre>
+     * Flux flux = Flux
+     *      .from("telegraf")
+     *      .window(5, ChronoUnit.MINUTES)
+     *          .addPropertyValueString("startCol", "differentCol")
+     *      .sum();
+     * </pre>
+     *
+     * @param property name of property in Flux query
+     * @param amount   the amount of the duration, measured in terms of the unit, positive or negative
+     * @param unit     the unit that the duration is measured in, must have an exact duration.  If null than ignored.
+     * @return a current operator
+     */
+    @Nonnull
+    public Flux addPropertyValue(@Nonnull final String property, final long amount, @Nonnull final ChronoUnit unit) {
+
+        Preconditions.checkNonEmptyString(property, "Flux property name");
+
+        this.operatorProperties.putPropertyValue(property, amount, unit);
+
+        return this;
+    }
+
+    /**
+     * Add string property value to current operator that will be quoted (value =&gt; "value").
+     *
+     * <pre>
+     * Flux flux = Flux
+     *      .from("telegraf")
+     *      .window(5, ChronoUnit.MINUTES)
+     *          .addPropertyValueString("startCol", "differentCol")
+     *      .sum();
+     * </pre>
+     *
+     * @param property name of property in Flux query
+     * @param value    value of property. If null than ignored.
+     * @return a current operator
+     */
+    @Nonnull
+    public Flux addPropertyValueString(@Nonnull final String property, @Nullable final String value) {
+
+        Preconditions.checkNonEmptyString(property, "Flux property name");
+
+        this.operatorProperties.putPropertyValueString(property, value);
+
+        return this;
     }
 
     /**

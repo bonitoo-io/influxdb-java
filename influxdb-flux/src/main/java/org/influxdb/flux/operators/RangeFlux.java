@@ -3,11 +3,6 @@ package org.influxdb.flux.operators;
 import org.influxdb.flux.Flux;
 
 import javax.annotation.Nonnull;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Objects;
-
-import static org.influxdb.flux.FluxChain.TimeInterval;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#range">range</a> - Filters the results by
@@ -39,93 +34,13 @@ import static org.influxdb.flux.FluxChain.TimeInterval;
  */
 public final class RangeFlux extends AbstractParametrizedFlux {
 
-    private final Parameter<Instant> startInstant;
-    private final Parameter<Instant> stopInstant;
-
-    private final Parameter<TimeInterval> startInterval;
-    private final Parameter<TimeInterval> stopInterval;
-
     public RangeFlux(@Nonnull final Flux flux) {
         super(flux);
-
-        this.startInstant = null;
-        this.stopInstant = null;
-
-        this.startInterval = null;
-        this.stopInterval = null;
-    }
-
-    public RangeFlux(@Nonnull final Flux source, @Nonnull final Instant start) {
-
-        super(source);
-
-        Objects.requireNonNull(start, "Start is required");
-
-        this.startInstant = (m) -> start;
-        this.stopInstant = new NotDefinedParameter<>();
-
-        this.startInterval = new NotDefinedParameter<>();
-        this.stopInterval = new NotDefinedParameter<>();
-    }
-
-    public RangeFlux(@Nonnull final Flux source, @Nonnull final Instant start, @Nonnull final Instant stop) {
-
-        super(source);
-
-        Objects.requireNonNull(start, "Start is required");
-        Objects.requireNonNull(stop, "Stop is required");
-
-        this.startInstant = (m) -> start;
-        this.stopInstant = (m) -> stop;
-
-        this.startInterval = new NotDefinedParameter<>();
-        this.stopInterval = new NotDefinedParameter<>();
-    }
-
-    public RangeFlux(@Nonnull final Flux source, @Nonnull final Long start, @Nonnull final ChronoUnit unit) {
-
-        super(source);
-
-        Objects.requireNonNull(start, "Start is required");
-        Objects.requireNonNull(unit, "Stop is required");
-
-        this.startInstant = new NotDefinedParameter<>();
-        this.stopInstant = new NotDefinedParameter<>();
-
-        this.startInterval = (m) -> new TimeInterval(start, unit);
-        this.stopInterval = new NotDefinedParameter<>();
-    }
-
-    public RangeFlux(@Nonnull final Flux source, @Nonnull final Long start,
-                     @Nonnull final Long stop, @Nonnull final ChronoUnit unit) {
-
-        super(source);
-
-        Objects.requireNonNull(start, "Start is required");
-        Objects.requireNonNull(stop, "Stop is required");
-        Objects.requireNonNull(unit, "Stop is required");
-
-        this.startInstant = new NotDefinedParameter<>();
-        this.stopInstant = new NotDefinedParameter<>();
-
-        this.startInterval = (m) -> new TimeInterval(start, unit);
-        this.stopInterval = (m) -> new TimeInterval(stop, unit);
     }
 
     @Nonnull
     @Override
     String operatorName() {
         return "range";
-    }
-
-    @Nonnull
-    @Override
-    OperatorParameters getParameters() {
-
-        return OperatorParameters
-                .of("start", startInstant)
-                .put("start", startInterval)
-                .put("stop", stopInstant)
-                .put("stop", stopInterval);
     }
 }
