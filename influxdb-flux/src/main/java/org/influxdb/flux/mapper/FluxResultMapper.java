@@ -5,6 +5,7 @@ import okio.BufferedSource;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +21,11 @@ public class FluxResultMapper {
 
         Objects.requireNonNull(source, "BufferedSource is required");
 
-        return new FluxResult();
+        try {
+            return new FluxResult(source.readUtf8());
+        } catch (IOException e) {
+            return new FluxResult(null);
+        }
     }
 
     @Nonnull

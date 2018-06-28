@@ -4,6 +4,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import okhttp3.ResponseBody;
 import retrofit2.HttpException;
+import retrofit2.Response;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -196,7 +197,14 @@ public class InfluxDBException extends RuntimeException {
 
     if (throwable instanceof HttpException) {
 
-      try (ResponseBody errorBody = ((HttpException) throwable).response().errorBody()) {
+      Response<?> response = ((HttpException) throwable).response();
+      String errorHeader = response.headers().get("X-Influx-Error");
+      // build from error header
+      if (errorHeader != null) {
+        return buildExceptionFromErrorMessage(errorHeader);
+      }
+      // build from error body
+      try (ResponseBody errorBody = response.errorBody()) {
         if (errorBody != null) {
           return InfluxDBException.buildExceptionForErrorState(errorBody.string());
         }

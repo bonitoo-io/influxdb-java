@@ -34,7 +34,7 @@ public abstract class AbstractFluxReactiveTest {
     }
 
     @AfterEach
-    private void after() {
+    protected void after() {
         fluxReactive.close();
     }
 }

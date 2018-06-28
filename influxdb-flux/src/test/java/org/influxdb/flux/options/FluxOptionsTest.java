@@ -16,18 +16,18 @@ class FluxOptionsTest {
     void value() {
         FluxOptions fluxOptions = FluxOptions.builder()
                 .url("http://localhost:8093")
-                .orgID("0")
+                .orgID("00")
                 .build();
 
         Assertions.assertThat(fluxOptions.getUrl()).isEqualTo("http://localhost:8093");
-        Assertions.assertThat(fluxOptions.getOrgID()).isEqualTo("0");
+        Assertions.assertThat(fluxOptions.getOrgID()).isEqualTo("00");
         Assertions.assertThat(fluxOptions.getOkHttpClient()).isNotNull();
     }
 
     @Test
     void urlRequired() {
 
-        FluxOptions.Builder fluxOptions = FluxOptions.builder().orgID("0");
+        FluxOptions.Builder fluxOptions = FluxOptions.builder().orgID("00");
 
         Assertions.assertThatThrownBy(fluxOptions::build)
                 .isInstanceOf(IllegalStateException.class)
@@ -51,7 +51,7 @@ class FluxOptionsTest {
 
         FluxOptions fluxOptions = FluxOptions.builder()
                 .url("http://localhost:8093")
-                .orgID("0")
+                .orgID("00")
                 .okHttpClient(okHttpClient)
                 .build();
 

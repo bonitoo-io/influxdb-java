@@ -17,7 +17,7 @@ class FluxReactiveFactoryTest {
 
         FluxOptions fluxOptions = FluxOptions.builder()
                 .url("http://localhost:8093")
-                .orgID("0")
+                .orgID("00")
                 .build();
 
         FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
