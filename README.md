@@ -741,9 +741,28 @@ Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
 
 #### Filter
 
-Filters the results using an expression. [[doc](https://github.com/influxdata/platform/tree/master/query#filter)]
+Filters the results using an expression [[doc](https://github.com/influxdata/platform/tree/master/query#filter)].
+
+Supported Record columns:
+- `_measurement`
+- `_field`
+- `_start`
+- `_stop`
+- `_time`
+- `_value`
+- `custom` - the custom column value by `Restrictions.column("_id").notEqual(5)`
+
+Supported Record restrictions:
+- `equal`
+- `notEqual`
+- `less`
+- `greater`
+- `greater`
+- `lessOrEqual`
+- `greaterOrEqual`
+
 ```java
-Restrictions restriction = Restrictions.and(
+Restrictions restrictions = Restrictions.and(
     Restrictions.measurement().equal("mem"),
     Restrictions.field().equal("usage_system"),
     Restrictions.tag("service").equal("app-server")
@@ -751,8 +770,21 @@ Restrictions restriction = Restrictions.and(
 
 Flux flux = Flux
     .from("telegraf")
-    .filter(restriction)
+    .filter(restrictions)
     .range(-4L, ChronoUnit.HOURS)
+    .count();
+```
+```java
+Restrictions restriction = Restrictions.and(
+    Restrictions.tag("instance_type").equal(Pattern.compile("/prod/")),
+    Restrictions.field().greater(10.5D),
+    Restrictions.time().lessOrEqual(new TimeInterval(-15L, ChronoUnit.HOURS))
+);
+
+Flux flux = Flux
+    .from("telegraf")
+    .filter(restriction)
+    .range(-4L, 2L, ChronoUnit.HOURS)
     .count();
 ```
 

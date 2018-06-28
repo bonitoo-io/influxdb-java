@@ -2,6 +2,7 @@ package org.influxdb.flux.operators;
 
 import org.assertj.core.api.Assertions;
 import org.influxdb.flux.Flux;
+import org.influxdb.flux.operators.properties.TimeInterval;
 import org.influxdb.flux.operators.restriction.Restrictions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -83,8 +84,9 @@ class FilterFluxTest {
     void filterDoubleAndRegexpValue() {
 
         Restrictions restriction = Restrictions.and(
-                Restrictions.tag("t1").equal(Pattern.compile("/val1/")),
-                Restrictions.field().equal(10.5D)
+                Restrictions.tag("instance_type").equal(Pattern.compile("/prod/")),
+                Restrictions.field().greater(10.5D),
+                Restrictions.time().lessOrEqual(new TimeInterval(-15L, ChronoUnit.HOURS))
         );
 
         Flux flux = Flux
@@ -93,7 +95,7 @@ class FilterFluxTest {
                 .range(-4L, 2L, ChronoUnit.HOURS)
                 .count();
 
-        String expected = "from(db:\"telegraf\") |> filter(fn: (r) => (r[\"t1\"]==/val1/ AND r[\"_field\"] == 10.5)) |> "
+        String expected = "from(db:\"telegraf\") |> filter(fn: (r) => (r[\"instance_type\"]==/prod/ AND r[\"_field\"] > 10.5 AND r[\"_time\"] <= -15h)) |> "
                 + "range(start:-4h, stop:2h) |> count()";
 
         Assertions.assertThat(flux.print()).isEqualToIgnoringWhitespace(expected);
