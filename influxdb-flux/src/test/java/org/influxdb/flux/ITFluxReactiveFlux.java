@@ -4,6 +4,7 @@ import io.reactivex.Flowable;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
 import org.influxdb.flux.mapper.FluxResult;
+import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.AbstractITFluxReactive;
 import org.influxdb.reactive.events.WriteSuccessEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,9 +82,12 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
         // filter(fn:(r) => r._measurement == "mem" and r._field == "free") |> sum()'
         // --data-urlencode "orgName=0" http://localhost:8093/v1/query
 
+        Restrictions restriction = Restrictions
+                .and(Restrictions.measurement().equal("mem"), Restrictions.field().equal("free"));
+
         Flux flux = Flux.from(DATABASE_NAME)
                 .range(Instant.EPOCH)
-                .expression("filter(fn:(r) => r._measurement == \"mem\" and r._field == \"free\")")
+                .filter(restriction)
                 .sum();
 
         Flowable<FluxResult> results = fluxReactive.flux(flux).take(1);
