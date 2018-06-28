@@ -4,6 +4,7 @@ import io.reactivex.Observable;
 import okhttp3.ResponseBody;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
+import retrofit2.http.Streaming;
 
 import javax.annotation.Nonnull;
 
@@ -13,7 +14,7 @@ import javax.annotation.Nonnull;
  */
 public interface FluxServiceReactive {
 
-//    @Streaming
+    @Streaming
     @POST("/v1/query")
     @Nonnull
     Observable<ResponseBody> query(@Query(value = InfluxDBService.Q, encoded = true) String query,
