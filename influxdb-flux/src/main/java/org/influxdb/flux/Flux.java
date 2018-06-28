@@ -2,6 +2,7 @@ package org.influxdb.flux;
 
 import org.influxdb.flux.operators.CountFlux;
 import org.influxdb.flux.operators.ExpressionFlux;
+import org.influxdb.flux.operators.FilterFlux;
 import org.influxdb.flux.operators.FirstFlux;
 import org.influxdb.flux.operators.FromFlux;
 import org.influxdb.flux.operators.GroupFlux;
@@ -25,6 +26,7 @@ import org.influxdb.flux.operators.ToTimeFlux;
 import org.influxdb.flux.operators.ToUIntFlux;
 import org.influxdb.flux.operators.WindowFlux;
 import org.influxdb.flux.operators.properties.OperatorProperties;
+import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
@@ -48,7 +50,7 @@ import java.util.Objects;
  * <li>derivative - SPEC</li>
  * <li>difference - SPEC</li>
  * <li>distinct - SPEC</li>
- * <li>filter - UNSUPPORTED</li>
+ * <li>{@link FilterFlux}</li>
  * <li>{@link FirstFlux}</li>
  * <li>{@link GroupFlux}</li>
  * <li>integral - SPEC</li>
@@ -155,6 +157,33 @@ public abstract class Flux {
     public Flux count(final boolean useStartTime) {
         return new CountFlux(this)
                 .addPropertyValue("useStartTime", useStartTime);
+    }
+
+    /**
+     * Returns the first result of the query.
+     * <p>
+     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
+     * {@link Flux#addPropertyNamed(String, String)}.
+     *
+     * @return {@link FilterFlux}
+     */
+    @Nonnull
+    public Flux filter() {
+        return new FilterFlux(this);
+    }
+
+    /**
+     * Returns the first result of the query.
+     * @param restrictions filter restrictions
+     *
+     * @return {@link FilterFlux}
+     */
+    @Nonnull
+    public Flux filter(@Nonnull final Restrictions restrictions) {
+
+        Objects.requireNonNull(restrictions, "Restrictions are required");
+
+        return new FilterFlux(this).addPropertyValue("fn", restrictions);
     }
 
     /**

@@ -1,5 +1,6 @@
 package org.influxdb.flux.operators.properties;
 
+import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
@@ -118,29 +119,46 @@ public final class OperatorProperties {
         }
 
         // array to collection
-        if (value.getClass().isArray()) {
-            value = Arrays.asList((Object[]) value);
+        return serializeValue(value);
+    }
+
+    /**
+     * Serialize value for Flux property.
+     *
+     * @param value to serialize
+     * @return serialized value
+     */
+    @Nonnull
+    public static String serializeValue(@Nonnull final Object value) {
+
+        Object serializedValue = value;
+        if (serializedValue.getClass().isArray()) {
+            serializedValue = Arrays.asList((Object[]) value);
         }
 
         // collection to delimited string ["one", "two", "three"]
-        if (value instanceof Collection) {
+        if (serializedValue instanceof Collection) {
 
             //noinspection unchecked
-            Collection<Object> collection = (Collection<Object>) value;
+            Collection<Object> collection = (Collection<Object>) serializedValue;
             if (collection.isEmpty()) {
                 return null;
             }
 
-            value = collection.stream()
+            serializedValue = collection.stream()
                     .map(host -> "\"" + host + "\"")
                     .collect(Collectors.joining(", ", "[", "]"));
         }
 
-        if (value instanceof Instant) {
-            value = DATE_FORMATTER.format((Instant) value);
+        if (serializedValue instanceof Instant) {
+            serializedValue = DATE_FORMATTER.format((Instant) value);
         }
 
-        return value.toString();
+        if (serializedValue instanceof Restrictions) {
+            return "(r) => " + serializedValue.toString();
+        }
+
+        return serializedValue.toString();
     }
 
     private void put(@Nonnull final String name, @Nullable final Property property) {

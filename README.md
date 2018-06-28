@@ -739,6 +739,23 @@ Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
 - [toUInt](https://github.com/influxdata/platform/tree/master/query#touint) - convert a value to a uint
 - [window](https://github.com/influxdata/platform/tree/master/query#window) - partitions the results by a given time range
 
+#### Filter
+
+Filters the results using an expression. [[doc](https://github.com/influxdata/platform/tree/master/query#filter)]
+```java
+Restrictions restriction = Restrictions.and(
+    Restrictions.measurement().equal("mem"),
+    Restrictions.field().equal("usage_system"),
+    Restrictions.tag("service").equal("app-server")
+);
+
+Flux flux = Flux
+    .from("telegraf")
+    .filter(restriction)
+    .range(-4L, ChronoUnit.HOURS)
+    .count();
+```
+
 ### Examples
 #### Query
 ```java
