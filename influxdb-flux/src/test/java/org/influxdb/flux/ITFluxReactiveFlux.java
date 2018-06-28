@@ -9,6 +9,8 @@ import org.influxdb.reactive.events.WriteSuccessEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
 
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -18,10 +20,11 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Jakub Bednar (bednar@github) (28/06/2018 07:59)
  */
 @DisabledIfSystemProperty(named = "FLUX_DISABLE", matches = "true")
+@RunWith(JUnitPlatform.class)
 class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
     @BeforeEach
-    void prepareDate() throws InterruptedException {
+    void prepareDate() {
         Point point1 = Point.measurement("mem")
                 .tag("host", "A").tag("region", "west")
                 .addField("free", 10)
