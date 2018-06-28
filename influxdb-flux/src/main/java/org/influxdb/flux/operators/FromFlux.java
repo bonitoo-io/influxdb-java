@@ -22,7 +22,11 @@ import java.util.stream.Collectors;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db:"telegraf")
+ * Flux flux = Flux.from("telegraf");
+ *
+ * Flux flux = Flux
+ *      .from("telegraf", new String[]{"192.168.1.200", "192.168.1.100"})
+ *      .last();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (22/06/2018 10:20)

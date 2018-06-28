@@ -715,7 +715,6 @@ Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
 ### Supported Functions
 
 
-- [from](https://github.com/influxdata/platform/tree/master/query#from) - get data from the specified database
 - [count](https://github.com/influxdata/platform/tree/master/query#count) - counts the number of results
 - [first](https://github.com/influxdata/platform/tree/master/query#first) - returns the first result of the query
 - [group](https://github.com/influxdata/platform/tree/master/query#group) - groups results by a user-specified set of tags
@@ -739,6 +738,18 @@ Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
 - [toUInt](https://github.com/influxdata/platform/tree/master/query#touint) - convert a value to a uint
 - [window](https://github.com/influxdata/platform/tree/master/query#window) - partitions the results by a given time range
 
+#### From
+
+Starting point for all queries. Get data from the specified database [[doc](https://github.com/influxdata/platform/tree/master/query#from)].
+```java
+Flux flux = Flux.from("telegraf");
+```
+
+```java
+Flux flux = Flux
+    .from("telegraf", new String[]{"192.168.1.200", "192.168.1.100"})
+    .last();
+```
 #### Filter
 
 Filters the results using an expression [[doc](https://github.com/influxdata/platform/tree/master/query#filter)].
