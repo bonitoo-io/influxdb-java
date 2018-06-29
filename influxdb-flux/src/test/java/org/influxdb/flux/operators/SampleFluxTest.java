@@ -49,6 +49,17 @@ class SampleFluxTest {
     }
 
     @Test
+    void sampleWith() {
+
+        Flux flux = Flux
+                .from("telegraf")
+                .sample()
+                .withN(5);
+
+        Assertions.assertThat(flux.print()).isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> sample(n: 5)");
+    }
+
+    @Test
     void samplePositionGreaterThanN() {
 
         Flux flux = Flux.from("telegraf")

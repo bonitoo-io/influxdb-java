@@ -36,4 +36,17 @@ public final class MeanFlux extends AbstractParametrizedFlux {
     String operatorName() {
         return "mean";
     }
+
+    /**
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return this
+     */
+    @Nonnull
+    public MeanFlux withUseStartTime(final boolean useStartTime) {
+
+        this.addPropertyValue("useStartTime", useStartTime);
+
+        return this;
+    }
+
 }

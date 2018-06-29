@@ -144,7 +144,7 @@ public abstract class Flux {
      * @return {@link CountFlux}
      */
     @Nonnull
-    public Flux count() {
+    public CountFlux count() {
         return new CountFlux(this);
     }
 
@@ -155,9 +155,9 @@ public abstract class Flux {
      * @return {@link CountFlux}
      */
     @Nonnull
-    public Flux count(final boolean useStartTime) {
+    public CountFlux count(final boolean useStartTime) {
         return new CountFlux(this)
-                .addPropertyValue("useStartTime", useStartTime);
+                .withUseStartTime(useStartTime);
     }
 
     /**
@@ -193,7 +193,7 @@ public abstract class Flux {
      * @return {@link FirstFlux}
      */
     @Nonnull
-    public Flux first() {
+    public FirstFlux first() {
         return new FirstFlux(this);
     }
 
@@ -204,9 +204,9 @@ public abstract class Flux {
      * @return {@link FirstFlux}
      */
     @Nonnull
-    public Flux first(final boolean useStartTime) {
+    public FirstFlux first(final boolean useStartTime) {
         return new FirstFlux(this)
-                .addPropertyValue("useStartTime", useStartTime);
+                .withUseStartTime(useStartTime);
     }
 
     /**
@@ -353,7 +353,7 @@ public abstract class Flux {
      * @return {@link LastFlux}
      */
     @Nonnull
-    public Flux last() {
+    public LastFlux last() {
         return new LastFlux(this);
     }
 
@@ -364,8 +364,8 @@ public abstract class Flux {
      * @return {@link LastFlux}
      */
     @Nonnull
-    public Flux last(final boolean useStartTime) {
-        return new LastFlux(this).addPropertyValue("useStartTime", useStartTime);
+    public LastFlux last(final boolean useStartTime) {
+        return new LastFlux(this).withUseStartTime(useStartTime);
     }
 
     /**
@@ -402,7 +402,7 @@ public abstract class Flux {
      * @return {@link MaxFlux}
      */
     @Nonnull
-    public Flux max() {
+    public MaxFlux max() {
         return new MaxFlux(this);
     }
 
@@ -413,8 +413,8 @@ public abstract class Flux {
      * @return {@link MaxFlux}
      */
     @Nonnull
-    public Flux max(final boolean useStartTime) {
-        return new MaxFlux(this).addPropertyValue("useStartTime", useStartTime);
+    public MaxFlux max(final boolean useStartTime) {
+        return new MaxFlux(this).withUseStartTime(useStartTime);
     }
 
     /**
@@ -423,7 +423,7 @@ public abstract class Flux {
      * @return {@link MeanFlux}
      */
     @Nonnull
-    public Flux mean() {
+    public MeanFlux mean() {
         return new MeanFlux(this);
     }
 
@@ -434,8 +434,8 @@ public abstract class Flux {
      * @return {@link MeanFlux}
      */
     @Nonnull
-    public Flux mean(final boolean useStartTime) {
-        return new MeanFlux(this).addPropertyValue("useStartTime", useStartTime);
+    public MeanFlux mean(final boolean useStartTime) {
+        return new MeanFlux(this).withUseStartTime(useStartTime);
     }
 
     /**
@@ -444,7 +444,7 @@ public abstract class Flux {
      * @return {@link MinFlux}
      */
     @Nonnull
-    public Flux min() {
+    public MinFlux min() {
         return new MinFlux(this);
     }
 
@@ -455,8 +455,8 @@ public abstract class Flux {
      * @return {@link MinFlux}
      */
     @Nonnull
-    public Flux min(final boolean useStartTime) {
-        return new MinFlux(this).addPropertyValue("useStartTime", useStartTime);
+    public MinFlux min(final boolean useStartTime) {
+        return new MinFlux(this).withUseStartTime(useStartTime);
     }
 
     /**
@@ -589,7 +589,7 @@ public abstract class Flux {
      * @return {@link SkewFlux}
      */
     @Nonnull
-    public Flux skew() {
+    public SkewFlux skew() {
         return new SkewFlux(this);
     }
 
@@ -600,8 +600,8 @@ public abstract class Flux {
      * @return {@link SkewFlux}
      */
     @Nonnull
-    public Flux skew(final boolean useStartTime) {
-        return new SkewFlux(this).addPropertyValue("useStartTime", useStartTime);
+    public SkewFlux skew(final boolean useStartTime) {
+        return new SkewFlux(this).withUseStartTime(useStartTime);
     }
 
     /**
@@ -689,7 +689,7 @@ public abstract class Flux {
      * @return {@link SpreadFlux}
      */
     @Nonnull
-    public Flux spread() {
+    public SpreadFlux spread() {
         return new SpreadFlux(this);
     }
 
@@ -700,8 +700,8 @@ public abstract class Flux {
      * @return {@link SpreadFlux}
      */
     @Nonnull
-    public Flux spread(final boolean useStartTime) {
-        return new SpreadFlux(this).addPropertyValue("useStartTime", useStartTime);
+    public SpreadFlux spread(final boolean useStartTime) {
+        return new SpreadFlux(this).withUseStartTime(useStartTime);
     }
 
     /**
@@ -710,7 +710,7 @@ public abstract class Flux {
      * @return {@link StddevFlux}
      */
     @Nonnull
-    public Flux stddev() {
+    public StddevFlux stddev() {
         return new StddevFlux(this);
     }
 
@@ -721,8 +721,8 @@ public abstract class Flux {
      * @return {@link StddevFlux}
      */
     @Nonnull
-    public Flux stddev(final boolean useStartTime) {
-        return new StddevFlux(this).addPropertyValue("useStartTime", useStartTime);
+    public StddevFlux stddev(final boolean useStartTime) {
+        return new StddevFlux(this).withUseStartTime(useStartTime);
     }
 
     /**
@@ -731,7 +731,7 @@ public abstract class Flux {
      * @return {@link SumFlux}
      */
     @Nonnull
-    public Flux sum() {
+    public SumFlux sum() {
         return new SumFlux(this);
     }
 
@@ -742,8 +742,8 @@ public abstract class Flux {
      * @return {@link SumFlux}
      */
     @Nonnull
-    public Flux sum(final boolean useStartTime) {
-        return new SumFlux(this).addPropertyValue("useStartTime", useStartTime);
+    public SumFlux sum(final boolean useStartTime) {
+        return new SumFlux(this).withUseStartTime(useStartTime);
     }
 
     /**

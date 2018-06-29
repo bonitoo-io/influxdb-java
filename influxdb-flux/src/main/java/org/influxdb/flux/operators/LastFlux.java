@@ -34,4 +34,17 @@ public final class LastFlux extends AbstractParametrizedFlux {
     String operatorName() {
         return "last";
     }
+
+    /**
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return this
+     */
+    @Nonnull
+    public LastFlux withUseStartTime(final boolean useStartTime) {
+
+        this.addPropertyValue("useStartTime", useStartTime);
+
+        return this;
+    }
+
 }

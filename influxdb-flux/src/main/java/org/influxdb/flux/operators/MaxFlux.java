@@ -36,4 +36,17 @@ public final class MaxFlux extends AbstractParametrizedFlux {
     String operatorName() {
         return "max";
     }
+
+    /**
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return this
+     */
+    @Nonnull
+    public MaxFlux withUseStartTime(final boolean useStartTime) {
+
+        this.addPropertyValue("useStartTime", useStartTime);
+
+        return this;
+    }
+
 }

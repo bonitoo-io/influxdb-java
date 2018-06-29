@@ -33,4 +33,16 @@ public final class SumFlux extends AbstractParametrizedFlux {
     String operatorName() {
         return "sum";
     }
+
+    /**
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return this
+     */
+    @Nonnull
+    public SumFlux withUseStartTime(final boolean useStartTime) {
+
+        this.addPropertyValue("useStartTime", useStartTime);
+
+        return this;
+    }
 }

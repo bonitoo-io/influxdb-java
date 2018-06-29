@@ -36,4 +36,16 @@ public final class MinFlux extends AbstractParametrizedFlux {
     String operatorName() {
         return "min";
     }
+
+    /**
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return this
+     */
+    @Nonnull
+    public MinFlux withUseStartTime(final boolean useStartTime) {
+
+        this.addPropertyValue("useStartTime", useStartTime);
+
+        return this;
+    }
 }

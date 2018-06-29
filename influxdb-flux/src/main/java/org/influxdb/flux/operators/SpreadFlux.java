@@ -35,4 +35,17 @@ public final class SpreadFlux extends AbstractParametrizedFlux {
     String operatorName() {
         return "spread";
     }
+
+    /**
+     * @param useStartTime Use the start time as the timestamp of the resulting aggregate
+     * @return this
+     */
+    @Nonnull
+    public SpreadFlux withUseStartTime(final boolean useStartTime) {
+
+        this.addPropertyValue("useStartTime", useStartTime);
+
+        return this;
+    }
+
 }
