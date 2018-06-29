@@ -25,10 +25,6 @@ import java.util.Objects;
  * Flux flux = Flux
  *     .from("telegraf")
  *     .range(-12L, -1L, ChronoUnit.HOURS)
- *
- *    from(db:"foo")
- *          |&gt; range(start: 2018-05-23T13:09:22.885021542Z)
- *          |&gt; derivative(unit:100ms)
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (26/06/2018 07:04)

@@ -13,6 +13,7 @@ import org.influxdb.flux.operators.MeanFlux;
 import org.influxdb.flux.operators.MinFlux;
 import org.influxdb.flux.operators.RangeFlux;
 import org.influxdb.flux.operators.SampleFlux;
+import org.influxdb.flux.operators.SetFlux;
 import org.influxdb.flux.operators.SkewFlux;
 import org.influxdb.flux.operators.SortFlux;
 import org.influxdb.flux.operators.SpreadFlux;
@@ -65,7 +66,7 @@ import java.util.Objects;
  * <li>percentile - SPEC</li>
  * <li>{@link RangeFlux}</li>
  * <li>{@link SampleFlux}</li>
- * <li>set - UNSUPPORTED</li>
+ * <li>{@link SetFlux}</li>
  * <li>shift - SPEC</li>
  * <li>{@link SkewFlux}</li>
  * <li>{@link SortFlux}</li>
@@ -162,9 +163,14 @@ public abstract class Flux {
 
     /**
      * Returns the first result of the query.
-     * <p>
-     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
-     * {@link Flux#withPropertyNamed(String, String)}.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link FilterFlux#withRestrictions(Restrictions)}</li>
+     * <li>{@link FilterFlux#withPropertyNamed(String)}</li>
+     * <li>{@link FilterFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link FilterFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
      *
      * @return {@link FilterFlux}
      */
@@ -211,9 +217,19 @@ public abstract class Flux {
 
     /**
      * Groups results by a user-specified set of tags.
-     * <p>
-     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
-     * {@link Flux#withPropertyNamed(String, String)}.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link GroupFlux#withBy(String[])}</li>
+     * <li>{@link GroupFlux#withBy(Collection)}</li>
+     * <li>{@link GroupFlux#withKeep(String[])}</li>
+     * <li>{@link GroupFlux#withKeep(Collection)}</li>
+     * <li>{@link GroupFlux#withExcept(String[])}</li>
+     * <li>{@link GroupFlux#withExcept(Collection)}</li>
+     * <li>{@link GroupFlux#withPropertyNamed(String)}</li>
+     * <li>{@link GroupFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link GroupFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
      *
      * @return {@link GroupFlux}
      */
@@ -358,9 +374,14 @@ public abstract class Flux {
 
     /**
      * Restricts the number of rows returned in the results.
-     * <p>
-     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
-     * {@link Flux#withPropertyNamed(String, String)}
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link LimitFlux#withN(int)}</li>
+     * <li>{@link LimitFlux#withPropertyNamed(String)}</li>
+     * <li>{@link LimitFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link LimitFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
      *
      * @return {@link LimitFlux}
      */
@@ -447,9 +468,17 @@ public abstract class Flux {
 
     /**
      * Filters the results by time boundaries.
-     * <p>
-     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
-     * {@link Flux#withPropertyNamed(String, String)}
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link RangeFlux#withStart(Instant)}</li>
+     * <li>{@link RangeFlux#withStart(Long, ChronoUnit)}</li>
+     * <li>{@link RangeFlux#withStop(Instant)}</li>
+     * <li>{@link RangeFlux#withStop(Long, ChronoUnit)}</li>
+     * <li>{@link RangeFlux#withPropertyNamed(String)}</li>
+     * <li>{@link RangeFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link RangeFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
      *
      * @return {@link RangeFlux}
      */
@@ -521,9 +550,15 @@ public abstract class Flux {
 
     /**
      * Sample values from a table.
-     * <p>
-     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
-     * {@link Flux#withPropertyNamed(String, String)}
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link SampleFlux#withN(int)}</li>
+     * <li>{@link SampleFlux#withPos(int)}</li>
+     * <li>{@link SampleFlux#withPropertyNamed(String)}</li>
+     * <li>{@link SampleFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link SampleFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
      *
      * @return {@link SampleFlux}
      */
@@ -563,6 +598,36 @@ public abstract class Flux {
         return new SampleFlux(this)
                 .withN(n)
                 .withPos(pos);
+    }
+
+    /**
+     * Assigns a static value to each record.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link SetFlux#withKeyValue(String, String)}</li>
+     * <li>{@link SetFlux#withPropertyNamed(String)}</li>
+     * <li>{@link SetFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link SetFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link SetFlux}
+     */
+    @Nonnull
+    public SetFlux set() {
+        return new SetFlux(this);
+    }
+
+    /**
+     * Assigns a static value to each record.
+     *
+     * @param key   label for the column. Has to be defined.
+     * @param value value for the column. Has to be defined.
+     * @return {@link SetFlux}
+     */
+    @Nonnull
+    public SetFlux set(@Nonnull final String key, @Nonnull final String value) {
+        return new SetFlux(this).withKeyValue(key, value);
     }
 
     /**
@@ -800,9 +865,21 @@ public abstract class Flux {
 
     /**
      * Partitions the results by a given time range.
-     * <p>
-     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
-     * {@link Flux#withPropertyNamed(String, String)}
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link WindowFlux#withEvery(Long, ChronoUnit)}</li>
+     * <li>{@link WindowFlux#withPeriod(Long, ChronoUnit)}</li>
+     * <li>{@link WindowFlux#withStart(Long, ChronoUnit)}</li>
+     * <li>{@link WindowFlux#withStart(Instant)}</li>
+     * <li>{@link WindowFlux#withRound(Long, ChronoUnit)}</li>
+     * <li>{@link WindowFlux#withColumn(String)}</li>
+     * <li>{@link WindowFlux#withStartCol(String)}</li>
+     * <li>{@link WindowFlux#withStartCol(String)}</li>
+     * <li>{@link WindowFlux#withPropertyNamed(String)}</li>
+     * <li>{@link WindowFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link WindowFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
      *
      * @return {@link WindowFlux}
      */

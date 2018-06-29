@@ -928,6 +928,11 @@ Flux flux = Flux.from("telegraf")
     .sample(5, 1);
 ```
 
+#### set
+Assigns a static value to each record [[doc](https://github.com/influxdata/platform/tree/master/query#set)].
+- `key` - Label for the column to set [string].
+- `value` - Value for the column to set [string].
+
 #### skew
 Skew of the results [[doc](https://github.com/influxdata/platform/tree/master/query#skew)].
 - `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
