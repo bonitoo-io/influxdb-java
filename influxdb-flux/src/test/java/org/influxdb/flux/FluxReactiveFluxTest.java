@@ -2,6 +2,8 @@ package org.influxdb.flux;
 
 import io.reactivex.Flowable;
 import io.reactivex.observers.TestObserver;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.influxdb.InfluxDBException;
@@ -13,9 +15,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:54)
@@ -95,6 +94,59 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
     }
 
     @Test
+    void parsingToFluxResultMultitable () {
+
+        fluxServer.enqueue(createMultiTableResonse());
+
+        Flowable<FluxResult> results = fluxReactive.flux(Flux.from("flux_database"));
+        results
+                .take(1)
+                .test()
+                .assertValueCount(1)
+                .assertValue(fluxResult -> {
+
+                    Assertions.assertThat(fluxResult).isNotNull();
+                    Assertions.assertThat(fluxResult.getTables().size() == 4).isTrue();
+                    //TODO data type
+                    Assertions.assertThat(fluxResult.getTable(0).getRecords().get(0).getValue().equals("50")).isTrue();
+
+                    return true;
+                });
+    }
+
+    private MockResponse createMultiTableResonse() {
+
+        String data =
+                "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n"
+                        + "#partition,false,false,true,true,false,false,true,true,true,true\n"
+                        + "#default,_result,,,,,,,,,\n"
+                        + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
+                        + ",,0,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,50,cpu_usage,server_performance,\"Area 1° 10' \"\"20\",false\n"
+                        + "\n"
+                        + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n"
+                        + "#partition,false,false,true,true,false,false,true,true,true,true\n"
+                        + "#default,_result,,,,,,,,,\n"
+                        + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
+                        + ",,1,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,1,rackNumber,server_performance,\"Area 1° 10' \"\"20\",false\n"
+                        + "\n"
+                        + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string\n"
+                        + "#partition,false,false,true,true,false,false,true,true,true,true\n"
+                        + "#default,_result,,,,,,,,,\n"
+                        + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
+                        + ",,2,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,Server no. 1,server description,server_performance,\"Area 1° 10' \"\"20\",false\n"
+                        + "\n"
+                        + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n"
+                        + "#partition,false,false,true,true,false,false,true,true,true,true\n"
+                        + "#default,_result,,,,,,,,,\n"
+                        + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
+                        + ",,3,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,10000,upTime,server_performance,\"Area 1° 10' \"\"20\",false";
+
+        return createResponse(data);
+
+
+    }
+
+    @Test
     @Disabled
     void parsingToPOJO() {
 
@@ -102,32 +154,7 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
         //
         // insert server_performance,location=Area\ 1°\ 10'\ "20,production_usage=false cpu_usage=50.0,rackNumber=1i,server\ description="Server no. 1",upTime=10000i 1530079000001000000
         //
-        String data =
-                "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n"
-                + "#partition,false,false,true,true,false,false,true,true,true,true\n"
-                + "#default,_result,,,,,,,,,\n"
-                + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
-                + ",,0,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,50,cpu_usage,server_performance,\"Area 1° 10' \"\"20\",false\n"
-                + "\n"
-                + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n"
-                + "#partition,false,false,true,true,false,false,true,true,true,true\n"
-                + "#default,_result,,,,,,,,,\n"
-                + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
-                + ",,1,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,1,rackNumber,server_performance,\"Area 1° 10' \"\"20\",false\n"
-                + "\n"
-                + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string\n"
-                + "#partition,false,false,true,true,false,false,true,true,true,true\n"
-                + "#default,_result,,,,,,,,,\n"
-                + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
-                + ",,2,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,Server no. 1,server description,server_performance,\"Area 1° 10' \"\"20\",false\n"
-                + "\n"
-                + "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n"
-                + "#partition,false,false,true,true,false,false,true,true,true,true\n"
-                + "#default,_result,,,,,,,,,\n"
-                + ",result,table,_start,_stop,_time,_value,_field,_measurement,location,production_usage\n"
-                + ",,3,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,10000,upTime,server_performance,\"Area 1° 10' \"\"20\",false";
-
-        fluxServer.enqueue(createResponse(data));
+        fluxServer.enqueue(createMultiTableResonse());
 
         Flowable<ServePerformance> results = fluxReactive
                 .flux(Flux.from("flux_database").last(), ServePerformance.class);

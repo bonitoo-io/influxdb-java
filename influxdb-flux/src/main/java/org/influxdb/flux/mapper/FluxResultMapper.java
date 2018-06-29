@@ -1,14 +1,16 @@
 package org.influxdb.flux.mapper;
 
-import okio.BufferedSource;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
+import okio.Buffer;
+import okio.BufferedSource;
 
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 12:04)
@@ -17,15 +19,15 @@ import java.util.Objects;
 public class FluxResultMapper {
 
     @Nullable
-    public FluxResult toFluxResult(@Nonnull final BufferedSource source) {
-
+    public FluxResult toFluxResult(@Nonnull final BufferedSource source) throws FluxResultMapperException, IOException {
         Objects.requireNonNull(source, "BufferedSource is required");
 
-        try {
-            return new FluxResult(source.readUtf8());
-        } catch (IOException e) {
-            return new FluxResult(null);
-        }
+        Buffer buffer = new Buffer();
+        source.readAll(buffer);
+        Reader reader = new InputStreamReader(buffer.inputStream());
+        FluxCsvParser tableCsvParser = new FluxCsvParser();
+
+        return tableCsvParser.parseFluxResponse(reader);
     }
 
     @Nonnull

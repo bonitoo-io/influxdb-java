@@ -1,20 +1,25 @@
 package org.influxdb.flux.mapper;
 
-import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 11:52)
  */
 public class FluxResult {
 
-    private final String content;
+    private LinkedHashMap<Integer, Table> tables;
 
-    public FluxResult(@Nullable final String content) {
-        this.content = content;
+    FluxResult(LinkedHashMap<Integer, Table> tables) {
+        this.tables = tables;
     }
 
-    @Nullable
-    public String getContent() {
-        return content;
+    public Table getTable(int index) {
+        return tables.get(index);
+    }
+
+    public List<Table> getTables() {
+        return new ArrayList<>(tables.values());
     }
 }

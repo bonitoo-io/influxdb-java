@@ -1,5 +1,6 @@
 package org.influxdb.examples;
 
+import java.util.concurrent.TimeUnit;
 import org.influxdb.BatchOptions;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
@@ -7,13 +8,12 @@ import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 
-import java.util.concurrent.TimeUnit;
-
 public class SimpleSynchronousWriteExample {
 
     public static void main(String[] args) {
 
         InfluxDB influxDB = InfluxDBFactory.connect("http://localhost:8086");
+        influxDB.enableBatch(BatchOptions.DEFAULTS.actions(1000).bufferLimit(10000).flushDuration(1000));
         String dbName = "aTimeSeries";
         influxDB.createDatabase(dbName);
 
