@@ -27,6 +27,7 @@ import org.influxdb.flux.operators.ToStringFlux;
 import org.influxdb.flux.operators.ToTimeFlux;
 import org.influxdb.flux.operators.ToUIntFlux;
 import org.influxdb.flux.operators.WindowFlux;
+import org.influxdb.flux.operators.YieldFlux;
 import org.influxdb.flux.operators.properties.OperatorProperties;
 import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.Preconditions;
@@ -82,7 +83,7 @@ import java.util.Objects;
  * <li>{@link ToTimeFlux}</li>
  * <li>{@link ToUIntFlux}</li>
  * <li>{@link WindowFlux}</li>
- * <li>yield - SPEC</li>
+ * <li>{@link YieldFlux}</li>
  * <li>toHttp - UNSUPPORTED</li>
  * <li>toKafka - UNSUPPORTED</li>
  * <li>{@link ExpressionFlux}</li>
@@ -1131,6 +1132,35 @@ public abstract class Flux {
                 .withColumn(timeColumn)
                 .withStartCol(startCol)
                 .withStopCol(stopCol);
+    }
+
+    /**
+     * Yield a query results to yielded results.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link YieldFlux#withName(String)}</li>
+     * <li>{@link YieldFlux#withPropertyNamed(String)}</li>
+     * <li>{@link YieldFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link YieldFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link YieldFlux}
+     */
+    @Nonnull
+    public YieldFlux yield() {
+        return new YieldFlux(this);
+    }
+
+    /**
+     * Yield a query results to yielded results.
+     *
+     * @param name The unique name to give to yielded results. Has to be defined.
+     * @return {@link YieldFlux}
+     */
+    @Nonnull
+    public YieldFlux yield(@Nonnull final String name) {
+        return new YieldFlux(this).withName(name);
     }
 
     /**

@@ -933,6 +933,12 @@ Assigns a static value to each record [[doc](https://github.com/influxdata/platf
 - `key` - Label for the column to set [string].
 - `value` - Value for the column to set [string].
 
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .set("location", "Carolina");
+```
+
 #### skew
 Skew of the results [[doc](https://github.com/influxdata/platform/tree/master/query#skew)].
 - `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
@@ -1075,6 +1081,15 @@ Flux flux = Flux
             -50L, ChronoUnit.WEEKS,
             1L, ChronoUnit.SECONDS)
     .max();
+```
+
+#### yield
+Yield a query results to yielded results [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#yield)].
+- `name` - The unique name to give to yielded results [string].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .yield("0");
 ```
 
 ### Examples

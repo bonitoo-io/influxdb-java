@@ -6,7 +6,7 @@ import org.influxdb.impl.Preconditions;
 import javax.annotation.Nonnull;
 
 /**
- * <a href="https://github.com/influxdata/platform/tree/master/query#set">set</a> - Assigns a static
+ * <a href="https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#yield">yield</a> - Assigns a static
  * value to each record.
  *
  * <h3>Options</h3>
@@ -19,11 +19,7 @@ import javax.annotation.Nonnull;
  * <pre>
  * Flux flux = Flux
  *     .from("telegraf")
- *     .range(-12L, -1L, ChronoUnit.HOURS)
- *
- *    from(db:"foo")
- *          |&gt; range(start: 2018-05-23T13:09:22.885021542Z)
- *          |&gt; derivative(unit:100ms)
+ *     .set("location", "Carolina");
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (29/06/2018 09:19)
