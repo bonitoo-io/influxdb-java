@@ -43,7 +43,7 @@ public final class StddevFlux extends AbstractParametrizedFlux {
     @Nonnull
     public StddevFlux withUseStartTime(final boolean useStartTime) {
 
-        this.addPropertyValue("useStartTime", useStartTime);
+        this.withPropertyValue("useStartTime", useStartTime);
 
         return this;
     }

@@ -675,7 +675,7 @@ fluxReactive.listenEvents(FluxErrorEvent.class).subscribe(event -> {
 ```
 
 ### Functions properties
-There are three possibilities how to add properties to the functions.
+There are four possibilities how to add properties to the functions.
 
 #### Use build-in constructor
 ```java
@@ -686,17 +686,28 @@ Flux flux = Flux
 
 Flowable<FluxResult> results = fluxReactive.flux(flux);
 ```
-#### Specify the property value
+#### Use build-in properties
 ```java
 Flux.from("telegraf")
     .window()
-        .addPropertyValue("every", 15L, ChronoUnit.MINUTES)
-        .addPropertyValue("period", 20L, ChronoUnit.SECONDS)
+        .withEvery(15L, ChronoUnit.MINUTES)
+        .withPeriod(20L, ChronoUnit.SECONDS)
     .sum();
 
 Flowable<FluxResult> results = fluxReactive.flux(flux);
 ```
-#### Use named properties
+
+#### Specify the property name and value
+```java
+Flux.from("telegraf")
+    .window()
+        .withPropertyValue("every", 15L, ChronoUnit.MINUTES)
+        .withPropertyValue("period", 20L, ChronoUnit.SECONDS)
+    .sum();
+
+Flowable<FluxResult> results = fluxReactive.flux(flux);
+```
+#### Specify the named properties
 ```java
 Map<String, Object> properties = new HashMap<>();
 properties.put("every", new TimeInterval(15L, ChronoUnit.MINUTES));
@@ -705,8 +716,8 @@ properties.put("period", new TimeInterval(20L, ChronoUnit.SECONDS));
 Flux flux = Flux
     .from("telegraf")
     .window()
-        .addPropertyNamed("every")
-        .addPropertyNamed("period")
+        .withPropertyNamed("every")
+        .withPropertyNamed("period")
     .sum();
 
 Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
@@ -886,11 +897,13 @@ Filters the results by time boundaries [[doc](https://github.com/influxdata/plat
 - `stop` - Specifies the exclusive newest time to be included in the results. Defaults to `"now"` [duration or timestamp].
 
 ```java
+// by interval
 Flux flux = Flux
     .from("telegraf")
     .range(-12L, -1L, ChronoUnit.HOURS)
 ```
 ```java
+// by Instant
 Flux flux = Flux
     .from("telegraf")
     .range(Instant.now().minus(4, ChronoUnit.HOURS),

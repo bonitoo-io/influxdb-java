@@ -1,8 +1,10 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
+import org.influxdb.flux.operators.restriction.Restrictions;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#filter">filter</a> -
@@ -45,5 +47,19 @@ public final class FilterFlux extends AbstractParametrizedFlux {
     @Override
     String operatorName() {
         return "filter";
+    }
+
+    /**
+     * @param restrictions filter restrictions
+     * @return this
+     */
+    @Nonnull
+    public FilterFlux withRestrictions(@Nonnull final Restrictions restrictions) {
+
+        Objects.requireNonNull(restrictions, "Restrictions are required");
+
+        this.withPropertyValue("fn", restrictions);
+
+        return this;
     }
 }

@@ -31,7 +31,7 @@ class StddevFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .stddev()
-                .addPropertyNamed("useStartTime", "parameter");
+                .withPropertyNamed("useStartTime", "parameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("parameter", true);

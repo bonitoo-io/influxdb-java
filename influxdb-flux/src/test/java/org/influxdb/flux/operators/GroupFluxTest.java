@@ -57,7 +57,7 @@ class GroupFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .group()
-                .addPropertyNamed("by", "groupByParameter");
+                .withPropertyNamed("by", "groupByParameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("groupByParameter", new String[]{"region", "zip"});
@@ -95,8 +95,8 @@ class GroupFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .group()
-                .addPropertyNamed("by", "groupByParameter")
-                .addPropertyNamed("keep", "keepByParameter");
+                .withPropertyNamed("by", "groupByParameter")
+                .withPropertyNamed("keep", "keepByParameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("groupByParameter", new String[]{"region", "zip"});
@@ -147,7 +147,7 @@ class GroupFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .group()
-                .addPropertyNamed("except", "groupExceptParameter");
+                .withPropertyNamed("except", "groupExceptParameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("groupExceptParameter", new String[]{"region", "zip"});
@@ -185,8 +185,8 @@ class GroupFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .group()
-                .addPropertyNamed("except", "groupExceptParameter")
-                .addPropertyNamed("keep", "keepExceptParameter");
+                .withPropertyNamed("except", "groupExceptParameter")
+                .withPropertyNamed("keep", "keepExceptParameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("groupExceptParameter", new String[]{"region", "zip"});

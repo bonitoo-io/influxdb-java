@@ -41,7 +41,7 @@ public final class SumFlux extends AbstractParametrizedFlux {
     @Nonnull
     public SumFlux withUseStartTime(final boolean useStartTime) {
 
-        this.addPropertyValue("useStartTime", useStartTime);
+        this.withPropertyValue("useStartTime", useStartTime);
 
         return this;
     }

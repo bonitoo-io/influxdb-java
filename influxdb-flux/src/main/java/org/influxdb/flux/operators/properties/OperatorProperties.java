@@ -39,7 +39,7 @@ public final class OperatorProperties {
     /**
      * @param fluxName      name in Flux query
      * @param namedProperty name in named properties
-     * @see org.influxdb.flux.Flux#addPropertyNamed(String, String)
+     * @see org.influxdb.flux.Flux#withPropertyNamed(String, String)
      */
     public void putPropertyNamed(@Nonnull final String fluxName, @Nonnull final String namedProperty) {
 
@@ -52,7 +52,7 @@ public final class OperatorProperties {
     /**
      * @param fluxName name in Flux query
      * @param value    value of property. If null than ignored.
-     * @see org.influxdb.flux.Flux#addPropertyValue(String, Object)
+     * @see org.influxdb.flux.Flux#withPropertyValue(String, Object)
      */
     public void putPropertyValue(@Nonnull final String fluxName, @Nullable final Object value) {
 
@@ -69,7 +69,7 @@ public final class OperatorProperties {
      * @param fluxName name of property in Flux query
      * @param amount   the amount of the duration, measured in terms of the unit, positive or negative
      * @param unit     the unit that the duration is measured in, must have an exact duration.  If null than ignored.
-     * @see org.influxdb.flux.Flux#addPropertyValue(String, long, ChronoUnit)
+     * @see org.influxdb.flux.Flux#withPropertyValue(String, long, ChronoUnit)
      */
     public void putPropertyValue(@Nonnull final String fluxName,
                                  @Nullable final Long amount,
@@ -87,7 +87,7 @@ public final class OperatorProperties {
     /**
      * @param fluxName name of property in Flux query
      * @param value    value of property. If null than ignored.
-     * @see org.influxdb.flux.Flux#addPropertyValueString(String, String)
+     * @see org.influxdb.flux.Flux#withPropertyValueEscaped(String, String)
      */
     public void putPropertyValueString(@Nonnull final String fluxName, @Nullable final String value) {
 

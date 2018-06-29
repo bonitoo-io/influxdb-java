@@ -80,7 +80,7 @@ class RangeFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .range()
-                .addPropertyNamed("start", "startParameter");
+                .withPropertyNamed("start", "startParameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("startParameter", Instant.ofEpochSecond(1_600_000));
@@ -95,8 +95,8 @@ class RangeFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .range()
-                .addPropertyNamed("start", "startParameter")
-                .addPropertyNamed("stop", "stopParameter");
+                .withPropertyNamed("start", "startParameter")
+                .withPropertyNamed("stop", "stopParameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("startParameter", Instant.ofEpochSecond(1_600_000));

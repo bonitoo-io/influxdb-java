@@ -42,7 +42,7 @@ public final class LastFlux extends AbstractParametrizedFlux {
     @Nonnull
     public LastFlux withUseStartTime(final boolean useStartTime) {
 
-        this.addPropertyValue("useStartTime", useStartTime);
+        this.withPropertyValue("useStartTime", useStartTime);
 
         return this;
     }

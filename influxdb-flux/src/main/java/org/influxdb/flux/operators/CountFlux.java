@@ -41,7 +41,7 @@ public final class CountFlux extends AbstractParametrizedFlux {
     @Nonnull
     public CountFlux withUseStartTime(final boolean useStartTime) {
 
-        this.addPropertyValue("useStartTime", useStartTime);
+        this.withPropertyValue("useStartTime", useStartTime);
 
         return this;
     }

@@ -53,7 +53,7 @@ public final class SortFlux extends AbstractParametrizedFlux {
     @Nonnull
     public SortFlux withDesc(final boolean desc) {
 
-        this.addPropertyValue("desc", desc);
+        this.withPropertyValue("desc", desc);
 
         return this;
     }
@@ -67,7 +67,7 @@ public final class SortFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(columns, "Columns are required");
 
-        this.addPropertyValue("cols", columns);
+        this.withPropertyValue("cols", columns);
 
         return this;
     }
@@ -81,7 +81,7 @@ public final class SortFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(columns, "Columns are required");
 
-        this.addPropertyValue("cols", columns);
+        this.withPropertyValue("cols", columns);
 
         return this;
     }

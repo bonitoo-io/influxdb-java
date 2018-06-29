@@ -57,7 +57,7 @@ public final class GroupFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
-        this.addPropertyValue("by", groupBy);
+        this.withPropertyValue("by", groupBy);
 
         return this;
     }
@@ -71,7 +71,7 @@ public final class GroupFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
-        this.addPropertyValue("by", groupBy);
+        this.withPropertyValue("by", groupBy);
 
         return this;
     }
@@ -85,7 +85,7 @@ public final class GroupFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        this.addPropertyValue("keep", keep);
+        this.withPropertyValue("keep", keep);
 
         return this;
     }
@@ -99,7 +99,7 @@ public final class GroupFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        this.addPropertyValue("keep", keep);
+        this.withPropertyValue("keep", keep);
 
         return this;
     }
@@ -113,7 +113,7 @@ public final class GroupFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
 
-        this.addPropertyValue("except", except);
+        this.withPropertyValue("except", except);
 
         return this;
     }
@@ -127,7 +127,7 @@ public final class GroupFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
 
-        this.addPropertyValue("except", except);
+        this.withPropertyValue("except", except);
 
         return this;
     }

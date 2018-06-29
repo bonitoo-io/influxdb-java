@@ -44,7 +44,7 @@ public final class MinFlux extends AbstractParametrizedFlux {
     @Nonnull
     public MinFlux withUseStartTime(final boolean useStartTime) {
 
-        this.addPropertyValue("useStartTime", useStartTime);
+        this.withPropertyValue("useStartTime", useStartTime);
 
         return this;
     }

@@ -45,7 +45,7 @@ public final class LimitFlux extends AbstractParametrizedFlux {
 
         Preconditions.checkPositiveNumber(numberOfResults, "Number of results");
 
-        this.addPropertyValue("n", numberOfResults);
+        this.withPropertyValue("n", numberOfResults);
 
         return this;
     }

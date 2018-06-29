@@ -31,7 +31,7 @@ class LastFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .last()
-                .addPropertyNamed("useStartTime", "parameter");
+                .withPropertyNamed("useStartTime", "parameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("parameter", true);

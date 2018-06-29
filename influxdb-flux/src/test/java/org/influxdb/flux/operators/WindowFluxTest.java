@@ -147,10 +147,10 @@ class WindowFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .window()
-                    .addPropertyNamed("every")
-                    .addPropertyNamed("period")
-                    .addPropertyNamed("start")
-                    .addPropertyNamed("round");
+                    .withPropertyNamed("every")
+                    .withPropertyNamed("period")
+                    .withPropertyNamed("start")
+                    .withPropertyNamed("round");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("every", new TimeInterval(15L, ChronoUnit.MINUTES));

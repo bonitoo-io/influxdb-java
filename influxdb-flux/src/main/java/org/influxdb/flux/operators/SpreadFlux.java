@@ -43,7 +43,7 @@ public final class SpreadFlux extends AbstractParametrizedFlux {
     @Nonnull
     public SpreadFlux withUseStartTime(final boolean useStartTime) {
 
-        this.addPropertyValue("useStartTime", useStartTime);
+        this.withPropertyValue("useStartTime", useStartTime);
 
         return this;
     }

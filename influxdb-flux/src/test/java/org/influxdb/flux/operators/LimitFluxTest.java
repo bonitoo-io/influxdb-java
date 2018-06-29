@@ -38,7 +38,7 @@ class LimitFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .limit()
-                .addPropertyNamed("n", "limit");
+                .withPropertyNamed("n", "limit");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("limit", 15);
@@ -50,7 +50,7 @@ class LimitFluxTest {
     @Test
     void limitByParameterMissing() {
 
-        Assertions.assertThatThrownBy(() -> Flux.from("telegraf").limit().addPropertyNamed("limit").print())
+        Assertions.assertThatThrownBy(() -> Flux.from("telegraf").limit().withPropertyNamed("limit").print())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("The parameter 'limit' is not defined.");
     }

@@ -44,7 +44,7 @@ public final class MeanFlux extends AbstractParametrizedFlux {
     @Nonnull
     public MeanFlux withUseStartTime(final boolean useStartTime) {
 
-        this.addPropertyValue("useStartTime", useStartTime);
+        this.withPropertyValue("useStartTime", useStartTime);
 
         return this;
     }

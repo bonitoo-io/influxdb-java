@@ -163,13 +163,13 @@ public abstract class Flux {
     /**
      * Returns the first result of the query.
      * <p>
-     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
-     * {@link Flux#addPropertyNamed(String, String)}.
+     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
+     * {@link Flux#withPropertyNamed(String, String)}.
      *
      * @return {@link FilterFlux}
      */
     @Nonnull
-    public Flux filter() {
+    public FilterFlux filter() {
         return new FilterFlux(this);
     }
 
@@ -180,11 +180,11 @@ public abstract class Flux {
      * @return {@link FilterFlux}
      */
     @Nonnull
-    public Flux filter(@Nonnull final Restrictions restrictions) {
+    public FilterFlux filter(@Nonnull final Restrictions restrictions) {
 
         Objects.requireNonNull(restrictions, "Restrictions are required");
 
-        return new FilterFlux(this).addPropertyValue("fn", restrictions);
+        return new FilterFlux(this).withRestrictions(restrictions);
     }
 
     /**
@@ -212,8 +212,8 @@ public abstract class Flux {
     /**
      * Groups results by a user-specified set of tags.
      * <p>
-     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
-     * {@link Flux#addPropertyNamed(String, String)}.
+     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
+     * {@link Flux#withPropertyNamed(String, String)}.
      *
      * @return {@link GroupFlux}
      */
@@ -359,8 +359,8 @@ public abstract class Flux {
     /**
      * Restricts the number of rows returned in the results.
      * <p>
-     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
-     * {@link Flux#addPropertyNamed(String, String)}
+     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
+     * {@link Flux#withPropertyNamed(String, String)}
      *
      * @return {@link LimitFlux}
      */
@@ -448,8 +448,8 @@ public abstract class Flux {
     /**
      * Filters the results by time boundaries.
      * <p>
-     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
-     * {@link Flux#addPropertyNamed(String, String)}
+     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
+     * {@link Flux#withPropertyNamed(String, String)}
      *
      * @return {@link RangeFlux}
      */
@@ -522,8 +522,8 @@ public abstract class Flux {
     /**
      * Sample values from a table.
      * <p>
-     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
-     * {@link Flux#addPropertyNamed(String, String)}
+     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
+     * {@link Flux#withPropertyNamed(String, String)}
      *
      * @return {@link SampleFlux}
      */
@@ -801,13 +801,13 @@ public abstract class Flux {
     /**
      * Partitions the results by a given time range.
      * <p>
-     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
-     * {@link Flux#addPropertyNamed(String, String)}
+     * The parameters had to be defined by {@link Flux#withPropertyNamed(String)} or
+     * {@link Flux#withPropertyNamed(String, String)}
      *
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window() {
+    public WindowFlux window() {
         return new WindowFlux(this);
     }
 
@@ -819,14 +819,13 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window(@Nonnull final Long every,
-                       @Nonnull final ChronoUnit everyUnit) {
+    public WindowFlux window(@Nonnull final Long every,
+                             @Nonnull final ChronoUnit everyUnit) {
 
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
 
-        return new WindowFlux(this)
-                .addPropertyValue("every", every, everyUnit);
+        return new WindowFlux(this).withEvery(every, everyUnit);
     }
 
     /**
@@ -839,10 +838,10 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window(@Nonnull final Long every,
-                       @Nonnull final ChronoUnit everyUnit,
-                       @Nonnull final Long period,
-                       @Nonnull final ChronoUnit periodUnit) {
+    public WindowFlux window(@Nonnull final Long every,
+                             @Nonnull final ChronoUnit everyUnit,
+                             @Nonnull final Long period,
+                             @Nonnull final ChronoUnit periodUnit) {
 
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
@@ -851,8 +850,8 @@ public abstract class Flux {
         Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
 
         return new WindowFlux(this)
-                .addPropertyValue("every", every, everyUnit)
-                .addPropertyValue("period", period, periodUnit);
+                .withEvery(every, everyUnit)
+                .withPeriod(period, periodUnit);
     }
 
     /**
@@ -866,11 +865,11 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window(@Nonnull final Long every,
-                       @Nonnull final ChronoUnit everyUnit,
-                       @Nonnull final Long period,
-                       @Nonnull final ChronoUnit periodUnit,
-                       @Nonnull final Instant start) {
+    public WindowFlux window(@Nonnull final Long every,
+                             @Nonnull final ChronoUnit everyUnit,
+                             @Nonnull final Long period,
+                             @Nonnull final ChronoUnit periodUnit,
+                             @Nonnull final Instant start) {
 
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
@@ -881,9 +880,9 @@ public abstract class Flux {
         Objects.requireNonNull(start, "Start is required");
 
         return new WindowFlux(this)
-                .addPropertyValue("every", every, everyUnit)
-                .addPropertyValue("period", period, periodUnit)
-                .addPropertyValue("start", start);
+                .withEvery(every, everyUnit)
+                .withPeriod(period, periodUnit)
+                .withStart(start);
     }
 
     /**
@@ -898,12 +897,12 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window(@Nonnull final Long every,
-                       @Nonnull final ChronoUnit everyUnit,
-                       @Nonnull final Long period,
-                       @Nonnull final ChronoUnit periodUnit,
-                       @Nonnull final Long start,
-                       @Nonnull final ChronoUnit startUnit) {
+    public WindowFlux window(@Nonnull final Long every,
+                             @Nonnull final ChronoUnit everyUnit,
+                             @Nonnull final Long period,
+                             @Nonnull final ChronoUnit periodUnit,
+                             @Nonnull final Long start,
+                             @Nonnull final ChronoUnit startUnit) {
 
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
@@ -915,9 +914,9 @@ public abstract class Flux {
         Objects.requireNonNull(startUnit, "Start ChronoUnit is required");
 
         return new WindowFlux(this)
-                .addPropertyValue("every", every, everyUnit)
-                .addPropertyValue("period", period, periodUnit)
-                .addPropertyValue("start", start, startUnit);
+                .withEvery(every, everyUnit)
+                .withPeriod(period, periodUnit)
+                .withStart(start, startUnit);
     }
 
     /**
@@ -934,32 +933,20 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window(@Nonnull final Long every,
-                       @Nonnull final ChronoUnit everyUnit,
-                       @Nonnull final Long period,
-                       @Nonnull final ChronoUnit periodUnit,
-                       @Nonnull final Long start,
-                       @Nonnull final ChronoUnit startUnit,
-                       @Nonnull final Long round,
-                       @Nonnull final ChronoUnit roundUnit) {
-
-        Objects.requireNonNull(every, "Every is required");
-        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
-
-        Objects.requireNonNull(period, "Period is required");
-        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
-
-        Objects.requireNonNull(start, "Start is required");
-        Objects.requireNonNull(startUnit, "Start ChronoUnit is required");
-
-        Objects.requireNonNull(round, "Round is required");
-        Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
+    public WindowFlux window(@Nonnull final Long every,
+                             @Nonnull final ChronoUnit everyUnit,
+                             @Nonnull final Long period,
+                             @Nonnull final ChronoUnit periodUnit,
+                             @Nonnull final Long start,
+                             @Nonnull final ChronoUnit startUnit,
+                             @Nonnull final Long round,
+                             @Nonnull final ChronoUnit roundUnit) {
 
         return new WindowFlux(this)
-                .addPropertyValue("every", every, everyUnit)
-                .addPropertyValue("period", period, periodUnit)
-                .addPropertyValue("start", start, startUnit)
-                .addPropertyValue("round", round, roundUnit);
+                .withEvery(every, everyUnit)
+                .withPeriod(period, periodUnit)
+                .withStart(start, startUnit)
+                .withRound(round, roundUnit);
 
     }
 
@@ -976,30 +963,19 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window(@Nonnull final Long every,
-                       @Nonnull final ChronoUnit everyUnit,
-                       @Nonnull final Long period,
-                       @Nonnull final ChronoUnit periodUnit,
-                       @Nonnull final Instant start,
-                       @Nonnull final Long round,
-                       @Nonnull final ChronoUnit roundUnit) {
-
-        Objects.requireNonNull(every, "Every is required");
-        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
-
-        Objects.requireNonNull(period, "Period is required");
-        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
-
-        Objects.requireNonNull(start, "Start is required");
-
-        Objects.requireNonNull(round, "Round is required");
-        Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
+    public WindowFlux window(@Nonnull final Long every,
+                             @Nonnull final ChronoUnit everyUnit,
+                             @Nonnull final Long period,
+                             @Nonnull final ChronoUnit periodUnit,
+                             @Nonnull final Instant start,
+                             @Nonnull final Long round,
+                             @Nonnull final ChronoUnit roundUnit) {
 
         return new WindowFlux(this)
-                .addPropertyValue("every", every, everyUnit)
-                .addPropertyValue("period", period, periodUnit)
-                .addPropertyValue("start", start)
-                .addPropertyValue("round", round, roundUnit);
+                .withEvery(every, everyUnit)
+                .withPeriod(period, periodUnit)
+                .withStart(start)
+                .withRound(round, roundUnit);
 
     }
 
@@ -1020,42 +996,26 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window(@Nonnull final Long every,
-                       @Nonnull final ChronoUnit everyUnit,
-                       @Nonnull final Long period,
-                       @Nonnull final ChronoUnit periodUnit,
-                       @Nonnull final Long start,
-                       @Nonnull final ChronoUnit startUnit,
-                       @Nonnull final Long round,
-                       @Nonnull final ChronoUnit roundUnit,
-                       @Nonnull final String timeColumn,
-                       @Nonnull final String startCol,
-                       @Nonnull final String stopCol) {
-
-        Objects.requireNonNull(every, "Every is required");
-        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
-
-        Objects.requireNonNull(period, "Period is required");
-        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
-
-        Objects.requireNonNull(start, "Start is required");
-        Objects.requireNonNull(startUnit, "Start ChronoUnit is required");
-
-        Objects.requireNonNull(round, "Round is required");
-        Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
-
-        Preconditions.checkNonEmptyString(timeColumn, "Time column");
-        Preconditions.checkNonEmptyString(startCol, "Start column");
-        Preconditions.checkNonEmptyString(stopCol, "Stop column");
+    public WindowFlux window(@Nonnull final Long every,
+                             @Nonnull final ChronoUnit everyUnit,
+                             @Nonnull final Long period,
+                             @Nonnull final ChronoUnit periodUnit,
+                             @Nonnull final Long start,
+                             @Nonnull final ChronoUnit startUnit,
+                             @Nonnull final Long round,
+                             @Nonnull final ChronoUnit roundUnit,
+                             @Nonnull final String timeColumn,
+                             @Nonnull final String startCol,
+                             @Nonnull final String stopCol) {
 
         return new WindowFlux(this)
-                .addPropertyValue("every", every, everyUnit)
-                .addPropertyValue("period", period, periodUnit)
-                .addPropertyValue("start", start, startUnit)
-                .addPropertyValue("round", round, roundUnit)
-                .addPropertyValueString("column", timeColumn)
-                .addPropertyValueString("startCol", startCol)
-                .addPropertyValueString("stopCol", stopCol);
+                .withEvery(every, everyUnit)
+                .withPeriod(period, periodUnit)
+                .withStart(start, startUnit)
+                .withRound(round, roundUnit)
+                .withColumn(timeColumn)
+                .withStartCol(startCol)
+                .withStopCol(stopCol);
 
     }
 
@@ -1075,40 +1035,25 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public Flux window(@Nonnull final Long every,
-                       @Nonnull final ChronoUnit everyUnit,
-                       @Nonnull final Long period,
-                       @Nonnull final ChronoUnit periodUnit,
-                       @Nonnull final Instant start,
-                       @Nonnull final Long round,
-                       @Nonnull final ChronoUnit roundUnit,
-                       @Nonnull final String timeColumn,
-                       @Nonnull final String startCol,
-                       @Nonnull final String stopCol) {
-
-        Objects.requireNonNull(every, "Every is required");
-        Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
-
-        Objects.requireNonNull(period, "Period is required");
-        Objects.requireNonNull(periodUnit, "Period ChronoUnit is required");
-
-        Objects.requireNonNull(start, "Start is required");
-
-        Objects.requireNonNull(round, "Round is required");
-        Objects.requireNonNull(roundUnit, "Round ChronoUnit is required");
-
-        Preconditions.checkNonEmptyString(timeColumn, "Time column");
-        Preconditions.checkNonEmptyString(startCol, "Start column");
-        Preconditions.checkNonEmptyString(stopCol, "Stop column");
+    public WindowFlux window(@Nonnull final Long every,
+                             @Nonnull final ChronoUnit everyUnit,
+                             @Nonnull final Long period,
+                             @Nonnull final ChronoUnit periodUnit,
+                             @Nonnull final Instant start,
+                             @Nonnull final Long round,
+                             @Nonnull final ChronoUnit roundUnit,
+                             @Nonnull final String timeColumn,
+                             @Nonnull final String startCol,
+                             @Nonnull final String stopCol) {
 
         return new WindowFlux(this)
-                .addPropertyValue("every", every, everyUnit)
-                .addPropertyValue("period", period, periodUnit)
-                .addPropertyValue("start", start)
-                .addPropertyValue("round", round, roundUnit)
-                .addPropertyValueString("column", timeColumn)
-                .addPropertyValueString("startCol", startCol)
-                .addPropertyValueString("stopCol", stopCol);
+                .withEvery(every, everyUnit)
+                .withPeriod(period, periodUnit)
+                .withStart(start)
+                .withRound(round, roundUnit)
+                .withColumn(timeColumn)
+                .withStartCol(startCol)
+                .withStopCol(stopCol);
     }
 
     /**
@@ -1130,17 +1075,17 @@ public abstract class Flux {
      *
      * <pre>
      *  FluxChain fluxChain = new FluxChain()
-     *      .addPropertyNamed("every", 15, ChronoUnit.MINUTES)
-     *      .addPropertyNamed("period", 20L, ChronoUnit.SECONDS)
-     *      .addPropertyNamed("start", -50, ChronoUnit.DAYS)
-     *      .addPropertyNamed("round", 1L, ChronoUnit.HOURS);
+     *      .withPropertyNamed("every", 15, ChronoUnit.MINUTES)
+     *      .withPropertyNamed("period", 20L, ChronoUnit.SECONDS)
+     *      .withPropertyNamed("start", -50, ChronoUnit.DAYS)
+     *      .withPropertyNamed("round", 1L, ChronoUnit.HOURS);
      *
      *  Flux flux = Flux.from("telegraf")
      *      .window()
-     *          .addPropertyNamed("every")
-     *          .addPropertyNamed("period")
-     *          .addPropertyNamed("start")
-     *          .addPropertyNamed("round")
+     *          .withPropertyNamed("every")
+     *          .withPropertyNamed("period")
+     *          .withPropertyNamed("start")
+     *          .withPropertyNamed("round")
      *      .sum();
      *
      * flux.print(fluxChain);
@@ -1150,8 +1095,8 @@ public abstract class Flux {
      * @return a current operator.
      */
     @Nonnull
-    public Flux addPropertyNamed(@Nonnull final String property) {
-        return addPropertyNamed(property, property);
+    public Flux withPropertyNamed(@Nonnull final String property) {
+        return withPropertyNamed(property, property);
     }
 
     /**
@@ -1161,11 +1106,11 @@ public abstract class Flux {
      * Flux flux = Flux
      *      .from("telegraf")
      *      .limit()
-     *          .addPropertyNamed("n", "limit")
+     *          .withPropertyNamed("n", "limit")
      *      .sum();
      *
      * FluxChain fluxChain = new FluxChain()
-     *      .addPropertyNamed("limit", 15);
+     *      .withPropertyNamed("limit", 15);
      *
      * flux.print(fluxChain);
      * </pre>
@@ -1175,7 +1120,7 @@ public abstract class Flux {
      * @return a current operator
      */
     @Nonnull
-    public Flux addPropertyNamed(@Nonnull final String fluxName, @Nonnull final String namedProperty) {
+    public Flux withPropertyNamed(@Nonnull final String fluxName, @Nonnull final String namedProperty) {
 
         Preconditions.checkNonEmptyString(fluxName, "Flux property name");
         Preconditions.checkNonEmptyString(namedProperty, "Named property");
@@ -1192,7 +1137,7 @@ public abstract class Flux {
      * Flux flux = Flux
      *      .from("telegraf")
      *      .limit()
-     *          .addPropertyValue("n", 5)
+     *          .withPropertyValue("n", 5)
      *      .sum();
      * </pre>
      *
@@ -1201,7 +1146,7 @@ public abstract class Flux {
      * @return a current operator
      */
     @Nonnull
-    public Flux addPropertyValue(@Nonnull final String propertyName, @Nullable final Object value) {
+    public Flux withPropertyValue(@Nonnull final String propertyName, @Nullable final Object value) {
 
         Preconditions.checkNonEmptyString(propertyName, "Flux property name");
 
@@ -1217,7 +1162,7 @@ public abstract class Flux {
      * Flux flux = Flux
      *      .from("telegraf")
      *      .window(5, ChronoUnit.MINUTES)
-     *          .addPropertyValueString("startCol", "differentCol")
+     *          .withPropertyValueEscaped("startCol", "differentCol")
      *      .sum();
      * </pre>
      *
@@ -1227,7 +1172,7 @@ public abstract class Flux {
      * @return a current operator
      */
     @Nonnull
-    public Flux addPropertyValue(@Nonnull final String property, final long amount, @Nonnull final ChronoUnit unit) {
+    public Flux withPropertyValue(@Nonnull final String property, final long amount, @Nonnull final ChronoUnit unit) {
 
         Preconditions.checkNonEmptyString(property, "Flux property name");
 
@@ -1243,7 +1188,7 @@ public abstract class Flux {
      * Flux flux = Flux
      *      .from("telegraf")
      *      .window(5, ChronoUnit.MINUTES)
-     *          .addPropertyValueString("startCol", "differentCol")
+     *          .withPropertyValueEscaped("startCol", "differentCol")
      *      .sum();
      * </pre>
      *
@@ -1252,7 +1197,7 @@ public abstract class Flux {
      * @return a current operator
      */
     @Nonnull
-    public Flux addPropertyValueString(@Nonnull final String property, @Nullable final String value) {
+    public Flux withPropertyValueEscaped(@Nonnull final String property, @Nullable final String value) {
 
         Preconditions.checkNonEmptyString(property, "Flux property name");
 

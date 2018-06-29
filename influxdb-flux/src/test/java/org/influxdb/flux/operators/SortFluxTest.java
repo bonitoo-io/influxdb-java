@@ -98,8 +98,8 @@ class SortFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .sort()
-                .addPropertyNamed("cols", "columnsParameter")
-                .addPropertyNamed("desc", "descParameter");
+                .withPropertyNamed("cols", "columnsParameter")
+                .withPropertyNamed("desc", "descParameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("columnsParameter", new String[]{"region", "tag"});

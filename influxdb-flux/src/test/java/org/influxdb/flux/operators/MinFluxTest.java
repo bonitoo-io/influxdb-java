@@ -31,7 +31,7 @@ class MinFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .min()
-                .addPropertyNamed("useStartTime", "parameter");
+                .withPropertyNamed("useStartTime", "parameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("parameter", true);

@@ -31,7 +31,7 @@ class MaxFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .max()
-                .addPropertyNamed("useStartTime", "parameter");
+                .withPropertyNamed("useStartTime", "parameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("parameter", true);

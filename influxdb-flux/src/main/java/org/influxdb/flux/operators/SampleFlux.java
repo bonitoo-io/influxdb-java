@@ -50,7 +50,7 @@ public final class SampleFlux extends AbstractParametrizedFlux {
      */
     @Nonnull
     public SampleFlux withN(final int n) {
-        addPropertyValue("n", n);
+        withPropertyValue("n", n);
 
         return this;
     }
@@ -61,7 +61,7 @@ public final class SampleFlux extends AbstractParametrizedFlux {
      */
     @Nonnull
     public SampleFlux withPos(final int pos) {
-        addPropertyValue("pos", pos);
+        withPropertyValue("pos", pos);
 
         return this;
     }

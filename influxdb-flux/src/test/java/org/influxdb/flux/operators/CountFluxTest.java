@@ -31,7 +31,7 @@ class CountFluxTest {
         Flux flux = Flux
                 .from("telegraf")
                 .count()
-                .addPropertyNamed("useStartTime", "parameter");
+                .withPropertyNamed("useStartTime", "parameter");
 
         HashMap<String, Object> parameters = new HashMap<>();
         parameters.put("parameter", true);

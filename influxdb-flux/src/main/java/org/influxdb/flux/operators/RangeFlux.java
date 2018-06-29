@@ -55,7 +55,7 @@ public final class RangeFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(start, "Start is required");
 
-        this.addPropertyValue("start", start);
+        this.withPropertyValue("start", start);
 
         return this;
     }
@@ -71,7 +71,7 @@ public final class RangeFlux extends AbstractParametrizedFlux {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
 
-        this.addPropertyValue("start", start, unit);
+        this.withPropertyValue("start", start, unit);
 
         return this;
     }
@@ -85,7 +85,7 @@ public final class RangeFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(stop, "Stop is required");
 
-        this.addPropertyValue("stop", stop);
+        this.withPropertyValue("stop", stop);
 
         return this;
     }
@@ -101,7 +101,7 @@ public final class RangeFlux extends AbstractParametrizedFlux {
         Objects.requireNonNull(stop, "Stop is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
 
-        this.addPropertyValue("stop", stop, unit);
+        this.withPropertyValue("stop", stop, unit);
 
         return this;
     }
