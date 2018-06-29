@@ -21,10 +21,18 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db: "telegraf") |&gt; range(start: -12h) |&gt; window(every: 10m) |&gt; max()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .window(15L, ChronoUnit.MINUTES)
+ *     .max();
  *
- *     from(db: "telegraf") |&gt; range(start: -12h) |&gt; window(every: 1m, period: 1h, start: -4h, round: 1s)
- *
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .window(15L, ChronoUnit.MINUTES,
+ *             20L, ChronoUnit.SECONDS,
+ *             -50L, ChronoUnit.WEEKS,
+ *             1L, ChronoUnit.SECONDS)
+ *     .max();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (27/06/2018 12:01)

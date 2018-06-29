@@ -714,45 +714,36 @@ Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
 
 ### Supported Functions
 
-
-- [count](https://github.com/influxdata/platform/tree/master/query#count) - counts the number of results
-- [first](https://github.com/influxdata/platform/tree/master/query#first) - returns the first result of the query
-- [group](https://github.com/influxdata/platform/tree/master/query#group) - groups results by a user-specified set of tags
-- [last](https://github.com/influxdata/platform/tree/master/query#last) - returns the last result of the query
-- [limit](https://github.com/influxdata/platform/tree/master/query#limit) - restricts the number of rows returned in the results
-- [max](https://github.com/influxdata/platform/tree/master/query#max) - returns the max value within the results
-- [mean](https://github.com/influxdata/platform/tree/master/query#mean) - returns the mean of the values within the results
-- [min](https://github.com/influxdata/platform/tree/master/query#min) - returns the min value within the results
-- [range](https://github.com/influxdata/platform/tree/master/query#range) - filters the results by time boundaries
-- [skew](https://github.com/influxdata/platform/tree/master/query#skew) - skew of the results
-- [sort](https://github.com/influxdata/platform/tree/master/query#sort) - sorts the results by the specified columns
-- [spread](https://github.com/influxdata/platform/tree/master/query#spread) - difference between min and max values
-- [stddev](https://github.com/influxdata/platform/tree/master/query#stddev) - standard Deviation of the results
-- [sum](https://github.com/influxdata/platform/tree/master/query#sum) - sum of the results
-- [toBool](https://github.com/influxdata/platform/tree/master/query#tobool) - convert a value to a bool
-- [toInt](https://github.com/influxdata/platform/tree/master/query#toint) - convert a value to a int
-- [toFloat](https://github.com/influxdata/platform/tree/master/query#tofloat) - convert a value to a float
-- [toDuration](https://github.com/influxdata/platform/tree/master/query#toduration) - convert a value to a duration
-- [toString](https://github.com/influxdata/platform/tree/master/query#tostring) - convert a value to a string
-- [toTime](https://github.com/influxdata/platform/tree/master/query#totime) - convert a value to a time
-- [toUInt](https://github.com/influxdata/platform/tree/master/query#touint) - convert a value to a uint
-- [window](https://github.com/influxdata/platform/tree/master/query#window) - partitions the results by a given time range
-
-#### From
+#### from
 
 Starting point for all queries. Get data from the specified database [[doc](https://github.com/influxdata/platform/tree/master/query#from)].
+- `db` - The name of the database to query [string].
+- `hosts` - [array of strings]
+
 ```java
 Flux flux = Flux.from("telegraf");
 ```
-
 ```java
 Flux flux = Flux
     .from("telegraf", new String[]{"192.168.1.200", "192.168.1.100"})
     .last();
 ```
-#### Filter
+
+#### count
+Counts the number of results [[doc](https://github.com/influxdata/platform/tree/master/query#count)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .count();
+```
+
+#### filter
 
 Filters the results using an expression [[doc](https://github.com/influxdata/platform/tree/master/query#filter)].
+- `fn` - Function to when filtering the records. The function must accept a single parameter which will be 
+the records and return a boolean value. Records which evaluate to true, will be included in the results [function(record) bool].
 
 Supported Record columns:
 - `_measurement`
@@ -771,6 +762,7 @@ Supported Record restrictions:
 - `greater`
 - `lessOrEqual`
 - `greaterOrEqual`
+- `custom` - the custom restriction by `Restrictions.value().custom(15L, "=~")`
 
 ```java
 Restrictions restrictions = Restrictions.and(
@@ -797,6 +789,257 @@ Flux flux = Flux
     .filter(restriction)
     .range(-4L, 2L, ChronoUnit.HOURS)
     .count();
+```
+
+#### first
+Returns the first result of the query [[doc](https://github.com/influxdata/platform/tree/master/query#first)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .first();
+```
+
+#### group
+Groups results by a user-specified set of tags [[doc](https://github.com/influxdata/platform/tree/master/query#group)].
+- `by` - Group by these specific tag names. Cannot be used with `except` option [array of strings].
+- `keep` - Keep specific tag keys that were not in `by` in the results [array of strings].
+- `except` - Group by all but these tag keys. Cannot be used with `by` option [array of strings].
+
+```java
+Flux.from("telegraf")
+    .range(-30L, ChronoUnit.MINUTES)
+    .groupBy(new String[]{"tag_a", "tag_b"});
+```
+```java
+// by + keep
+Flux.from("telegraf")
+    .range(-30L, ChronoUnit.MINUTES)
+    .groupBy(new String[]{"tag_a", "tag_b"}, new String[]{"tag_c"});
+```
+```java
+// except + keep
+Flux.from("telegraf")
+    .range(-30L, ChronoUnit.MINUTES)
+    .groupExcept(new String[]{"tag_a"}, new String[]{"tag_b", "tag_c"});
+```
+
+#### last
+Returns the last result of the query [[doc](https://github.com/influxdata/platform/tree/master/query#last)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .last();
+```
+
+#### limit
+Restricts the number of rows returned in the results [[doc](https://github.com/influxdata/platform/tree/master/query#limit)].
+- `n` - The maximum number of records to output [int]. 
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .limit(5);
+```
+
+#### max
+Returns the max value within the results [[doc](https://github.com/influxdata/platform/tree/master/query#max)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .range(-12L, ChronoUnit.HOURS)
+    .window(10L, ChronoUnit.MINUTES)
+    .max();
+```
+
+#### mean
+Returns the mean of the values within the results [[doc](https://github.com/influxdata/platform/tree/master/query#mean)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .range(-12L, ChronoUnit.HOURS)
+    .window(10L, ChronoUnit.MINUTES)
+    .mean();
+```
+
+#### min
+Returns the min value within the results [[doc](https://github.com/influxdata/platform/tree/master/query#min)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .range(-12L, ChronoUnit.HOURS)
+    .window(10L, ChronoUnit.MINUTES)
+    .min();
+```
+
+#### range
+Filters the results by time boundaries [[doc](https://github.com/influxdata/platform/tree/master/query#range)].
+- `start` - Specifies the oldest time to be included in the results [duration or timestamp].
+- `stop` - Specifies the exclusive newest time to be included in the results. Defaults to `"now"` [duration or timestamp].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .range(-12L, -1L, ChronoUnit.HOURS)
+```
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .range(Instant.now().minus(4, ChronoUnit.HOURS),
+           Instant.now().minus(15, ChronoUnit.MINUTES)
+    );
+```
+
+#### skew
+Skew of the results [[doc](https://github.com/influxdata/platform/tree/master/query#skew)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .range(-30L, -15L, ChronoUnit.MINUTES)
+    .skew();
+```
+
+#### sort
+Sorts the results by the specified columns. Default sort is ascending [[doc](https://github.com/influxdata/platform/tree/master/query#skew)].
+- `cols` - List of columns used to sort. Precedence from left to right. Default is `"value"` [array of strings].
+- `desc` - Sort results descending. Default false [bool].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .sort(new String[]{"region", "value"});
+```
+```java
+ Flux flux = Flux
+    .from("telegraf")
+    .sort(true);
+```
+
+#### spread
+Difference between min and max values [[doc](https://github.com/influxdata/platform/tree/master/query#spread)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .spread();
+```
+
+#### stddev
+Standard Deviation of the results [[doc](https://github.com/influxdata/platform/tree/master/query#stddev)].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .stddev();
+```
+
+#### sum
+Sum of the results [[doc](https://github.com/influxdata/platform/tree/master/query#sum)].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .sum();
+```
+
+#### toBool
+Convert a value to a bool [[doc](https://github.com/influxdata/platform/tree/master/query#tobool)].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .filter(and(measurement().equal("mem"), field().equal("used")))
+    .toBool();
+```
+
+#### toInt
+Convert a value to a int [[doc](https://github.com/influxdata/platform/tree/master/query#toint)].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .filter(and(measurement().equal("mem"), field().equal("used")))
+    .toInt();
+```
+
+#### toFloat
+Convert a value to a float [[doc](https://github.com/influxdata/platform/tree/master/query#tofloat)].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .filter(and(measurement().equal("mem"), field().equal("used")))
+    .toFloat();
+```
+
+#### toDuration
+Convert a value to a duration [[doc](https://github.com/influxdata/platform/tree/master/query#toduration)].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .filter(and(measurement().equal("mem"), field().equal("used")))
+    .toDuration();
+```
+
+#### toString
+Convert a value to a string [[doc](https://github.com/influxdata/platform/tree/master/query#tostring)].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .filter(and(measurement().equal("mem"), field().equal("used")))
+    .toString();
+```
+
+#### toTime
+Convert a value to a time [[doc](https://github.com/influxdata/platform/tree/master/query#totime)].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .filter(and(measurement().equal("mem"), field().equal("used")))
+    .toTime();
+```
+
+#### toUInt
+Convert a value to a uint [[doc](https://github.com/influxdata/platform/tree/master/query#touint)].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .filter(and(measurement().equal("mem"), field().equal("used")))
+    .toUInt();
+```
+
+#### window
+Partitions the results by a given time range [[doc](https://github.com/influxdata/platform/tree/master/query#window)].
+- `every` - Duration of time between windows. Defaults to `period's` value [duration]. 
+- `period` - Duration of the windowed partition. Defaults to `period's` value [duration]. 
+- `start` - The time of the initial window partition [time].
+- `round` - Rounds a window's bounds to the nearest duration. Defaults to `every's` value [duration].
+- `column` - Name of the time column to use. Defaults to `_time` [string].
+- `startCol` - Name of the column containing the window start time. Defaults to `_start` [string].
+- `stopCol` - Name of the column containing the window stop time. Defaults to `_stop` [string].
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .window(15L, ChronoUnit.MINUTES)
+    .max();
+```
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .window(15L, ChronoUnit.MINUTES,
+            20L, ChronoUnit.SECONDS,
+            -50L, ChronoUnit.WEEKS,
+            1L, ChronoUnit.SECONDS)
+    .max();
 ```
 
 ### Examples

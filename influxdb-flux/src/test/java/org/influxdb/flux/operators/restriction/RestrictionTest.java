@@ -58,4 +58,9 @@ class RestrictionTest {
         Assertions.assertThat(Restrictions.column("custom_column").equal(20D))
                 .hasToString("r[\"custom_column\"] == 20.0");
     }
+
+    @Test
+    void custom() {
+        Assertions.assertThat(Restrictions.value().custom(15L, "=~")).hasToString("r[\"_value\"] =~ 15");
+    }
 }

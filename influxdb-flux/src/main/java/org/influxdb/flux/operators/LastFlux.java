@@ -15,7 +15,9 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db:"telegraf") |&gt; last()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .last();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (25/06/2018 09:43)

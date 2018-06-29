@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  *
  * <h3>Options</h3>
  * <ul>
- * <li><b>db</b> - string from(db:"telegraf")</li>
+ * <li><b>db</b> - The name of the database to query [string]</li>
  * <li><b>hosts</b> - array of strings from(db:"telegraf", hosts:["host1", "host2"])</li>
  * </ul>
  *

@@ -19,10 +19,9 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db:"telegraf")
- *          |&gt; filter(fn: (r) =&gt; r["_measurement"] == "system" AND r["_field"] == "uptime")
- *          |&gt; range(start:-12h)
- *          |&gt; sort(cols:["region", "host", "value"])
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .sort(new String[]{"region", "value"});
  *
  *     from(db:"telegraf")
  *          |&gt; filter(fn: (r) =&gt; r["_measurement"] == "system" AND r["_field"] == "uptime")

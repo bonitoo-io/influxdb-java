@@ -17,11 +17,17 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db: "telegraf") |&gt; range(start: -30m) |&gt; group(by: ["tag_a", "tag_b"])
+ *     Flux.from("telegraf")
+ *                 .range(-30L, ChronoUnit.MINUTES)
+ *                 .groupBy(new String[]{"tag_a", "tag_b"});
  *
- *     from(db: "telegraf") |&gt; range(start: -30m) |&gt; group(by: ["tag_a", "tag_b"], keep:["tag_c"])
+ *     Flux.from("telegraf")
+ *                 .range(-30L, ChronoUnit.MINUTES)
+ *                 .groupBy(new String[]{"tag_a", "tag_b"}, new String[]{"tag_c"});
  *
- *     from(db: "telegraf") |&gt; range(start: -30m) |&gt; group(except: ["tag_a"], keep:["tag_b", "tag_c"])
+ *     Flux.from("telegraf")
+ *                 .range(-30L, ChronoUnit.MINUTES)
+ *                 .groupExcept(new String[]{"tag_a"}, new String[]{"tag_b", "tag_c"});
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (25/06/2018 14:56)

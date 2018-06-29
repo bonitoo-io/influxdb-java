@@ -15,13 +15,11 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db:"foo")
- *          |&gt; filter(fn: (r) =&gt; r["_measurement"]=="cpu" AND
- *                 r["_field"] == "usage_system" AND
- *                 r["service"] == "app-server")
- *          |&gt; range(start:-12h)
- *          |&gt; window(every:10m)
- *          |&gt; max()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .range(-12L, ChronoUnit.HOURS)
+ *     .window(10L, ChronoUnit.MINUTES)
+ *     .max();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (25/06/2018 09:49)

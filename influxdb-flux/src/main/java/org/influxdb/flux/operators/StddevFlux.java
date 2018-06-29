@@ -15,7 +15,9 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db: "telegraf") |&gt; range(start: -30m, stop: -15m) |&gt; stddev()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .stddev();
  * </pre>
  *
  *

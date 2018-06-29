@@ -15,11 +15,11 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db:"foo")
- *          |&gt; filter(fn: (r) =&gt; r["_measurement"] == "mem" AND r["_field"] == "used_percent")
- *          |&gt; range(start:-12h)
- *          |&gt; window(every:10m)
- *          |&gt; mean()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .range(-12L, ChronoUnit.HOURS)
+ *     .window(10L, ChronoUnit.MINUTES)
+ *     .mean();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (25/06/2018 09:55)

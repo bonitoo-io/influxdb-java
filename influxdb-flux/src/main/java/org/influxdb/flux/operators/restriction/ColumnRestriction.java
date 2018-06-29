@@ -29,7 +29,7 @@ public final class ColumnRestriction {
      */
     @Nonnull
     public Restrictions equal(@Nonnull final Object value) {
-        return new OperatorRestrictions(fieldName, value, "==");
+        return custom(value, "==");
     }
 
     /**
@@ -40,7 +40,7 @@ public final class ColumnRestriction {
      */
     @Nonnull
     public Restrictions notEqual(@Nonnull final Object value) {
-        return new OperatorRestrictions(fieldName, value, "!=");
+        return custom(value, "!=");
     }
 
     /**
@@ -51,7 +51,7 @@ public final class ColumnRestriction {
      */
     @Nonnull
     public Restrictions less(@Nonnull final Object value) {
-        return new OperatorRestrictions(fieldName, value, "<");
+        return custom(value, "<");
     }
 
     /**
@@ -62,7 +62,7 @@ public final class ColumnRestriction {
      */
     @Nonnull
     public Restrictions greater(@Nonnull final Object value) {
-        return new OperatorRestrictions(fieldName, value, ">");
+        return custom(value, ">");
     }
 
     /**
@@ -73,7 +73,7 @@ public final class ColumnRestriction {
      */
     @Nonnull
     public Restrictions lessOrEqual(@Nonnull final Object value) {
-        return new OperatorRestrictions(fieldName, value, "<=");
+        return custom(value, "<=");
     }
 
     /**
@@ -84,7 +84,19 @@ public final class ColumnRestriction {
      */
     @Nonnull
     public Restrictions greaterOrEqual(@Nonnull final Object value) {
-        return new OperatorRestrictions(fieldName, value, ">=");
+        return custom(value, ">=");
+    }
+
+    /**
+     * Is column of record "{@code operator}" than {@code value}?
+     *
+     * @param value the value to compare
+     * @param operator the restriction operator
+     * @return restriction
+     */
+    @Nonnull
+    public Restrictions custom(@Nonnull final Object value, @Nonnull final String operator) {
+        return new OperatorRestrictions(fieldName, value, operator);
     }
 
     private final class OperatorRestrictions extends Restrictions {

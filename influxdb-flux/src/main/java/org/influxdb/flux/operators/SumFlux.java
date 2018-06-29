@@ -14,7 +14,9 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db: "telegraf") |&gt; range(start: -30m, stop: -15m) |&gt; sum()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .sum();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (25/06/2018 10:19)

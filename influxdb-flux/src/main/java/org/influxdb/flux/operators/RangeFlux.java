@@ -19,10 +19,9 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db:"foo")
- *          |&gt; filter(fn: (r) =&gt; r["_measurement"] == "cpu" AND
- *                    r["_field"] == "usage_system")
- *          |&gt; range(start:-12h, stop: -15m)
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .range(-12L, -1L, ChronoUnit.HOURS)
  *
  *    from(db:"foo")
  *          |&gt; range(start: 2018-05-23T13:09:22.885021542Z)

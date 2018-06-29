@@ -15,7 +15,9 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db: "telegraf") |&gt; range(start: -30m) |&gt; spread()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .spread();
  * </pre>
  *
  *

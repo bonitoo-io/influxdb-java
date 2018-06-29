@@ -9,7 +9,10 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db: "telegraf") |&gt; filter(fn:(r) =&gt; r._measurement == "mem" and r._field == "used") |&gt; toBool()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .filter(and(measurement().equal("mem"), field().equal("used")))
+ *     .toBool();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (25/06/2018 15:57)

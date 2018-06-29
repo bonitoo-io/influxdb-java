@@ -9,7 +9,10 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db: "telegraf") |&gt; filter(fn:(r) =&gt; r._measurement == "mem" and r._field == "used") |&gt; toFloat()
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .filter(and(measurement().equal("mem"), field().equal("used")))
+ *     .toFloat();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (25/06/2018 16:06)

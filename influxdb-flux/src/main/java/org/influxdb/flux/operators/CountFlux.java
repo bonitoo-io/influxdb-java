@@ -14,7 +14,9 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
- *     from(db:"telegraf") |&gt; count()
+ * Flux flux = Flux
+ *      .from("telegraf")
+ *      .count();
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (22/06/2018 11:06)
