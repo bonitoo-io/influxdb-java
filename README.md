@@ -939,6 +939,21 @@ Flux flux = Flux
     .set("location", "Carolina");
 ```
 
+#### shift
+Shift add a fixed duration to time columns [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#shift)].
+- `shift` - The amount to add to each time value [duration].
+- `columns` - The list of all columns that should be shifted. Defaults `["_start", "_stop", "_time"]` [array of strings].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .shift(10L, ChronoUnit.HOURS);
+```
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .shift(10L, ChronoUnit.HOURS, new String[]{"_time", "custom"});
+```
+
 #### skew
 Skew of the results [[doc](https://github.com/influxdata/platform/tree/master/query#skew)].
 - `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].

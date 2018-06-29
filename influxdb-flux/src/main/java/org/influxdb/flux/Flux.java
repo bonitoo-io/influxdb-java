@@ -14,6 +14,7 @@ import org.influxdb.flux.operators.MinFlux;
 import org.influxdb.flux.operators.RangeFlux;
 import org.influxdb.flux.operators.SampleFlux;
 import org.influxdb.flux.operators.SetFlux;
+import org.influxdb.flux.operators.ShiftFlux;
 import org.influxdb.flux.operators.SkewFlux;
 import org.influxdb.flux.operators.SortFlux;
 import org.influxdb.flux.operators.SpreadFlux;
@@ -68,7 +69,7 @@ import java.util.Objects;
  * <li>{@link RangeFlux}</li>
  * <li>{@link SampleFlux}</li>
  * <li>{@link SetFlux}</li>
- * <li>shift - SPEC</li>
+ * <li>{@link ShiftFlux}</li>
  * <li>{@link SkewFlux}</li>
  * <li>{@link SortFlux}</li>
  * <li>{@link SpreadFlux}</li>
@@ -629,6 +630,72 @@ public abstract class Flux {
     @Nonnull
     public SetFlux set(@Nonnull final String key, @Nonnull final String value) {
         return new SetFlux(this).withKeyValue(key, value);
+    }
+
+    /**
+     * Shift add a fixed duration to time columns.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link ShiftFlux#withShift(Long, ChronoUnit)}</li>
+     * <li>{@link ShiftFlux#withColumns(String[])}</li>
+     * <li>{@link ShiftFlux#withColumns(Collection)} )}</li>
+     * <li>{@link ShiftFlux#withPropertyNamed(String)}</li>
+     * <li>{@link ShiftFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link ShiftFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link ShiftFlux}
+     */
+    @Nonnull
+    public ShiftFlux shift() {
+        return new ShiftFlux(this);
+    }
+
+    /**
+     * Shift add a fixed duration to time columns.
+     *
+     * @param amount The amount to add to each time value
+     * @param unit   a {@code ChronoUnit} determining how to interpret the {@code amount} parameter
+     * @return {@link ShiftFlux}
+     */
+    @Nonnull
+    public ShiftFlux shift(@Nonnull final Long amount,
+                           @Nonnull final ChronoUnit unit) {
+
+        return new ShiftFlux(this).withShift(amount, unit);
+    }
+
+    /**
+     * Shift add a fixed duration to time columns.
+     *
+     * @param amount  The amount to add to each time value
+     * @param unit    a {@code ChronoUnit} determining how to interpret the {@code amount} parameter
+     * @param columns The list of all columns that should be shifted.
+     * @return {@link ShiftFlux}
+     */
+    @Nonnull
+    public ShiftFlux shift(@Nonnull final Long amount,
+                           @Nonnull final ChronoUnit unit,
+                           @Nonnull final String[] columns) {
+
+        return new ShiftFlux(this).withShift(amount, unit).withColumns(columns);
+    }
+
+    /**
+     * Shift add a fixed duration to time columns.
+     *
+     * @param amount  The amount to add to each time value
+     * @param unit    a {@code ChronoUnit} determining how to interpret the {@code amount} parameter
+     * @param columns The list of all columns that should be shifted.
+     * @return {@link ShiftFlux}
+     */
+    @Nonnull
+    public ShiftFlux shift(@Nonnull final Long amount,
+                           @Nonnull final ChronoUnit unit,
+                           @Nonnull final Collection<String> columns) {
+
+        return new ShiftFlux(this).withShift(amount, unit).withColumns(columns);
     }
 
     /**
