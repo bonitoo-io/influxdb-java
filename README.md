@@ -898,6 +898,23 @@ Flux flux = Flux
     );
 ```
 
+#### sample
+Sample values from a table [[doc](https://github.com/influxdata/platform/tree/master/query#sample)].
+- `n` - Sample every Nth element [int].
+- `pos` - Position offset from start of results to begin sampling. `pos` must be less than `n`. If `pos` less than 0, a random offset is used. Default is -1 (random offset) [int].
+```java
+Flux flux = Flux.from("telegraf")
+    .filter(and(measurement().equal("cpu"), field().equal("usage_system")))
+    .range(-1L, ChronoUnit.DAYS)
+    .sample(10);
+```
+```java
+Flux flux = Flux.from("telegraf")
+    .filter(and(measurement().equal("cpu"), field().equal("usage_system")))
+    .range(-1L, ChronoUnit.DAYS)
+    .sample(5, 1);
+```
+
 #### skew
 Skew of the results [[doc](https://github.com/influxdata/platform/tree/master/query#skew)].
 - `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].

@@ -12,6 +12,7 @@ import org.influxdb.flux.operators.MaxFlux;
 import org.influxdb.flux.operators.MeanFlux;
 import org.influxdb.flux.operators.MinFlux;
 import org.influxdb.flux.operators.RangeFlux;
+import org.influxdb.flux.operators.SampleFlux;
 import org.influxdb.flux.operators.SkewFlux;
 import org.influxdb.flux.operators.SortFlux;
 import org.influxdb.flux.operators.SpreadFlux;
@@ -63,7 +64,7 @@ import java.util.Objects;
  * <li>{@link MinFlux}</li>
  * <li>percentile - SPEC</li>
  * <li>{@link RangeFlux}</li>
- * <li>sample - UNSUPPORTED</li>
+ * <li>{@link SampleFlux}</li>
  * <li>set - UNSUPPORTED</li>
  * <li>shift - SPEC</li>
  * <li>{@link SkewFlux}</li>
@@ -79,7 +80,7 @@ import java.util.Objects;
  * <li>{@link ToStringFlux}</li>
  * <li>{@link ToTimeFlux}</li>
  * <li>{@link ToUIntFlux}</li>
- * <li>window - UNSUPPORTED</li>
+ * <li>{@link WindowFlux}</li>
  * <li>yield - SPEC</li>
  * <li>toHttp - UNSUPPORTED</li>
  * <li>toKafka - UNSUPPORTED</li>
@@ -174,8 +175,8 @@ public abstract class Flux {
 
     /**
      * Returns the first result of the query.
-     * @param restrictions filter restrictions
      *
+     * @param restrictions filter restrictions
      * @return {@link FilterFlux}
      */
     @Nonnull
@@ -534,6 +535,52 @@ public abstract class Flux {
         return new RangeFlux(this)
                 .addPropertyValue("start", start, unit)
                 .addPropertyValue("stop", stop, unit);
+    }
+
+    /**
+     * Sample values from a table.
+     * <p>
+     * The parameters had to be defined by {@link Flux#addPropertyNamed(String)} or
+     * {@link Flux#addPropertyNamed(String, String)}
+     *
+     * @return {@link SampleFlux}
+     */
+    @Nonnull
+    public SampleFlux sample() {
+
+        return new SampleFlux(this);
+    }
+
+    /**
+     * Sample values from a table.
+     *
+     * @param n   Sample every Nth element.
+     * @return {@link SampleFlux}
+     */
+    @Nonnull
+    public SampleFlux sample(final int n) {
+
+        return new SampleFlux(this)
+                .withN(n);
+    }
+
+    /**
+     * Sample values from a table.
+     *
+     * @param n   Sample every Nth element.
+     * @param pos Position offset from start of results to begin sampling. Must be less than @{code n}.
+     * @return {@link SampleFlux}
+     */
+    @Nonnull
+    public SampleFlux sample(final int n, final int pos) {
+
+        if (pos >= n) {
+            throw new IllegalArgumentException("pos must be less than n");
+        }
+
+        return new SampleFlux(this)
+                .withN(n)
+                .withPos(pos);
     }
 
     /**
