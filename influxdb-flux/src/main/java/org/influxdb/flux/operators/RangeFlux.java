@@ -3,6 +3,9 @@ package org.influxdb.flux.operators;
 import org.influxdb.flux.Flux;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#range">range</a> - Filters the results by
@@ -41,5 +44,65 @@ public final class RangeFlux extends AbstractParametrizedFlux {
     @Override
     String operatorName() {
         return "range";
+    }
+
+    /**
+     * @param start Specifies the oldest time to be included in the results
+     * @return this
+     */
+    @Nonnull
+    public RangeFlux withStart(@Nonnull final Instant start) {
+
+        Objects.requireNonNull(start, "Start is required");
+
+        this.addPropertyValue("start", start);
+
+        return this;
+    }
+
+    /**
+     * @param start Specifies the oldest time to be included in the results
+     * @param unit  a {@code ChronoUnit} determining how to interpret the {@code start} parameter
+     * @return this
+     */
+    @Nonnull
+    public RangeFlux withStart(@Nonnull final Long start, @Nonnull final ChronoUnit unit) {
+
+        Objects.requireNonNull(start, "Start is required");
+        Objects.requireNonNull(unit, "ChronoUnit is required");
+
+        this.addPropertyValue("start", start, unit);
+
+        return this;
+    }
+
+    /**
+     * @param stop Specifies the exclusive newest time to be included in the results
+     * @return this
+     */
+    @Nonnull
+    public RangeFlux withStop(@Nonnull final Instant stop) {
+
+        Objects.requireNonNull(stop, "Stop is required");
+
+        this.addPropertyValue("stop", stop);
+
+        return this;
+    }
+
+    /**
+     * @param stop Specifies the exclusive newest time to be included in the results
+     * @param unit  a {@code ChronoUnit} determining how to interpret the {@code start} parameter
+     * @return this
+     */
+    @Nonnull
+    public RangeFlux withStop(@Nonnull final Long stop, @Nonnull final ChronoUnit unit) {
+
+        Objects.requireNonNull(stop, "Stop is required");
+        Objects.requireNonNull(unit, "ChronoUnit is required");
+
+        this.addPropertyValue("stop", stop, unit);
+
+        return this;
     }
 }

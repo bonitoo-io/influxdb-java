@@ -28,6 +28,12 @@ public final class CountFlux extends AbstractParametrizedFlux {
         super(source);
     }
 
+    @Nonnull
+    @Override
+    String operatorName() {
+        return "count";
+    }
+
     /**
      * @param useStartTime Use the start time as the timestamp of the resulting aggregate
      * @return this
@@ -38,11 +44,5 @@ public final class CountFlux extends AbstractParametrizedFlux {
         this.addPropertyValue("useStartTime", useStartTime);
 
         return this;
-    }
-
-    @Nonnull
-    @Override
-    String operatorName() {
-        return "count";
     }
 }

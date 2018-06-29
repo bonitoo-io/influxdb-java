@@ -48,5 +48,4 @@ public final class MaxFlux extends AbstractParametrizedFlux {
 
         return this;
     }
-
 }

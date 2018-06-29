@@ -218,7 +218,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public Flux group() {
+    public GroupFlux group() {
 
         return new GroupFlux(this);
     }
@@ -230,11 +230,10 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public Flux groupBy(@Nonnull final Collection<String> groupBy) {
+    public GroupFlux groupBy(@Nonnull final Collection<String> groupBy) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
-        return new GroupFlux(this)
-                .addPropertyValue("by", groupBy);
+        return new GroupFlux(this).withBy(groupBy);
     }
 
     /**
@@ -245,13 +244,11 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public Flux groupBy(@Nonnull final Collection<String> groupBy, @Nonnull final Collection<String> keep) {
+    public GroupFlux groupBy(@Nonnull final Collection<String> groupBy, @Nonnull final Collection<String> keep) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        return new GroupFlux(this)
-                .addPropertyValue("by", groupBy)
-                .addPropertyValue("keep", keep);
+        return new GroupFlux(this).withBy(groupBy).withKeep(keep);
     }
 
     /**
@@ -261,11 +258,10 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public Flux groupBy(@Nonnull final String[] groupBy) {
+    public GroupFlux groupBy(@Nonnull final String[] groupBy) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
-        return new GroupFlux(this)
-                .addPropertyValue("by", groupBy);
+        return new GroupFlux(this).withBy(groupBy);
     }
 
     /**
@@ -276,13 +272,11 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public Flux groupBy(@Nonnull final String[] groupBy, @Nonnull final String[] keep) {
+    public GroupFlux groupBy(@Nonnull final String[] groupBy, @Nonnull final String[] keep) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        return new GroupFlux(this)
-                .addPropertyValue("by", groupBy)
-                .addPropertyValue("keep", keep);
+        return new GroupFlux(this).withBy(groupBy).withKeep(keep);
     }
 
     /**
@@ -292,42 +286,10 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public Flux groupExcept(@Nonnull final Collection<String> except) {
+    public GroupFlux groupExcept(@Nonnull final Collection<String> except) {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
 
-        return new GroupFlux(this)
-                .addPropertyValue("except", except);
-    }
-
-    /**
-     * Groups results by a user-specified set of tags.
-     *
-     * @param except Group by all but these tag keys Cannot be used.
-     * @param keep   Keep specific tag keys that were not in {@code groupBy} in the results.
-     * @return {@link GroupFlux}
-     */
-    @Nonnull
-    public Flux groupExcept(@Nonnull final Collection<String> except, @Nonnull final Collection<String> keep) {
-        Objects.requireNonNull(except, "GroupBy Except Columns are required");
-        Objects.requireNonNull(keep, "Keep Columns are required");
-
-        return new GroupFlux(this)
-                .addPropertyValue("except", except)
-                .addPropertyValue("keep", keep);
-    }
-
-    /**
-     * Groups results by a user-specified set of tags.
-     *
-     * @param except Group by all but these tag keys Cannot be used.
-     * @return {@link GroupFlux}
-     */
-    @Nonnull
-    public Flux groupExcept(@Nonnull final String[] except) {
-        Objects.requireNonNull(except, "GroupBy Except Columns are required");
-
-        return new GroupFlux(this)
-                .addPropertyValue("except", except);
+        return new GroupFlux(this).withExcept(except);
     }
 
     /**
@@ -338,13 +300,39 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public Flux groupExcept(@Nonnull final String[] except, @Nonnull final String[] keep) {
+    public GroupFlux groupExcept(@Nonnull final Collection<String> except, @Nonnull final Collection<String> keep) {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
-        return new GroupFlux(this)
-                .addPropertyValue("except", except)
-                .addPropertyValue("keep", keep);
+        return new GroupFlux(this).withExcept(except).withKeep(keep);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param except Group by all but these tag keys Cannot be used.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public GroupFlux groupExcept(@Nonnull final String[] except) {
+        Objects.requireNonNull(except, "GroupBy Except Columns are required");
+
+        return new GroupFlux(this).withExcept(except);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
+     * @param except Group by all but these tag keys Cannot be used.
+     * @param keep   Keep specific tag keys that were not in {@code groupBy} in the results.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public GroupFlux groupExcept(@Nonnull final String[] except, @Nonnull final String[] keep) {
+        Objects.requireNonNull(except, "GroupBy Except Columns are required");
+        Objects.requireNonNull(keep, "Keep Columns are required");
+
+        return new GroupFlux(this).withExcept(except).withKeep(keep);
     }
 
     /**
@@ -377,7 +365,7 @@ public abstract class Flux {
      * @return {@link LimitFlux}
      */
     @Nonnull
-    public Flux limit() {
+    public LimitFlux limit() {
 
         return new LimitFlux(this);
     }
@@ -389,11 +377,9 @@ public abstract class Flux {
      * @return {@link LimitFlux}
      */
     @Nonnull
-    public Flux limit(final int numberOfResults) {
+    public LimitFlux limit(final int numberOfResults) {
 
-        Preconditions.checkPositiveNumber(numberOfResults, "Number of results");
-
-        return new LimitFlux(this).addPropertyValue("n", numberOfResults);
+        return new LimitFlux(this).withN(numberOfResults);
     }
 
     /**
@@ -468,7 +454,7 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public Flux range() {
+    public RangeFlux range() {
 
         return new RangeFlux(this);
     }
@@ -480,10 +466,10 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public Flux range(@Nonnull final Instant start) {
+    public RangeFlux range(@Nonnull final Instant start) {
         Objects.requireNonNull(start, "Start is required");
 
-        return new RangeFlux(this).addPropertyValue("start", start);
+        return new RangeFlux(this).withStart(start);
     }
 
     /**
@@ -494,13 +480,11 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public Flux range(@Nonnull final Instant start, @Nonnull final Instant stop) {
+    public RangeFlux range(@Nonnull final Instant start, @Nonnull final Instant stop) {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(stop, "Stop is required");
 
-        return new RangeFlux(this)
-                .addPropertyValue("start", start)
-                .addPropertyValue("stop", stop);
+        return new RangeFlux(this).withStart(start).withStop(stop);
     }
 
     /**
@@ -511,30 +495,28 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public Flux range(@Nonnull final Long start, @Nonnull final ChronoUnit unit) {
+    public RangeFlux range(@Nonnull final Long start, @Nonnull final ChronoUnit unit) {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
 
-        return new RangeFlux(this)
-                .addPropertyValue("start", start, unit);
+        return new RangeFlux(this).withStart(start, unit);
     }
 
     /**
      * Filters the results by time boundaries.
      *
      * @param start Specifies the oldest time to be included in the results
+     * @param stop  Specifies the exclusive newest time to be included in the results
      * @param unit  a {@code ChronoUnit} determining how to interpret the {@code start} and {@code stop} parameter
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public Flux range(@Nonnull final Long start, @Nonnull final Long stop, @Nonnull final ChronoUnit unit) {
+    public RangeFlux range(@Nonnull final Long start, @Nonnull final Long stop, @Nonnull final ChronoUnit unit) {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(stop, "Stop is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
 
-        return new RangeFlux(this)
-                .addPropertyValue("start", start, unit)
-                .addPropertyValue("stop", stop, unit);
+        return new RangeFlux(this).withStart(start, unit).withStop(stop, unit);
     }
 
     /**
@@ -554,7 +536,7 @@ public abstract class Flux {
     /**
      * Sample values from a table.
      *
-     * @param n   Sample every Nth element.
+     * @param n Sample every Nth element.
      * @return {@link SampleFlux}
      */
     @Nonnull
@@ -610,7 +592,7 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public Flux sort() {
+    public SortFlux sort() {
         return new SortFlux(this);
     }
 
@@ -621,8 +603,8 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public Flux sort(final boolean desc) {
-        return new SortFlux(this).addPropertyValue("desc", desc);
+    public SortFlux sort(final boolean desc) {
+        return new SortFlux(this).withDesc(desc);
     }
 
     /**
@@ -632,10 +614,10 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public Flux sort(@Nonnull final String[] columns) {
+    public SortFlux sort(@Nonnull final String[] columns) {
         Objects.requireNonNull(columns, "Columns are required");
 
-        return new SortFlux(this).addPropertyValue("cols", columns);
+        return new SortFlux(this).withCols(columns);
     }
 
     /**
@@ -645,26 +627,10 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public Flux sort(@Nonnull final Collection<String> columns) {
+    public SortFlux sort(@Nonnull final Collection<String> columns) {
         Objects.requireNonNull(columns, "Columns are required");
 
-        return new SortFlux(this).addPropertyValue("cols", columns);
-    }
-
-    /**
-     * Sorts the results by the specified columns Default sort is ascending.
-     *
-     * @param columns columns used to sort
-     * @param desc    use the descending sorting
-     * @return {@link SortFlux}
-     */
-    @Nonnull
-    public Flux sort(@Nonnull final String[] columns, final boolean desc) {
-        Objects.requireNonNull(columns, "Columns are required");
-
-        return new SortFlux(this)
-                .addPropertyValue("cols", columns)
-                .addPropertyValue("desc", desc);
+        return new SortFlux(this).withCols(columns);
     }
 
     /**
@@ -675,12 +641,28 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public Flux sort(@Nonnull final Collection<String> columns, final boolean desc) {
+    public SortFlux sort(@Nonnull final String[] columns, final boolean desc) {
         Objects.requireNonNull(columns, "Columns are required");
 
         return new SortFlux(this)
-                .addPropertyValue("cols", columns)
-                .addPropertyValue("desc", desc);
+                .withCols(columns)
+                .withDesc(desc);
+    }
+
+    /**
+     * Sorts the results by the specified columns Default sort is ascending.
+     *
+     * @param columns columns used to sort
+     * @param desc    use the descending sorting
+     * @return {@link SortFlux}
+     */
+    @Nonnull
+    public SortFlux sort(@Nonnull final Collection<String> columns, final boolean desc) {
+        Objects.requireNonNull(columns, "Columns are required");
+
+        return new SortFlux(this)
+                .withCols(columns)
+                .withDesc(desc);
     }
 
     /**
@@ -752,7 +734,7 @@ public abstract class Flux {
      * @return {@link ToBoolFlux}
      */
     @Nonnull
-    public Flux toBool() {
+    public ToBoolFlux toBool() {
         return new ToBoolFlux(this);
     }
 
@@ -762,7 +744,7 @@ public abstract class Flux {
      * @return {@link ToIntFlux}
      */
     @Nonnull
-    public Flux toInt() {
+    public ToIntFlux toInt() {
         return new ToIntFlux(this);
     }
 
@@ -772,7 +754,7 @@ public abstract class Flux {
      * @return {@link ToFloatFlux}
      */
     @Nonnull
-    public Flux toFloat() {
+    public ToFloatFlux toFloat() {
         return new ToFloatFlux(this);
     }
 
@@ -782,7 +764,7 @@ public abstract class Flux {
      * @return {@link ToDurationFlux}
      */
     @Nonnull
-    public Flux toDuration() {
+    public ToDurationFlux toDuration() {
         return new ToDurationFlux(this);
     }
 
@@ -792,7 +774,7 @@ public abstract class Flux {
      * @return {@link ToStringFlux}
      */
     @Nonnull
-    public Flux toStringConvert() {
+    public ToStringFlux toStringConvert() {
         return new ToStringFlux(this);
     }
 
@@ -802,7 +784,7 @@ public abstract class Flux {
      * @return {@link ToTimeFlux}
      */
     @Nonnull
-    public Flux toTime() {
+    public ToTimeFlux toTime() {
         return new ToTimeFlux(this);
     }
 
@@ -812,7 +794,7 @@ public abstract class Flux {
      * @return {@link ToUIntFlux}
      */
     @Nonnull
-    public Flux toUInt() {
+    public ToUIntFlux toUInt() {
         return new ToUIntFlux(this);
     }
 

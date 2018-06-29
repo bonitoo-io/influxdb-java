@@ -48,5 +48,4 @@ public final class MeanFlux extends AbstractParametrizedFlux {
 
         return this;
     }
-
 }

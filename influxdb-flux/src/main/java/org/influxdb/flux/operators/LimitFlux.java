@@ -1,6 +1,7 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
+import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 
@@ -33,5 +34,19 @@ public final class LimitFlux extends AbstractParametrizedFlux {
     @Override
     String operatorName() {
         return "limit";
+    }
+
+    /**
+     * @param numberOfResults The number of results
+     * @return this
+     */
+    @Nonnull
+    public LimitFlux withN(final int numberOfResults) {
+
+        Preconditions.checkPositiveNumber(numberOfResults, "Number of results");
+
+        this.addPropertyValue("n", numberOfResults);
+
+        return this;
     }
 }

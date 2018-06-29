@@ -47,5 +47,4 @@ public final class SpreadFlux extends AbstractParametrizedFlux {
 
         return this;
     }
-
 }

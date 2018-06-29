@@ -3,6 +3,8 @@ package org.influxdb.flux.operators;
 import org.influxdb.flux.Flux;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Objects;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#sort">sort</a> - Sorts the results by the
@@ -42,5 +44,45 @@ public final class SortFlux extends AbstractParametrizedFlux {
     @Override
     String operatorName() {
         return "sort";
+    }
+
+    /**
+     * @param desc use the descending sorting
+     * @return this
+     */
+    @Nonnull
+    public SortFlux withDesc(final boolean desc) {
+
+        this.addPropertyValue("desc", desc);
+
+        return this;
+    }
+
+    /**
+     * @param columns columns used to sort
+     * @return this
+     */
+    @Nonnull
+    public SortFlux withCols(@Nonnull final String[] columns) {
+
+        Objects.requireNonNull(columns, "Columns are required");
+
+        this.addPropertyValue("cols", columns);
+
+        return this;
+    }
+
+    /**
+     * @param columns columns used to sort
+     * @return this
+     */
+    @Nonnull
+    public SortFlux withCols(@Nonnull final Collection<String> columns) {
+
+        Objects.requireNonNull(columns, "Columns are required");
+
+        this.addPropertyValue("cols", columns);
+
+        return this;
     }
 }

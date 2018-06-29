@@ -29,6 +29,12 @@ public final class FirstFlux extends AbstractParametrizedFlux {
         super(source);
     }
 
+    @Nonnull
+    @Override
+    String operatorName() {
+        return "first";
+    }
+
     /**
      * @param useStartTime Use the start time as the timestamp of the resulting aggregate
      * @return this
@@ -39,12 +45,5 @@ public final class FirstFlux extends AbstractParametrizedFlux {
         this.addPropertyValue("useStartTime", useStartTime);
 
         return this;
-    }
-
-
-    @Nonnull
-    @Override
-    String operatorName() {
-        return "first";
     }
 }

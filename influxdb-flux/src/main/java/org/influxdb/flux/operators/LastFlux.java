@@ -46,5 +46,4 @@ public final class LastFlux extends AbstractParametrizedFlux {
 
         return this;
     }
-
 }

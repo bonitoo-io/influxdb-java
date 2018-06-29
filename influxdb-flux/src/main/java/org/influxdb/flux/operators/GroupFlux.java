@@ -3,6 +3,8 @@ package org.influxdb.flux.operators;
 import org.influxdb.flux.Flux;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Objects;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#group">group</a> - Groups results by
@@ -44,5 +46,89 @@ public final class GroupFlux extends AbstractParametrizedFlux {
     @Override
     String operatorName() {
         return "group";
+    }
+
+    /**
+     * @param groupBy Group by these specific tag names.
+     * @return this
+     */
+    @Nonnull
+    public GroupFlux withBy(@Nonnull final String[] groupBy) {
+
+        Objects.requireNonNull(groupBy, "GroupBy Columns are required");
+
+        this.addPropertyValue("by", groupBy);
+
+        return this;
+    }
+
+    /**
+     * @param groupBy Group by these specific tag names.
+     * @return this
+     */
+    @Nonnull
+    public GroupFlux withBy(@Nonnull final Collection<String> groupBy) {
+
+        Objects.requireNonNull(groupBy, "GroupBy Columns are required");
+
+        this.addPropertyValue("by", groupBy);
+
+        return this;
+    }
+
+    /**
+     * @param keep Keep specific tag keys that were not in {@code groupBy} in the results.
+     * @return this
+     */
+    @Nonnull
+    public GroupFlux withKeep(@Nonnull final String[] keep) {
+
+        Objects.requireNonNull(keep, "Keep Columns are required");
+
+        this.addPropertyValue("keep", keep);
+
+        return this;
+    }
+
+    /**
+     * @param keep Keep specific tag keys that were not in {@code groupBy} in the results.
+     * @return this
+     */
+    @Nonnull
+    public GroupFlux withKeep(@Nonnull final Collection<String> keep) {
+
+        Objects.requireNonNull(keep, "Keep Columns are required");
+
+        this.addPropertyValue("keep", keep);
+
+        return this;
+    }
+
+    /**
+     * @param except Group by all but these tag keys Cannot be used.
+     * @return this
+     */
+    @Nonnull
+    public GroupFlux withExcept(@Nonnull final String[] except) {
+
+        Objects.requireNonNull(except, "GroupBy Except Columns are required");
+
+        this.addPropertyValue("except", except);
+
+        return this;
+    }
+
+    /**
+     * @param except Group by all but these tag keys Cannot be used.
+     * @return this
+     */
+    @Nonnull
+    public GroupFlux withExcept(@Nonnull final Collection<String> except) {
+
+        Objects.requireNonNull(except, "GroupBy Except Columns are required");
+
+        this.addPropertyValue("except", except);
+
+        return this;
     }
 }
