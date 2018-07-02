@@ -33,7 +33,7 @@ public final class MaxFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "max";
     }
 

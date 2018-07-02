@@ -32,7 +32,7 @@ public final class StddevFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "stddev";
     }
 

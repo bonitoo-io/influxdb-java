@@ -32,7 +32,7 @@ public final class YieldFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "yield";
     }
 

@@ -9,9 +9,9 @@ import javax.annotation.Nullable;
 /**
  * @author Jakub Bednar (bednar@github) (27/06/2018 14:03)
  */
-abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
+public abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
 
-    AbstractParametrizedFlux(@Nonnull final Flux source) {
+    protected AbstractParametrizedFlux(@Nonnull final Flux source) {
         super(source);
     }
 
@@ -46,7 +46,7 @@ abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
      * @return name of operator
      */
     @Nonnull
-    abstract String operatorName();
+    protected abstract String operatorName();
 
     /**
      * @return {@link Boolean#TRUE} if was appended parameter

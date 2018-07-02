@@ -51,7 +51,7 @@ public final class WindowFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "window";
     }
 

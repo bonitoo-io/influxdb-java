@@ -30,7 +30,7 @@ public final class SumFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "sum";
     }
 

@@ -33,7 +33,7 @@ public final class SetFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "set";
     }
 

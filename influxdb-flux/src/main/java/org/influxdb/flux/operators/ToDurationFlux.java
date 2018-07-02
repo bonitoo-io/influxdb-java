@@ -26,7 +26,7 @@ public final class ToDurationFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "toDuration";
     }
 }

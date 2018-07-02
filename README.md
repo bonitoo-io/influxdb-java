@@ -1107,6 +1107,55 @@ Flux flux = Flux
     .yield("0");
 ```
 
+### Custom Functions
+We assume that exist custom function measurement that filter measurement by their name. The `Flux` implementation looks like this: 
+
+```flux
+// Define measurement function which accepts table as the piped argument.
+measurement = (m, table=<-) => table |> filter(fn: (r) => r._measurement == m)
+```
+
+The Java implementation:
+```java
+public class FilterMeasurement extends AbstractParametrizedFlux {
+
+    public FilterMeasurement(@Nonnull final Flux source) {
+        super(source);
+    }
+
+    @Nonnull
+    @Override
+    protected String operatorName() {
+        // name of the Flux function
+        return "measurement";
+    }
+
+    /**
+     * @param measurement the measurement name. Has to be defined.
+     * @return this
+     */
+    @Nonnull
+    public FilterMeasurement withName(@Nonnull final String measurement) {
+
+        Preconditions.checkNonEmptyString(measurement, "Measurement name");
+
+        // name of parameter from the Flux function
+        withPropertyValueEscaped("m", measurement);
+
+        return this;
+    }
+}
+```
+
+Using the measurement function:
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .operator(FilterMeasurement.class)
+        .withName("cpu")
+    .sum();
+```
+
 ### Examples
 #### Query
 ```java

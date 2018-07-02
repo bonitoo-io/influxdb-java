@@ -27,7 +27,7 @@ public final class ToStringFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "toString";
     }
 }

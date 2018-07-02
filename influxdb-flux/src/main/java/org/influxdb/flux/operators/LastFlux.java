@@ -31,7 +31,7 @@ public final class LastFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "last";
     }
 

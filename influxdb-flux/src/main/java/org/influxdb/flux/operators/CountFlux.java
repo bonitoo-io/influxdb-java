@@ -30,7 +30,7 @@ public final class CountFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "count";
     }
 

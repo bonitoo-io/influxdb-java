@@ -45,7 +45,7 @@ public final class FilterFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "filter";
     }
 

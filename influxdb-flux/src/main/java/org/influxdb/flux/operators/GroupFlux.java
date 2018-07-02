@@ -44,7 +44,7 @@ public final class GroupFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "group";
     }
 

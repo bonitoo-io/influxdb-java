@@ -42,7 +42,7 @@ public final class SortFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "sort";
     }
 

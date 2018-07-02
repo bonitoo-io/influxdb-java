@@ -27,7 +27,7 @@ public final class ToUIntFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "toUInt";
     }
 }

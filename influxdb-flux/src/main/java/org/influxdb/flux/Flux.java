@@ -1,5 +1,6 @@
 package org.influxdb.flux;
 
+import org.influxdb.flux.operators.AbstractParametrizedFlux;
 import org.influxdb.flux.operators.CountFlux;
 import org.influxdb.flux.operators.ExpressionFlux;
 import org.influxdb.flux.operators.FilterFlux;
@@ -88,7 +89,6 @@ import java.util.Objects;
  * <li>toHttp - UNSUPPORTED</li>
  * <li>toKafka - UNSUPPORTED</li>
  * <li>{@link ExpressionFlux}</li>
- * <li>byInstance - UNSUPPORTED</li>
  * </ul>
  *
  * @author Jakub Bednar (bednar@github) (22/06/2018 10:16)
@@ -1245,6 +1245,34 @@ public abstract class Flux {
     }
 
     /**
+     * Create new operator with type {@code type}.
+     *
+     * <pre>
+     * Flux flux = Flux
+     *      .from("telegraf")
+     *      .operator(FilterMeasurement.class)
+     *          .withName("cpu")
+     *      .sum();
+     * </pre>
+     *
+     * @param type operator type
+     * @param <F>  operator type
+     * @return operator with type {@link F}
+     */
+    @Nonnull
+    public <F extends AbstractParametrizedFlux> F operator(@Nonnull final Class<F> type) {
+
+        Objects.requireNonNull(type, "Operator type is required");
+
+        try {
+            return type.getConstructor(Flux.class).newInstance(this);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    /**
      * Add named property to current operator.
      *
      * <pre>
@@ -1416,4 +1444,10 @@ public abstract class Flux {
     public String toString() {
         return print();
     }
+
+    public Flux operator() {
+        return this;
+
+    }
+
 }

@@ -32,7 +32,7 @@ public final class SpreadFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "spread";
     }
 

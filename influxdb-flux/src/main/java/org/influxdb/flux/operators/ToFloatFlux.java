@@ -25,7 +25,7 @@ public final class ToFloatFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "toFloat";
     }
 }

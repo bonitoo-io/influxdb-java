@@ -32,7 +32,7 @@ public final class LimitFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    String operatorName() {
+    protected String operatorName() {
         return "limit";
     }
 
