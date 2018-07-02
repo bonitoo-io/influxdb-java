@@ -11,11 +11,11 @@ public class FluxResult {
 
     private LinkedHashMap<Integer, Table> tables;
 
-    FluxResult(LinkedHashMap<Integer, Table> tables) {
+    FluxResult(final LinkedHashMap<Integer, Table> tables) {
         this.tables = tables;
     }
 
-    public Table getTable(int index) {
+    public Table getTable(final int index) {
         return tables.get(index);
     }
 

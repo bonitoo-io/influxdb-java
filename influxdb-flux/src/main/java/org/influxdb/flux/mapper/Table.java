@@ -39,7 +39,7 @@ public class Table {
         return index;
     }
 
-    public void setIndex(long index) {
+    public void setIndex(final long index) {
         this.index = index;
     }
 
@@ -47,7 +47,7 @@ public class Table {
         return dataTypes;
     }
 
-    public void setDataTypes(List<String> dataTypes) {
+    public void setDataTypes(final List<String> dataTypes) {
         this.dataTypes = dataTypes;
     }
 
@@ -55,7 +55,7 @@ public class Table {
         return partitions;
     }
 
-    public void setPartitions(List<String> partitions) {
+    public void setPartitions(final List<String> partitions) {
         this.partitions = partitions;
     }
 
@@ -63,16 +63,16 @@ public class Table {
         return records;
     }
 
-    void setDefaultEmptyValues(List<String> emptyValues) {
+    void setDefaultEmptyValues(final List<String> emptyValues) {
         this.defaultEmptyValues = emptyValues;
     }
 
-    void addColumnName(String columnName, int index) {
+    void addColumnName(final String columnName, final int index) {
         columnNames.put(columnName, index);
     }
 
     public String[] getColumnNames() {
-        return (String[]) columnNames.keySet().toArray();
+        return columnNames.keySet().stream().toArray(String[]::new);
     }
 
     public List<String> getDefaultEmptyValues() {
@@ -83,7 +83,7 @@ public class Table {
         return tags;
     }
 
-    int indexOfColumn(String field) {
+    int indexOfColumn(final String field) {
         Integer ret = columnNames.get(field);
         if (ret == null) {
             return -1;

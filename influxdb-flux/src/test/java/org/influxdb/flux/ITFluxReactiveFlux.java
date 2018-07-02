@@ -1,13 +1,10 @@
 package org.influxdb.flux;
 
 import io.reactivex.Flowable;
-import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
 import org.influxdb.flux.mapper.FluxResult;
+import org.influxdb.flux.mapper.Record;
 import org.influxdb.flux.mapper.Table;
 import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.AbstractITFluxReactive;
@@ -17,6 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Jakub Bednar (bednar@github) (28/06/2018 07:59)
@@ -83,6 +85,8 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
         // filter(fn:(r) => r._measurement == "mem" and r._field == "free") |> sum()'
         // --data-urlencode "orgName=0" http://localhost:8093/v1/query
 
+        Instant beforeQuery = Instant.now();
+
         Restrictions restriction = Restrictions
                 .and(Restrictions.measurement().equal("mem"), Restrictions.field().equal("free"));
 
@@ -100,32 +104,53 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
                     Assertions.assertThat(result).isNotNull();
 
-//                    String[] content = result.getContent().split("\n");
                     List<Table> tables = result.getTables();
-                    System.out.println(tables);
 
-                    /*
+                    Assertions.assertThat(tables).hasSize(1);
+
+                    Table table = tables.get(0);
                     // Data types
-                    Assertions.assertThat(content[0])
-                            .isEqualToIgnoringWhitespace("#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string");
-
-                    // Partition
-                    Assertions.assertThat(content[1])
-                            .isEqualToIgnoringWhitespace("#partition,false,false,true,true,false,false,true,true,true,true");
-                    // Default
-                    Assertions.assertThat(content[2])
-                            .isEqualToIgnoringWhitespace("#default,_result,,,,,,,,,");
+                    Assertions.assertThat(table.getDataTypes()).hasSize(11);
+                    Assertions.assertThat(table.getDataTypes())
+                            .containsExactlyInAnyOrder("#datatype", "string","long","dateTime:RFC3339","dateTime:RFC3339","dateTime:RFC3339","long","string","string","string","string");
 
                     // Columns
-                    Assertions.assertThat(content[3])
-                            .isEqualToIgnoringWhitespace(",result,table,_start,_stop,_time,_value,_field,_measurement,host,region");
+                    Assertions.assertThat(table.getColumnNames()).hasSize(11);
+                    Assertions.assertThat(table.getColumnNames())
+                            .containsExactlyInAnyOrder("", "result", "table", "_start", "_stop", "_time", "_value", "_field", "_measurement", "host", "region");
 
-                    // Row 1
-                    Assertions.assertThat(content[4]).contains(",1970-01-01T00:00:10Z,21,free,mem,A,west");
+                    // Records
+                    Assertions.assertThat(table.getRecords()).hasSize(2);
 
-                    // Row 2
-                    Assertions.assertThat(content[5]).contains(",1970-01-01T00:00:10Z,42,free,mem,B,west");
-                    */
+                    // Record 1
+                    Record record1 = table.getRecords().get(0);
+                    Assertions.assertThat(record1.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record1.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record1.getStart()).isEqualTo(Instant.ofEpochSecond(0));
+                    Assertions.assertThat(record1.getStop().isBefore(beforeQuery)).isFalse();
+                    Assertions.assertThat(record1.getTime()).isEqualTo(Instant.ofEpochSecond(10));
+
+                    Assertions.assertThat(record1.getValue()).isEqualTo("21");
+
+                    Assertions.assertThat(record1.getTags()).hasSize(2);
+                    Assertions.assertThat(record1.getTags().get("host")).isEqualTo("A");
+                    Assertions.assertThat(record1.getTags().get("region")).isEqualTo("west");
+
+                    // Record 2
+                    Record record2 = table.getRecords().get(1);
+                    Assertions.assertThat(record2.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record2.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record2.getStart()).isEqualTo(Instant.ofEpochSecond(0));
+                    Assertions.assertThat(record2.getStop().isBefore(beforeQuery)).isFalse();
+                    Assertions.assertThat(record2.getTime()).isEqualTo(Instant.ofEpochSecond(10));
+
+                    Assertions.assertThat(record2.getValue()).isEqualTo("42");
+
+                    Assertions.assertThat(record2.getTags()).hasSize(2);
+                    Assertions.assertThat(record2.getTags().get("host")).isEqualTo("B");
+                    Assertions.assertThat(record2.getTags().get("region")).isEqualTo("west");
 
                     return true;
                 });

@@ -1,16 +1,17 @@
 package org.influxdb.flux.mapper;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Reader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 
 /**
  * This class us used to construct FluxResult from CSV.
@@ -18,7 +19,7 @@ import org.apache.commons.csv.CSVRecord;
 class FluxCsvParser {
 
     @Nonnull
-    FluxResult parseFluxResponse(@Nonnull Reader reader) throws FluxResultMapperException, IOException {
+    FluxResult parseFluxResponse(@Nonnull final Reader reader) throws FluxResultMapperException, IOException {
 
         final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
         final List<CSVRecord> records = parser.getRecords();
@@ -41,9 +42,10 @@ class FluxCsvParser {
                 tableIndex++;
 
             } else if (table == null) {
-                throw new FluxResultMapperException("Unable to parse CSV response. Table definition was not found. Row:" + i);
+                String message = "Unable to parse CSV response. Table definition was not found. Row:" + i;
+                throw new FluxResultMapperException(message);
             }
-            //#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
+            //#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
             if ("#datatype".equals(token)) {
                 table.setDataTypes(parseDataTypes(csvRecord));
 
@@ -68,7 +70,7 @@ class FluxCsvParser {
         return new FluxResult(tables);
     }
 
-    private void parseColumnNamesAndTags(Table table, CSVRecord csvRecord) {
+    private void parseColumnNamesAndTags(final Table table, final CSVRecord csvRecord) {
 
         int size = csvRecord.size();
 
@@ -79,19 +81,19 @@ class FluxCsvParser {
 
             if (!(columnName.startsWith("_")
                     || columnName.isEmpty()
-                    || columnName.equals("result")
-                    || columnName.equals("table"))) {
+                    || "result".equals(columnName)
+                    || "table".equals(columnName))) {
                 table.getTags().add(columnName);
             }
         }
     }
 
-    private List<String> parseDefaultEmptyValues(CSVRecord csvRecord) {
+    private List<String> parseDefaultEmptyValues(final CSVRecord csvRecord) {
         //todo
         return null;
     }
 
-    private Record parseRecord(Table table, CSVRecord csvRecord) {
+    private Record parseRecord(final Table table, final CSVRecord csvRecord) {
 
         Record record = new Record();
 
@@ -111,7 +113,7 @@ class FluxCsvParser {
         return record;
     }
 
-    private String getFieldVal(Table table, CSVRecord csvRecord, String columnName) {
+    private String getFieldVal(final Table table, final CSVRecord csvRecord, final String columnName) {
 
         int i = table.indexOfColumn(columnName);
         if (i > 0) {
@@ -122,7 +124,7 @@ class FluxCsvParser {
 
     //parse RFC 3339 to instant
     @Nullable
-    private Instant toInstant(@Nullable String dateTime) {
+    private Instant toInstant(@Nullable final String dateTime) {
 
         if (dateTime == null) {
             return null;
@@ -130,15 +132,15 @@ class FluxCsvParser {
         return Instant.parse(dateTime);
     }
 
-    private List<String> parsePartitions(CSVRecord csvRecord) {
+    private List<String> parsePartitions(final CSVRecord csvRecord) {
         return toList(csvRecord);
     }
 
-    private List<String> parseDataTypes(CSVRecord csvRecord) {
+    private List<String> parseDataTypes(final CSVRecord csvRecord) {
         return toList(csvRecord);
     }
 
-    private List<String> toList(CSVRecord csvRecord) {
+    private List<String> toList(final CSVRecord csvRecord) {
         List<String> ret = new ArrayList<>(csvRecord.size());
         int size = csvRecord.size();
 

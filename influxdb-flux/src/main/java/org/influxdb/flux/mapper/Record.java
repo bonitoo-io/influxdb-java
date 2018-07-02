@@ -22,7 +22,7 @@ public class Record {
         return start;
     }
 
-    public void setStart(Instant start) {
+    public void setStart(final Instant start) {
         this.start = start;
     }
 
@@ -30,7 +30,7 @@ public class Record {
         return stop;
     }
 
-    public void setStop(Instant stop) {
+    public void setStop(final Instant stop) {
         this.stop = stop;
     }
 
@@ -38,7 +38,7 @@ public class Record {
         return time;
     }
 
-    public void setTime(Instant time) {
+    public void setTime(final Instant time) {
         this.time = time;
     }
 
@@ -46,7 +46,7 @@ public class Record {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(final Object value) {
         this.value = value;
     }
 
@@ -54,7 +54,7 @@ public class Record {
         return field;
     }
 
-    public void setField(String field) {
+    public void setField(final String field) {
         this.field = field;
     }
 
@@ -62,7 +62,7 @@ public class Record {
         return measurement;
     }
 
-    public void setMeasurement(String measurement) {
+    public void setMeasurement(final String measurement) {
         this.measurement = measurement;
     }
 
@@ -70,7 +70,7 @@ public class Record {
         return tags;
     }
 
-    public void setTags(Map<String, String> tags) {
+    public void setTags(final Map<String, String> tags) {
         this.tags = tags;
     }
 }

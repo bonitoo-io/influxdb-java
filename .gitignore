@@ -9,4 +9,6 @@ test-output/
 .idea/
 *iml
 .m2/
-*-nightly*.tar.gz
+platform_nightly_*/**
+platform_nightly_*
+

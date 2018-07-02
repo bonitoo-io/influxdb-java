@@ -2,6 +2,7 @@ package org.influxdb.flux;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.annotations.Experimental;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.influxdb.flux.events.AbstractFluxEvent;
 import org.influxdb.flux.mapper.FluxResult;
@@ -16,6 +17,7 @@ import java.util.Map;
  * @author Jakub Bednar (bednar@github) (26/06/2018 11:07)
  * @since 3.0.0
  */
+@Experimental
 public interface FluxReactive {
 
     /**

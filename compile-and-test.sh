@@ -21,9 +21,39 @@ docker run \
           --detach \
           --name influxdb \
           --publish 8086:8086 \
+          --publish 8082:8082 \
           --publish 8089:8089/udp \
           --volume ${PWD}/influxdb.conf:/etc/influxdb/influxdb.conf \
       influxdb:${INFLUXDB_VERSION}-alpine
+
+if [ ! "$FLUX_DISABLE" == "true" ]; then
+
+    killall fluxd || true
+    
+    # OS Type
+    case "$OSTYPE" in
+      darwin*)
+        archive='platform_nightly_macOS_amd64.tar.gz'
+         ;;
+      linux*)
+        archive="platform_nightly_linux_amd64.tar.gz" ;;
+      msys*)
+        archive="platform_nightly_windows_amd64.zip" ;;
+      *)
+        echo "unknown: $OSTYPE";
+        exit 1 ;;
+    esac
+
+    # Download/extract the new nightly build
+    baseUrl="https://dl.influxdata.com/flux/nightlies/"
+    if [[ $(find "${archive}" -mtime +100 -print) ]] || [ ! -e "$archive" ] ; then
+      rm -rf platform_nightly*
+      wget ${baseUrl}${archive} -O ${archive}
+      tar xvfz ${archive}
+    fi
+
+    platform_nightly_*/fluxd &
+fi
 
 docker run -it --rm  \
       --volume $PWD:/usr/src/mymaven \
@@ -34,3 +64,7 @@ docker run -it --rm  \
         maven:${MAVEN_JAVA_VERSION} mvn clean install -DFLUX_DISABLE=${FLUX_DISABLE}
 
 docker kill influxdb || true
+
+if [ ! "$FLUX_DISABLE" == "true" ]; then
+    killall fluxd || true
+fi
