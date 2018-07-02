@@ -52,6 +52,9 @@ if [ ! "$FLUX_DISABLE" == "true" ]; then
       tar xvfz ${archive}
     fi
 
+    FLUX_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
+    echo "FLUX_IP: " ${FLUX_IP}
+    sleep 3
     platform_nightly_*/fluxd &
 fi
 
@@ -61,6 +64,7 @@ docker run -it --rm  \
       --workdir /usr/src/mymaven \
       --link=influxdb \
       --env INFLUXDB_IP=influxdb \
+      --env FLUX_IP=${FLUX_IP} \
         maven:${MAVEN_JAVA_VERSION} mvn clean install -DFLUX_DISABLE=${FLUX_DISABLE}
 
 docker kill influxdb || true

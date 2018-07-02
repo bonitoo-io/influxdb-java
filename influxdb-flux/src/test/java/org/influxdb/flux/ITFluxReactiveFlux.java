@@ -85,8 +85,6 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
         // filter(fn:(r) => r._measurement == "mem" and r._field == "free") |> sum()'
         // --data-urlencode "orgName=0" http://localhost:8093/v1/query
 
-        Instant beforeQuery = Instant.now();
-
         Restrictions restriction = Restrictions
                 .and(Restrictions.measurement().equal("mem"), Restrictions.field().equal("free"));
 
@@ -127,8 +125,8 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                     Assertions.assertThat(record1.getMeasurement()).isEqualTo("mem");
                     Assertions.assertThat(record1.getField()).isEqualTo("free");
 
-                    Assertions.assertThat(record1.getStart()).isEqualTo(Instant.ofEpochSecond(0));
-                    Assertions.assertThat(record1.getStop().isBefore(beforeQuery)).isFalse();
+                    Assertions.assertThat(record1.getStart()).isEqualTo(Instant.EPOCH);
+                    Assertions.assertThat(record1.getStop()).isNotNull();
                     Assertions.assertThat(record1.getTime()).isEqualTo(Instant.ofEpochSecond(10));
 
                     Assertions.assertThat(record1.getValue()).isEqualTo("21");
@@ -142,8 +140,8 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                     Assertions.assertThat(record2.getMeasurement()).isEqualTo("mem");
                     Assertions.assertThat(record2.getField()).isEqualTo("free");
 
-                    Assertions.assertThat(record2.getStart()).isEqualTo(Instant.ofEpochSecond(0));
-                    Assertions.assertThat(record2.getStop().isBefore(beforeQuery)).isFalse();
+                    Assertions.assertThat(record2.getStart()).isEqualTo(Instant.EPOCH);
+                    Assertions.assertThat(record2.getStop()).isNotNull();
                     Assertions.assertThat(record2.getTime()).isEqualTo(Instant.ofEpochSecond(10));
 
                     Assertions.assertThat(record2.getValue()).isEqualTo("42");
