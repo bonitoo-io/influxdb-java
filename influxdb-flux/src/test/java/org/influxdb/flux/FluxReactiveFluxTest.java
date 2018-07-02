@@ -2,8 +2,6 @@ package org.influxdb.flux;
 
 import io.reactivex.Flowable;
 import io.reactivex.observers.TestObserver;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.influxdb.InfluxDBException;
@@ -15,6 +13,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:54)
@@ -142,8 +143,6 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
                         + ",,3,1677-09-21T00:12:43.145224192Z,2018-06-27T06:22:38.347437344Z,2018-06-27T05:56:40.001Z,10000,upTime,server_performance,\"Area 1° 10' \"\"20\",false";
 
         return createResponse(data);
-
-
     }
 
     @Test

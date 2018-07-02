@@ -110,7 +110,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                     // Data types
                     Assertions.assertThat(table.getDataTypes()).hasSize(11);
                     Assertions.assertThat(table.getDataTypes())
-                            .containsExactlyInAnyOrder("#datatype", "string","long","dateTime:RFC3339","dateTime:RFC3339","dateTime:RFC3339","long","string","string","string","string");
+                            .containsExactlyInAnyOrder("#datatype", "string", "long", "dateTime:RFC3339", "dateTime:RFC3339", "dateTime:RFC3339", "long", "string", "string", "string", "string");
 
                     // Columns
                     Assertions.assertThat(table.getColumnNames()).hasSize(11);
