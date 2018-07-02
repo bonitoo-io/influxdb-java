@@ -1,93 +1,104 @@
 package org.influxdb.flux.mapper;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class represents table structure in FluxRequest.
  */
 public class Table {
 
-    //index of table in result
-    long index;
-
-    //types
-    private List<String> dataTypes = new ArrayList<>();
-
-    //partitions
-    private List<String> partitions = new ArrayList<>();
-
-    //types
-    private Map<String, Integer> columnNames = new LinkedHashMap<>();
-
-    //list of empty values
-    private List<String> defaultEmptyValues = new ArrayList<>();
+    //column header specification
+    private List<ColumnHeader> columnHeaders = new ArrayList<>();
 
     //list of records
     private List<Record> records = new ArrayList<>();
 
-    //tags
-    private List<String> tags = new ArrayList<>();
-
-    Table() {
-
-    }
-
-    public long getIndex() {
-        return index;
-    }
-
-    public void setIndex(final long index) {
-        this.index = index;
-    }
-
-    public List<String> getDataTypes() {
-        return dataTypes;
-    }
-
-    public void setDataTypes(final List<String> dataTypes) {
-        this.dataTypes = dataTypes;
-    }
-
-    public List<String> getPartitions() {
-        return partitions;
-    }
-
-    public void setPartitions(final List<String> partitions) {
-        this.partitions = partitions;
+    public List<ColumnHeader> getColumnHeaders() {
+        return columnHeaders;
     }
 
     public List<Record> getRecords() {
         return records;
     }
 
-    void setDefaultEmptyValues(final List<String> emptyValues) {
-        this.defaultEmptyValues = emptyValues;
-    }
+    void addDataTypes(List<String> datatypes) {
 
-    void addColumnName(final String columnName, final int index) {
-        columnNames.put(columnName, index);
-    }
+        for (int i = 0; i < datatypes.size(); i++) {
+            String s = datatypes.get(i);
 
-    public String[] getColumnNames() {
-        return columnNames.keySet().stream().toArray(String[]::new);
-    }
+            ColumnHeader columnDef = new ColumnHeader();
+            columnDef.setDataType(s);
+            columnDef.setIndex(i);
 
-    public List<String> getDefaultEmptyValues() {
-        return defaultEmptyValues;
-    }
+            columnHeaders.add(columnDef);
 
-    public List<String> getTags() {
-        return tags;
-    }
-
-    int indexOfColumn(final String field) {
-        Integer ret = columnNames.get(field);
-        if (ret == null) {
-            return -1;
         }
-        return ret;
     }
+
+    void addPartitions(List<String> partitions) throws FluxResultMapperException {
+
+        for (int i = 0; i < partitions.size(); i++) {
+            String s = partitions.get(i);
+
+            if (columnHeaders.isEmpty()) {
+                throw new FluxResultMapperException("Unable to parse response, no #datatypes header found.");
+            }
+            ColumnHeader def = columnHeaders.get(i);
+
+            if (def == null) {
+                throw new FluxResultMapperException("Unable to parse response, inconsistent  #datatypes and #partition header");
+            }
+
+            def.setPartition(s);
+        }
+
+    }
+
+    void addDefaultEmptyValues(List<String> defaultEmptyValues) throws FluxResultMapperException {
+
+        for (int i = 0; i < defaultEmptyValues.size(); i++) {
+            String s = defaultEmptyValues.get(i);
+
+            if (columnHeaders.isEmpty()) {
+                throw new FluxResultMapperException("Unable to parse response, no #datatypes header found.");
+            }
+            ColumnHeader def = columnHeaders.get(i);
+
+            if (def == null) {
+                throw new FluxResultMapperException("Unable to parse response, inconsistent  #datatypes and #partition header");
+            }
+
+            def.setDefaultEmptyValue(s);
+        }
+
+    }
+
+    void addColumnNamesAndTags(List<String> columnNames) throws FluxResultMapperException {
+
+        int size = columnNames.size();
+
+        for (int i = 0; i < size; i++) {
+            String columnName = columnNames.get(i);
+
+            if (columnHeaders.isEmpty()) {
+                throw new FluxResultMapperException("Unable to parse response, no #datatypes header found.");
+            }
+            ColumnHeader def = columnHeaders.get(i);
+
+            if (def == null) {
+                throw new FluxResultMapperException("Unable to parse response, inconsistent  #datatypes and #partition header");
+            }
+
+            def.setColumnName(columnName);
+
+            if (!(columnName.startsWith("_")
+                    || columnName.isEmpty()
+                    || "result".equals(columnName)
+                    || "table".equals(columnName))) {
+                def.setTag(true);
+            }
+        }
+    }
+
 }

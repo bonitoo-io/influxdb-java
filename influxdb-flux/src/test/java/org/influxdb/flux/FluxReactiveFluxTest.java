@@ -2,20 +2,21 @@ package org.influxdb.flux;
 
 import io.reactivex.Flowable;
 import io.reactivex.observers.TestObserver;
+import java.time.Instant;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.influxdb.InfluxDBException;
 import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
+import org.influxdb.flux.mapper.Record;
 import org.influxdb.impl.AbstractFluxReactiveTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:54)
@@ -108,8 +109,36 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
 
                     Assertions.assertThat(fluxResult).isNotNull();
                     Assertions.assertThat(fluxResult.getTables().size() == 4).isTrue();
-                    //TODO data type
-                    Assertions.assertThat(fluxResult.getTable(0).getRecords().get(0).getValue().equals("50")).isTrue();
+
+                    {
+                        Record rec = fluxResult.getTables().get(0).getRecords().get(0);
+
+                        Assertions.assertThat(rec.getValue()).isEqualTo(50d);
+                        Assertions.assertThat(rec.getField()).isEqualTo("cpu_usage");
+
+                        Assertions.assertThat(rec.getStart()).isEqualTo(Instant.parse("1677-09-21T00:12:43.145224192Z"));
+                        Assertions.assertThat(rec.getStop()).isEqualTo(Instant.parse("2018-06-27T06:22:38.347437344Z"));
+                        Assertions.assertThat(rec.getTime()).isEqualTo(Instant.parse("2018-06-27T05:56:40.001Z"));
+
+                        Assertions.assertThat(rec.getMeasurement()).isEqualTo("server_performance");
+                        Assertions.assertThat(rec.getTags().get("location")).isEqualTo("Area 1° 10' \"20");
+                        Assertions.assertThat(rec.getTags().get("production_usage")).isEqualTo("false");
+                    }
+
+                    {
+                        Record rec = fluxResult.getTables().get(2).getRecords().get(0);
+
+                        Assertions.assertThat(rec.getValue()).isEqualTo("Server no. 1");
+                        Assertions.assertThat(rec.getField()).isEqualTo("server description");
+
+                        Assertions.assertThat(rec.getStart()).isEqualTo(Instant.parse("1677-09-21T00:12:43.145224192Z"));
+                        Assertions.assertThat(rec.getStop()).isEqualTo(Instant.parse("2018-06-27T06:22:38.347437344Z"));
+                        Assertions.assertThat(rec.getTime()).isEqualTo(Instant.parse("2018-06-27T05:56:40.001Z"));
+
+                        Assertions.assertThat(rec.getMeasurement()).isEqualTo("server_performance");
+                        Assertions.assertThat(rec.getTags().get("location")).isEqualTo("Area 1° 10' \"20");
+                        Assertions.assertThat(rec.getTags().get("production_usage")).isEqualTo("false");
+                    }
 
                     return true;
                 });

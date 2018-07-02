@@ -1,8 +1,13 @@
 package org.influxdb.flux;
 
 import io.reactivex.Flowable;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
+import org.influxdb.flux.mapper.ColumnHeader;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.Record;
 import org.influxdb.flux.mapper.Table;
@@ -14,11 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Jakub Bednar (bednar@github) (28/06/2018 07:59)
@@ -108,13 +108,12 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
                     Table table = tables.get(0);
                     // Data types
-                    Assertions.assertThat(table.getDataTypes()).hasSize(11);
-                    Assertions.assertThat(table.getDataTypes())
+                    Assertions.assertThat(table.getColumnHeaders()).hasSize(11);
+                    Assertions.assertThat(table.getColumnHeaders().stream().map(ColumnHeader::getDataType))
                             .containsExactlyInAnyOrder("#datatype", "string", "long", "dateTime:RFC3339", "dateTime:RFC3339", "dateTime:RFC3339", "long", "string", "string", "string", "string");
 
                     // Columns
-                    Assertions.assertThat(table.getColumnNames()).hasSize(11);
-                    Assertions.assertThat(table.getColumnNames())
+                    Assertions.assertThat(table.getColumnHeaders().stream().map(ColumnHeader::getColumnName))
                             .containsExactlyInAnyOrder("", "result", "table", "_start", "_stop", "_time", "_value", "_field", "_measurement", "host", "region");
 
                     // Records

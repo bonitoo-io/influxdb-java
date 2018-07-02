@@ -1,17 +1,14 @@
 package org.influxdb.flux.mapper;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Reader;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import javax.annotation.Nonnull;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
 /**
  * This class us used to construct FluxResult from CSV.
@@ -24,7 +21,7 @@ class FluxCsvParser {
         final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
         final List<CSVRecord> records = parser.getRecords();
 
-        final LinkedHashMap<Integer, Table> tables = new LinkedHashMap<>();
+        final List<Table> tables = new ArrayList<>();
 
         boolean startNewTable = false;
         Table table = null;
@@ -38,7 +35,7 @@ class FluxCsvParser {
                 startNewTable = true;
 
                 table = new Table();
-                tables.put(tableIndex, table);
+                tables.add(tableIndex, table);
                 tableIndex++;
 
             } else if (table == null) {
@@ -47,19 +44,18 @@ class FluxCsvParser {
             }
             //#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
             if ("#datatype".equals(token)) {
-                table.setDataTypes(parseDataTypes(csvRecord));
+                table.addDataTypes(toList(csvRecord));
 
             } else if ("#partition".equals(token)) {
-                table.setPartitions(parsePartitions(csvRecord));
+                table.addPartitions(toList(csvRecord));
 
             } else if (token.startsWith("#")) {
-                //TODO #default,_result,,,,,,,,, ???
-                table.setDefaultEmptyValues(parseDefaultEmptyValues(csvRecord));
+                table.addDefaultEmptyValues(toList(csvRecord));
 
             } else {
                 // parse column names
                 if (startNewTable) {
-                    parseColumnNamesAndTags(table, csvRecord);
+                    table.addColumnNamesAndTags(toList(csvRecord));
                     startNewTable = false;
                     continue;
                 }
@@ -70,75 +66,40 @@ class FluxCsvParser {
         return new FluxResult(tables);
     }
 
-    private void parseColumnNamesAndTags(final Table table, final CSVRecord csvRecord) {
-
-        int size = csvRecord.size();
-
-        for (int i = 0; i < size; i++) {
-            String columnName = csvRecord.get(i);
-
-            table.addColumnName(columnName, i);
-
-            if (!(columnName.startsWith("_")
-                    || columnName.isEmpty()
-                    || "result".equals(columnName)
-                    || "table".equals(columnName))) {
-                table.getTags().add(columnName);
-            }
-        }
-    }
 
     private List<String> parseDefaultEmptyValues(final CSVRecord csvRecord) {
         //todo
         return null;
     }
 
-    private Record parseRecord(final Table table, final CSVRecord csvRecord) {
+    private Record parseRecord(final Table table, final CSVRecord csvRecord) throws FluxResultMapperException {
 
         Record record = new Record();
 
-        record.setField(getFieldVal(table, csvRecord, "_field"));
-        record.setMeasurement(getFieldVal(table, csvRecord, "_measurement"));
-        record.setStart(toInstant(getFieldVal(table, csvRecord, "_start")));
-        record.setStop(toInstant(getFieldVal(table, csvRecord, "_stop")));
-        record.setTime(toInstant(getFieldVal(table, csvRecord, "_time")));
-        record.setValue(getFieldVal(table, csvRecord, "_value"));
+        for (ColumnHeader columnHeader : table.getColumnHeaders()) {
 
-        List<String> tags = table.getTags();
+            int index = columnHeader.getIndex();
+            String columnName = columnHeader.getColumnName();
 
-        for (String tag : tags) {
-            String tagValue = csvRecord.get(table.indexOfColumn(tag));
-            record.getTags().put(tag, tagValue);
+            if ("_field".equals(columnName)) {
+                record.setField(csvRecord.get(index));
+            } else if ("_measurement".equals(columnName)) {
+                record.setMeasurement(csvRecord.get(index));
+            } else if ("_value".equals(columnName)) {
+                record.setValue(columnHeader.toValue(csvRecord.get(index)));
+            } else if ("_start".equals(columnName)) {
+                record.setStart((Instant) columnHeader.toValue(csvRecord.get(index)));
+            } else if ("_stop".equals(columnName)) {
+                record.setStop((Instant) columnHeader.toValue(csvRecord.get(index)));
+            } else if ("_time".equals(columnName)) {
+                record.setTime((Instant) columnHeader.toValue(csvRecord.get(index)));
+            } else if (columnHeader.getTag()) {
+                record.getTags().put(columnName, csvRecord.get(index));
+            }
         }
         return record;
     }
 
-    private String getFieldVal(final Table table, final CSVRecord csvRecord, final String columnName) {
-
-        int i = table.indexOfColumn(columnName);
-        if (i > 0) {
-            return csvRecord.get(i);
-        }
-        return null;
-    }
-
-    //parse RFC 3339 to instant
-    @Nullable
-    private Instant toInstant(@Nullable final String dateTime) {
-
-        if (dateTime == null) {
-            return null;
-        }
-        return Instant.parse(dateTime);
-    }
-
-    private List<String> parsePartitions(final CSVRecord csvRecord) {
-        return toList(csvRecord);
-    }
-
-    private List<String> parseDataTypes(final CSVRecord csvRecord) {
-        return toList(csvRecord);
-    }
 
     private List<String> toList(final CSVRecord csvRecord) {
         List<String> ret = new ArrayList<>(csvRecord.size());
