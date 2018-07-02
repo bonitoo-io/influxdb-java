@@ -52,8 +52,8 @@ if [ ! "$FLUX_DISABLE" == "true" ]; then
       tar xvfz ${archive}
     fi
 
-    FLUX_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
-    echo "FLUX_IP: " ${FLUX_IP}
+    FLUX_IP=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n 1`
+    echo "FLUX_IP:" ${FLUX_IP}
     sleep 3
     platform_nightly_*/fluxd &
 fi
