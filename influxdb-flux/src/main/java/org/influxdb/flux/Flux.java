@@ -1444,10 +1444,4 @@ public abstract class Flux {
     public String toString() {
         return print();
     }
-
-    public Flux operator() {
-        return this;
-
-    }
-
 }

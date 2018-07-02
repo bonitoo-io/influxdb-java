@@ -7,6 +7,8 @@ import org.influxdb.impl.Preconditions;
 import javax.annotation.Nonnull;
 
 /**
+ * The custom function.
+ *
  * @author Jakub Bednar (bednar@github) (02/07/2018 14:23)
  */
 public class FilterMeasurement extends AbstractParametrizedFlux {
