@@ -6,13 +6,13 @@ set -e
 
 DEFAULT_INFLUXDB_VERSION="1.5"
 DEFAULT_MAVEN_JAVA_VERSION="3-jdk-10-slim"
-DEFAULT_FLUX_DISABLE="true"
+DEFAULT_FLUX_DISABLE="false"
 
 INFLUXDB_VERSION="${INFLUXDB_VERSION:-$DEFAULT_INFLUXDB_VERSION}"
 MAVEN_JAVA_VERSION="${MAVEN_JAVA_VERSION:-$DEFAULT_MAVEN_JAVA_VERSION}"
 FLUX_DISABLE="${FLUX_DISABLE:-$DEFAULT_FLUX_DISABLE}"
 
-echo "Run tests with maven:${MAVEN_JAVA_VERSION} on onfluxdb-${INFLUXDB_VERSION} with flux disabled:${FLUX_DISABLE}"
+echo "Run tests with maven:${MAVEN_JAVA_VERSION} on fluxdb-${INFLUXDB_VERSION} with flux disabled:${FLUX_DISABLE}"
 
 docker kill influxdb || true
 docker rm influxdb || true
@@ -46,9 +46,9 @@ if [ ! "$FLUX_DISABLE" == "true" ]; then
 
     # Download/extract the new nightly build
     baseUrl="https://dl.influxdata.com/flux/nightlies/"
-    if [[ $(find "${archive}" -mtime +100 -print) ]] || [ ! -e "$archive" ] ; then
+    if [[ $(find "${archive}" -mtime +1 -print) ]] || [ ! -e "$archive" ] ; then
       rm -rf platform_nightly*
-      wget ${baseUrl}${archive} -O ${archive}
+      wget --no-use-server-timestamps ${baseUrl}${archive} -O ${archive}
       tar xvfz ${archive}
     fi
 

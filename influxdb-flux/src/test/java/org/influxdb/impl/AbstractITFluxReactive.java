@@ -76,7 +76,7 @@ public abstract class AbstractITFluxReactive {
 
     protected void waitToFlux() {
         try {
-            Thread.sleep(3_000);
+            Thread.sleep(1_000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
