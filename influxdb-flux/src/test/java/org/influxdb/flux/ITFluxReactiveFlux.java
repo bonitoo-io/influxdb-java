@@ -96,6 +96,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
         Flowable<FluxResult> results = fluxReactive.flux(flux).take(1);
 
         results
+                .take(1)
                 .test()
                 .assertValueCount(1)
                 .assertValue(result -> {
