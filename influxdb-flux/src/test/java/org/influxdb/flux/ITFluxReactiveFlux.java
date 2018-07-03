@@ -1,10 +1,6 @@
 package org.influxdb.flux;
 
 import io.reactivex.Flowable;
-import java.time.Instant;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
 import org.influxdb.flux.mapper.ColumnHeader;
@@ -15,10 +11,17 @@ import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.AbstractITFluxReactive;
 import org.influxdb.reactive.events.WriteSuccessEvent;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Jakub Bednar (bednar@github) (28/06/2018 07:59)
@@ -76,7 +79,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
     }
 
     @Test
-    void inputTablesToOutputTable() {
+    void oneToOneTable() {
 
         //
         // CURL
@@ -93,10 +96,9 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                 .filter(restriction)
                 .sum();
 
-        Flowable<FluxResult> results = fluxReactive.flux(flux).take(1);
+        Flowable<FluxResult> results = fluxReactive.flux(flux);
 
         results
-                .take(1)
                 .test()
                 .assertValueCount(1)
                 .assertValue(result -> {
@@ -149,6 +151,95 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                     Assertions.assertThat(record2.getTags()).hasSize(2);
                     Assertions.assertThat(record2.getTags().get("host")).isEqualTo("B");
                     Assertions.assertThat(record2.getTags().get("region")).isEqualTo("west");
+
+                    return true;
+                });
+    }
+
+    @Test
+    @Disabled
+    void oneToManyTable() {
+
+        //
+        // CURL
+        //
+        // curl -i -XPOST --data-urlencode 'q=from(db: "flux_database") |> range(start:0) |>
+        // filter(fn:(r) => r._measurement == "mem" and r._field == "free") |> window(every:10s)'
+        //  --data-urlencode "orgName=0" http://localhost:8093/v1/query
+
+        // #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
+        // #partition,false,false,true,true,false,false,true,true,true,true
+        // #default,_result,,,,,,,,,
+        // ,result,table,_start,_stop,_time,_value,_field,_measurement,host,region
+        // ,,0,1970-01-01T00:00:10Z,1970-01-01T00:00:20Z,1970-01-01T00:00:10Z,10,free,mem,A,west
+        // ,,1,1970-01-01T00:00:10Z,1970-01-01T00:00:20Z,1970-01-01T00:00:10Z,20,free,mem,B,west
+        // ,,2,1970-01-01T00:00:20Z,1970-01-01T00:00:30Z,1970-01-01T00:00:20Z,11,free,mem,A,west
+        // ,,3,1970-01-01T00:00:20Z,1970-01-01T00:00:30Z,1970-01-01T00:00:20Z,22,free,mem,B,west
+
+        Restrictions restriction = Restrictions
+                .and(Restrictions.measurement().equal("mem"), Restrictions.field().equal("free"));
+
+        Flux flux = Flux.from(DATABASE_NAME)
+                .range(Instant.EPOCH)
+                .filter(restriction)
+                .window(10L, ChronoUnit.SECONDS);
+
+        Flowable<FluxResult> results = fluxReactive.flux(flux);
+
+        results
+                .test()
+                .assertValueCount(1)
+                .assertValue(result -> {
+
+                    Assertions.assertThat(result).isNotNull();
+
+                    List<Table> tables = result.getTables();
+
+                    Assertions.assertThat(tables).hasSize(4);
+
+                    // Record1
+                    Record record1 = tables.get(0).getRecords().get(0);
+                    Assertions.assertThat(record1.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record1.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record1.getTags()).hasSize(2);
+                    Assertions.assertThat(record1.getTags().get("host")).isEqualTo("A");
+                    Assertions.assertThat(record1.getTags().get("region")).isEqualTo("west");
+
+                    Assertions.assertThat(record1.getValue()).isEqualTo(10L);
+
+                    // Record2
+                    Record record2 = tables.get(1).getRecords().get(0);
+                    Assertions.assertThat(record2.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record2.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record2.getTags()).hasSize(2);
+                    Assertions.assertThat(record2.getTags().get("host")).isEqualTo("B");
+                    Assertions.assertThat(record2.getTags().get("region")).isEqualTo("west");
+
+                    Assertions.assertThat(record2.getValue()).isEqualTo(20L);
+
+                    // Record3
+                    Record record3 = tables.get(2).getRecords().get(0);
+                    Assertions.assertThat(record3.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record3.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record3.getTags()).hasSize(2);
+                    Assertions.assertThat(record3.getTags().get("host")).isEqualTo("A");
+                    Assertions.assertThat(record3.getTags().get("region")).isEqualTo("west");
+
+                    Assertions.assertThat(record3.getValue()).isEqualTo(11L);
+
+                    // Record4
+                    Record record4 = tables.get(3).getRecords().get(0);
+                    Assertions.assertThat(record4.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record4.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record4.getTags()).hasSize(2);
+                    Assertions.assertThat(record4.getTags().get("host")).isEqualTo("B");
+                    Assertions.assertThat(record4.getTags().get("region")).isEqualTo("west");
+
+                    Assertions.assertThat(record4.getValue()).isEqualTo(22L);
 
                     return true;
                 });
