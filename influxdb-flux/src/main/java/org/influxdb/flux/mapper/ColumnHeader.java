@@ -3,7 +3,7 @@ package org.influxdb.flux.mapper;
 import java.time.Instant;
 
 /**
- * This class represents column header specification of {@link Table}
+ * This class represents column header specification of {@link Table}.
  */
 public class ColumnHeader {
 
@@ -33,7 +33,7 @@ public class ColumnHeader {
         return dataType;
     }
 
-    public void setDataType(String dataType) {
+    public void setDataType(final String dataType) {
         this.dataType = dataType;
     }
 
@@ -41,7 +41,7 @@ public class ColumnHeader {
         return index;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(final int index) {
         this.index = index;
     }
 
@@ -49,11 +49,11 @@ public class ColumnHeader {
         return columnName;
     }
 
-    public void setColumnName(String columnName) {
+    public void setColumnName(final String columnName) {
         this.columnName = columnName;
     }
 
-    public Object toValue(String strValue) throws FluxResultMapperException {
+    public Object toValue(final String strValue) throws FluxResultMapperException {
 
         if (STRING_DATATYPE.equals(dataType)) {
             return strValue;
@@ -75,7 +75,7 @@ public class ColumnHeader {
 
     }
 
-    public void setPartition(String partition) {
+    public void setPartition(final String partition) {
         this.partition = partition;
     }
 
@@ -83,7 +83,7 @@ public class ColumnHeader {
         return partition;
     }
 
-    public void setDefaultEmptyValue(String defaultEmptyValue) {
+    public void setDefaultEmptyValue(final String defaultEmptyValue) {
         this.defaultEmptyValue = defaultEmptyValue;
     }
 
@@ -91,7 +91,7 @@ public class ColumnHeader {
         return defaultEmptyValue;
     }
 
-    public void setTag(boolean tag) {
+    public void setTag(final boolean tag) {
         this.tag = tag;
     }
 

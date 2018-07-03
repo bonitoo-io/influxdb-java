@@ -22,7 +22,7 @@ public class Table {
         return records;
     }
 
-    void addDataTypes(List<String> datatypes) {
+    void addDataTypes(final List<String> datatypes) {
 
         for (int i = 0; i < datatypes.size(); i++) {
             String s = datatypes.get(i);
@@ -36,7 +36,7 @@ public class Table {
         }
     }
 
-    void addPartitions(List<String> partitions) throws FluxResultMapperException {
+    void addPartitions(final List<String> partitions) throws FluxResultMapperException {
 
         for (int i = 0; i < partitions.size(); i++) {
             String s = partitions.get(i);
@@ -47,7 +47,8 @@ public class Table {
             ColumnHeader def = columnHeaders.get(i);
 
             if (def == null) {
-                throw new FluxResultMapperException("Unable to parse response, inconsistent  #datatypes and #partition header");
+                String message = "Unable to parse response, inconsistent  #datatypes and #partition header";
+                throw new FluxResultMapperException(message);
             }
 
             def.setPartition(s);
@@ -55,7 +56,7 @@ public class Table {
 
     }
 
-    void addDefaultEmptyValues(List<String> defaultEmptyValues) throws FluxResultMapperException {
+    void addDefaultEmptyValues(final List<String> defaultEmptyValues) throws FluxResultMapperException {
 
         for (int i = 0; i < defaultEmptyValues.size(); i++) {
             String s = defaultEmptyValues.get(i);
@@ -66,7 +67,8 @@ public class Table {
             ColumnHeader def = columnHeaders.get(i);
 
             if (def == null) {
-                throw new FluxResultMapperException("Unable to parse response, inconsistent  #datatypes and #partition header");
+                String message = "Unable to parse response, inconsistent  #datatypes and #partition header";
+                throw new FluxResultMapperException(message);
             }
 
             def.setDefaultEmptyValue(s);
@@ -74,7 +76,7 @@ public class Table {
 
     }
 
-    void addColumnNamesAndTags(List<String> columnNames) throws FluxResultMapperException {
+    void addColumnNamesAndTags(final List<String> columnNames) throws FluxResultMapperException {
 
         int size = columnNames.size();
 
@@ -87,7 +89,8 @@ public class Table {
             ColumnHeader def = columnHeaders.get(i);
 
             if (def == null) {
-                throw new FluxResultMapperException("Unable to parse response, inconsistent  #datatypes and #partition header");
+                String message = "Unable to parse response, inconsistent  #datatypes and #partition header";
+                throw new FluxResultMapperException(message);
             }
 
             def.setColumnName(columnName);

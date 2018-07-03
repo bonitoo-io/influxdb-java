@@ -128,7 +128,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                     Assertions.assertThat(record1.getStop()).isNotNull();
                     Assertions.assertThat(record1.getTime()).isEqualTo(Instant.ofEpochSecond(10));
 
-                    Assertions.assertThat(record1.getValue()).isEqualTo("21");
+                    Assertions.assertThat(record1.getValue()).isEqualTo(21L);
 
                     Assertions.assertThat(record1.getTags()).hasSize(2);
                     Assertions.assertThat(record1.getTags().get("host")).isEqualTo("A");
@@ -143,7 +143,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                     Assertions.assertThat(record2.getStop()).isNotNull();
                     Assertions.assertThat(record2.getTime()).isEqualTo(Instant.ofEpochSecond(10));
 
-                    Assertions.assertThat(record2.getValue()).isEqualTo("42");
+                    Assertions.assertThat(record2.getValue()).isEqualTo(42L);
 
                     Assertions.assertThat(record2.getTags()).hasSize(2);
                     Assertions.assertThat(record2.getTags().get("host")).isEqualTo("B");

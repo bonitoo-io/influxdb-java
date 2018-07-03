@@ -1257,7 +1257,7 @@ public abstract class Flux {
      *
      * @param type operator type
      * @param <F>  operator type
-     * @return operator with type {@link F}
+     * @return operator with {@code type}
      */
     @Nonnull
     public <F extends AbstractParametrizedFlux> F operator(@Nonnull final Class<F> type) {
@@ -1270,7 +1270,6 @@ public abstract class Flux {
             throw new RuntimeException(e);
         }
     }
-
 
     /**
      * Add named property to current operator.
