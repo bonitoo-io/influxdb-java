@@ -58,7 +58,7 @@ public abstract class AbstractITFluxReactive {
     @AfterEach
     protected void after() {
 
-        simpleQuery("DROP DATABASE " + DATABASE_NAME);
+//        simpleQuery("DROP DATABASE " + DATABASE_NAME);
 
         fluxReactive.close();
         influxDBReactive.close();

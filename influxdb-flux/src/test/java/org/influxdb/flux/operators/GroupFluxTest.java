@@ -18,6 +18,17 @@ import java.util.List;
 class GroupFluxTest {
 
     @Test
+    void groupByString() {
+
+        Flux flux = Flux
+                .from("telegraf")
+                .groupBy("location");
+
+        Assertions.assertThat(flux.print())
+                .isEqualToIgnoringWhitespace("from(db:\"telegraf\") |> group(by: [\"location\"])");
+    }
+
+    @Test
     void groupByCollection() {
 
         List<String> groupBy = new ArrayList<>();

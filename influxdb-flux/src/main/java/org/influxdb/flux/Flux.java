@@ -244,6 +244,19 @@ public abstract class Flux {
     /**
      * Groups results by a user-specified set of tags.
      *
+     * @param groupBy Group by these specific tag name.
+     * @return {@link GroupFlux}
+     */
+    @Nonnull
+    public GroupFlux groupBy(@Nonnull final String groupBy) {
+        Objects.requireNonNull(groupBy, "GroupBy Columns are required");
+
+        return new GroupFlux(this).withBy(groupBy);
+    }
+
+    /**
+     * Groups results by a user-specified set of tags.
+     *
      * @param groupBy Group by these specific tag names.
      * @return {@link GroupFlux}
      */

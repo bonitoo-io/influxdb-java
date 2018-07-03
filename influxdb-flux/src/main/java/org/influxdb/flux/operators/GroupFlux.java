@@ -49,6 +49,20 @@ public final class GroupFlux extends AbstractParametrizedFlux {
     }
 
     /**
+     * @param groupBy Group by these specific tag name.
+     * @return this
+     */
+    @Nonnull
+    public GroupFlux withBy(@Nonnull final String groupBy) {
+
+        Objects.requireNonNull(groupBy, "GroupBy Column are required");
+
+        this.withPropertyValue("by", new String[]{groupBy});
+
+        return this;
+    }
+
+    /**
      * @param groupBy Group by these specific tag names.
      * @return this
      */

@@ -199,6 +199,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
                     // Record1
                     Record record1 = tables.get(0).getRecords().get(0);
+                    Assertions.assertThat(tables.get(0).getRecords()).hasSize(1);
                     Assertions.assertThat(record1.getMeasurement()).isEqualTo("mem");
                     Assertions.assertThat(record1.getField()).isEqualTo("free");
 
@@ -210,6 +211,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
                     // Record2
                     Record record2 = tables.get(1).getRecords().get(0);
+                    Assertions.assertThat(tables.get(1).getRecords()).hasSize(1);
                     Assertions.assertThat(record2.getMeasurement()).isEqualTo("mem");
                     Assertions.assertThat(record2.getField()).isEqualTo("free");
 
@@ -221,6 +223,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
                     // Record3
                     Record record3 = tables.get(2).getRecords().get(0);
+                    Assertions.assertThat(tables.get(2).getRecords()).hasSize(1);
                     Assertions.assertThat(record3.getMeasurement()).isEqualTo("mem");
                     Assertions.assertThat(record3.getField()).isEqualTo("free");
 
@@ -232,6 +235,97 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
                     // Record4
                     Record record4 = tables.get(3).getRecords().get(0);
+                    Assertions.assertThat(tables.get(3).getRecords()).hasSize(1);
+                    Assertions.assertThat(record4.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record4.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record4.getTags()).hasSize(2);
+                    Assertions.assertThat(record4.getTags().get("host")).isEqualTo("B");
+                    Assertions.assertThat(record4.getTags().get("region")).isEqualTo("west");
+
+                    Assertions.assertThat(record4.getValue()).isEqualTo(22L);
+
+                    return true;
+                });
+    }
+
+    @Test
+    void manyToOne() {
+
+        //
+        // CURL
+        //
+        // curl -i -XPOST --data-urlencode 'q=from(db: "flux_database") |> range(start:0)
+        // |> filter(fn:(r) => r._measurement == "mem" and r._field == "free") |> window(every:10s)
+        // |> group(by:["region"])' --data-urlencode "orgName=0" http://localhost:8093/v1/query
+
+        // #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
+        // #partition,false,false,false,false,false,false,false,false,false,true
+        // #default,_result,,,,,,,,,
+        // ,result,table,_start,_stop,_time,_value,_field,_measurement,host,region
+        // ,,0,1970-01-01T00:00:10Z,1970-01-01T00:00:20Z,1970-01-01T00:00:10Z,10,free,mem,A,west
+        // ,,0,1970-01-01T00:00:10Z,1970-01-01T00:00:20Z,1970-01-01T00:00:10Z,20,free,mem,B,west
+        // ,,0,1970-01-01T00:00:20Z,1970-01-01T00:00:30Z,1970-01-01T00:00:20Z,11,free,mem,A,west
+        // ,,0,1970-01-01T00:00:20Z,1970-01-01T00:00:30Z,1970-01-01T00:00:20Z,22,free,mem,B,west
+
+        Restrictions restriction = Restrictions
+                .and(Restrictions.measurement().equal("mem"), Restrictions.field().equal("free"));
+
+        Flux flux = Flux.from(DATABASE_NAME)
+                .range(Instant.EPOCH)
+                .filter(restriction)
+                .window(10L, ChronoUnit.SECONDS)
+                .groupBy("region");
+
+        Flowable<FluxResult> results = fluxReactive.flux(flux);
+
+        results
+                .test()
+                .assertValueCount(1)
+                .assertValue(result -> {
+
+                    Assertions.assertThat(result).isNotNull();
+
+                    List<Table> tables = result.getTables();
+
+                    Assertions.assertThat(tables).hasSize(1);
+                    Assertions.assertThat(tables.get(0).getRecords()).hasSize(4);
+
+                    // Record1
+                    Record record1 = tables.get(0).getRecords().get(0);
+                    Assertions.assertThat(record1.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record1.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record1.getTags()).hasSize(2);
+                    Assertions.assertThat(record1.getTags().get("host")).isEqualTo("A");
+                    Assertions.assertThat(record1.getTags().get("region")).isEqualTo("west");
+
+                    Assertions.assertThat(record1.getValue()).isEqualTo(10L);
+
+                    // Record2
+                    Record record2 = tables.get(0).getRecords().get(1);
+                    Assertions.assertThat(record2.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record2.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record2.getTags()).hasSize(2);
+                    Assertions.assertThat(record2.getTags().get("host")).isEqualTo("B");
+                    Assertions.assertThat(record2.getTags().get("region")).isEqualTo("west");
+
+                    Assertions.assertThat(record2.getValue()).isEqualTo(20L);
+
+                    // Record3
+                    Record record3 = tables.get(0).getRecords().get(2);
+                    Assertions.assertThat(record3.getMeasurement()).isEqualTo("mem");
+                    Assertions.assertThat(record3.getField()).isEqualTo("free");
+
+                    Assertions.assertThat(record3.getTags()).hasSize(2);
+                    Assertions.assertThat(record3.getTags().get("host")).isEqualTo("A");
+                    Assertions.assertThat(record3.getTags().get("region")).isEqualTo("west");
+
+                    Assertions.assertThat(record3.getValue()).isEqualTo(11L);
+
+                    // Record4
+                    Record record4 = tables.get(0).getRecords().get(3);
                     Assertions.assertThat(record4.getMeasurement()).isEqualTo("mem");
                     Assertions.assertThat(record4.getField()).isEqualTo("free");
 
