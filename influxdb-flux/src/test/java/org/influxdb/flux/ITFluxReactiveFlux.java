@@ -1,11 +1,6 @@
 package org.influxdb.flux;
 
 import io.reactivex.Flowable;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
 import org.influxdb.flux.mapper.ColumnHeader;
@@ -20,6 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Jakub Bednar (bednar@github) (28/06/2018 07:59)
@@ -65,6 +66,13 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                 .time(20, TimeUnit.SECONDS)
                 .build();
 
+        System.out.println("point1.lineProtocol() = " + point1.lineProtocol());
+        System.out.println("point2.lineProtocol() = " + point2.lineProtocol());
+        System.out.println("point3.lineProtocol() = " + point3.lineProtocol());
+        System.out.println("point4.lineProtocol() = " + point4.lineProtocol());
+        System.out.println("point5.lineProtocol() = " + point5.lineProtocol());
+        System.out.println("point6.lineProtocol() = " + point6.lineProtocol());
+
         LongAdder successEventCount = new LongAdder();
         influxDBReactive
                 .listenEvents(WriteSuccessEvent.class)
@@ -74,6 +82,11 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
         waitToSecondsTo(() -> successEventCount.intValue() != 6);
         waitToFlux();
+    }
+
+    @Test
+    void test() {
+        
     }
 
     @Test

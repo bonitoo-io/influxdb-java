@@ -2,6 +2,7 @@ package org.influxdb.flux;
 
 import org.influxdb.flux.operators.AbstractParametrizedFlux;
 import org.influxdb.flux.operators.CountFlux;
+import org.influxdb.flux.operators.DerivativeFlux;
 import org.influxdb.flux.operators.ExpressionFlux;
 import org.influxdb.flux.operators.FilterFlux;
 import org.influxdb.flux.operators.FirstFlux;
@@ -53,7 +54,7 @@ import java.util.Objects;
  * <li>{@link CountFlux}</li>
  * <li>covariance - SPEC</li>
  * <li>cumulativeSum - SPEC</li>
- * <li>derivative - SPEC 1</li>
+ * <li>{@link DerivativeFlux}</li>
  * <li>difference - SPEC</li>
  * <li>distinct - SPEC</li>
  * <li>{@link FilterFlux}</li>
@@ -162,6 +163,39 @@ public abstract class Flux {
     public CountFlux count(final boolean useStartTime) {
         return new CountFlux(this)
                 .withUseStartTime(useStartTime);
+    }
+
+    /**
+     * Computes the time based difference between subsequent non null records.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link DerivativeFlux#withUnit(Long, ChronoUnit)}</li>
+     * <li>{@link DerivativeFlux#withNonNegative(boolean)}</li>
+     * <li>{@link DerivativeFlux#withColumns(String[])}</li>
+     * <li>{@link DerivativeFlux#withTimeSrc(String)}</li>
+     * <li>{@link DerivativeFlux#withPropertyNamed(String)}</li>
+     * <li>{@link DerivativeFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link DerivativeFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link DerivativeFlux}
+     */
+    @Nonnull
+    public DerivativeFlux derivative() {
+        return new DerivativeFlux(this);
+    }
+
+    /**
+     * Computes the time based difference between subsequent non null records.
+     *
+     * @param duration the time duration to use for the result
+     * @param unit     a {@code ChronoUnit} determining how to interpret the {@code duration} parameter
+     * @return {@link DerivativeFlux}
+     */
+    @Nonnull
+    public DerivativeFlux derivative(@Nonnull final Long duration, @Nonnull final ChronoUnit unit) {
+        return new DerivativeFlux(this).withUnit(duration, unit);
     }
 
     /**

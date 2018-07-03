@@ -53,5 +53,4 @@ public final class IntegralFlux extends AbstractParametrizedFlux {
 
         return this;
     }
-
 }

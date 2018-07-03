@@ -744,10 +744,27 @@ Flux flux = Flux
 Counts the number of results [[doc](https://github.com/influxdata/platform/tree/master/query#count)].
 - `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
 
+#### derivative
+Computes the time based difference between subsequent non null records [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#derivative)].
+- `unit` - The time duration to use for the result [duration].
+- `nonNegative` - Indicates if the derivative is allowed to be negative [boolean].
+- `columns` - List of columns on which to compute the derivative [array of strings].
+- `timeSrc` - The source column for the time values. Defaults to `_time` [string].
+
 ```java
 Flux flux = Flux
     .from("telegraf")
-    .count();
+    .derivative(1L, ChronoUnit.MINUTES);
+```
+
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .derivative()
+        .withUnit(10L, ChronoUnit.DAYS)
+        .withNonNegative(true)
+        .withColumns(new String[]{"columnCompare_1", "columnCompare_2"})
+        .withTimeSrc("_timeColumn");
 ```
 
 #### filter
