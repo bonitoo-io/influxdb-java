@@ -7,6 +7,7 @@ import org.influxdb.flux.operators.FilterFlux;
 import org.influxdb.flux.operators.FirstFlux;
 import org.influxdb.flux.operators.FromFlux;
 import org.influxdb.flux.operators.GroupFlux;
+import org.influxdb.flux.operators.IntegralFlux;
 import org.influxdb.flux.operators.LastFlux;
 import org.influxdb.flux.operators.LimitFlux;
 import org.influxdb.flux.operators.MaxFlux;
@@ -52,17 +53,17 @@ import java.util.Objects;
  * <li>{@link CountFlux}</li>
  * <li>covariance - SPEC</li>
  * <li>cumulativeSum - SPEC</li>
- * <li>derivative - SPEC</li>
+ * <li>derivative - SPEC 1</li>
  * <li>difference - SPEC</li>
  * <li>distinct - SPEC</li>
  * <li>{@link FilterFlux}</li>
  * <li>{@link FirstFlux}</li>
  * <li>{@link GroupFlux}</li>
- * <li>integral - SPEC</li>
+ * <li>{@link IntegralFlux}</li>
  * <li>join - UNSUPPORTED</li>
  * <li>{@link LastFlux}</li>
  * <li>{@link LimitFlux}</li>
- * <li>map - UNSUPPORTED</li>
+ * <li>map - UNSUPPORTED 1</li>
  * <li>{@link MaxFlux}</li>
  * <li>{@link MeanFlux}</li>
  * <li>{@link MinFlux}</li>
@@ -364,6 +365,41 @@ public abstract class Flux {
         Objects.requireNonNull(keep, "Keep Columns are required");
 
         return new GroupFlux(this).withExcept(except).withKeep(keep);
+    }
+
+    /**
+     * For each aggregate column, it outputs the area under the curve of non null records.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link IntegralFlux#withUnit(Long, ChronoUnit)}</li>
+     * <li>{@link IntegralFlux#withPropertyNamed(String)}</li>
+     * <li>{@link IntegralFlux#withPropertyNamed(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link IntegralFlux}
+     */
+    @Nonnull
+    public IntegralFlux integral() {
+
+
+        return new IntegralFlux(this);
+    }
+
+    /**
+     * For each aggregate column, it outputs the area under the curve of non null records.
+     *
+     * @param duration Time duration to use when computing the integral
+     * @param unit     a {@code ChronoUnit} determining how to interpret the {@code duration} parameter
+     * @return {@link IntegralFlux}
+     */
+    @Nonnull
+    public IntegralFlux integral(@Nonnull final Long duration, @Nonnull final ChronoUnit unit) {
+
+        Objects.requireNonNull(duration, "Duration is required");
+        Objects.requireNonNull(unit, "ChronoUnit is required");
+
+        return new IntegralFlux(this).withUnit(duration, unit);
     }
 
     /**

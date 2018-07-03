@@ -97,7 +97,7 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
     }
 
     @Test
-    void parsingToFluxResultMultitable () {
+    void parsingToFluxResultMultiTable() {
 
         fluxServer.enqueue(createMultiTableResponse());
 
