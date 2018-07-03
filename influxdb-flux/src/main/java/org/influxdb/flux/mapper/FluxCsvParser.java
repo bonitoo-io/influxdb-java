@@ -27,6 +27,8 @@ class FluxCsvParser {
         Table table = null;
 
         int tableIndex = 0;
+        int tableColumnIndex = -1;
+
         for (int i = 0, recordsSize = records.size(); i < recordsSize; i++) {
             CSVRecord csvRecord = records.get(i);
             String token = csvRecord.get(0);
@@ -55,21 +57,32 @@ class FluxCsvParser {
             } else {
                 // parse column names
                 if (startNewTable) {
-                    table.addColumnNamesAndTags(toList(csvRecord));
+                    tableColumnIndex = table.addColumnNamesAndTags(toList(csvRecord));
                     startNewTable = false;
                     continue;
                 }
+
+                //create the new table object if tableColumnIndex is incremented
+                if (tableColumnIndex < 0) {
+                    throw new FluxResultMapperException("table index is not found in CSV header");
+                }
+
+                int currentIndex = Integer.parseInt(csvRecord.get(tableColumnIndex));
+
+                if (currentIndex > (tableIndex - 1)) {
+                    //create new table with previous column headers settings
+                    List<ColumnHeader> columnHeaders = table.getColumnHeaders();
+                    table = new Table();
+                    table.setColumnHeaders(columnHeaders);
+                    tables.add(tableIndex, table);
+                    tableIndex++;
+                }
+
                 Record r = parseRecord(table, csvRecord);
                 table.getRecords().add(r);
             }
         }
         return new FluxResult(tables);
-    }
-
-
-    private List<String> parseDefaultEmptyValues(final CSVRecord csvRecord) {
-        //todo
-        return null;
     }
 
     private Record parseRecord(final Table table, final CSVRecord csvRecord) throws FluxResultMapperException {

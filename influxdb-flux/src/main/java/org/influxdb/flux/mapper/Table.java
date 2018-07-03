@@ -18,6 +18,10 @@ public class Table {
         return columnHeaders;
     }
 
+    void setColumnHeaders(final List<ColumnHeader> columnHeaders) {
+        this.columnHeaders = columnHeaders;
+    }
+
     public List<Record> getRecords() {
         return records;
     }
@@ -76,9 +80,18 @@ public class Table {
 
     }
 
-    void addColumnNamesAndTags(final List<String> columnNames) throws FluxResultMapperException {
+    /**
+     * Sets the column names and tags and returns index of "table" column.
+     *
+     * @param columnNames
+     * @return index of "table" column
+     *
+     * @throws FluxResultMapperException
+     */
+    int addColumnNamesAndTags(final List<String> columnNames) throws FluxResultMapperException {
 
         int size = columnNames.size();
+        int tableIndexColumn = -1;
 
         for (int i = 0; i < size; i++) {
             String columnName = columnNames.get(i);
@@ -95,6 +108,10 @@ public class Table {
 
             def.setColumnName(columnName);
 
+            if ("table".equals(columnName)) {
+                tableIndexColumn = i;
+            }
+
             if (!(columnName.startsWith("_")
                     || columnName.isEmpty()
                     || "result".equals(columnName)
@@ -102,6 +119,8 @@ public class Table {
                 def.setTag(true);
             }
         }
+
+        return tableIndexColumn;
     }
 
 }

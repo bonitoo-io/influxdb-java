@@ -1,6 +1,11 @@
 package org.influxdb.flux;
 
 import io.reactivex.Flowable;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 import org.assertj.core.api.Assertions;
 import org.influxdb.dto.Point;
 import org.influxdb.flux.mapper.ColumnHeader;
@@ -11,17 +16,10 @@ import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.AbstractITFluxReactive;
 import org.influxdb.reactive.events.WriteSuccessEvent;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Jakub Bednar (bednar@github) (28/06/2018 07:59)
@@ -107,23 +105,23 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
                     List<Table> tables = result.getTables();
 
-                    Assertions.assertThat(tables).hasSize(1);
+                    Assertions.assertThat(tables).hasSize(2);
 
-                    Table table = tables.get(0);
+                    Table table1 = tables.get(0);
                     // Data types
-                    Assertions.assertThat(table.getColumnHeaders()).hasSize(11);
-                    Assertions.assertThat(table.getColumnHeaders().stream().map(ColumnHeader::getDataType))
+                    Assertions.assertThat(table1.getColumnHeaders()).hasSize(11);
+                    Assertions.assertThat(table1.getColumnHeaders().stream().map(ColumnHeader::getDataType))
                             .containsExactlyInAnyOrder("#datatype", "string", "long", "dateTime:RFC3339", "dateTime:RFC3339", "dateTime:RFC3339", "long", "string", "string", "string", "string");
 
                     // Columns
-                    Assertions.assertThat(table.getColumnHeaders().stream().map(ColumnHeader::getColumnName))
+                    Assertions.assertThat(table1.getColumnHeaders().stream().map(ColumnHeader::getColumnName))
                             .containsExactlyInAnyOrder("", "result", "table", "_start", "_stop", "_time", "_value", "_field", "_measurement", "host", "region");
 
                     // Records
-                    Assertions.assertThat(table.getRecords()).hasSize(2);
+                    Assertions.assertThat(table1.getRecords()).hasSize(1);
 
                     // Record 1
-                    Record record1 = table.getRecords().get(0);
+                    Record record1 = table1.getRecords().get(0);
                     Assertions.assertThat(record1.getMeasurement()).isEqualTo("mem");
                     Assertions.assertThat(record1.getField()).isEqualTo("free");
 
@@ -138,7 +136,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                     Assertions.assertThat(record1.getTags().get("region")).isEqualTo("west");
 
                     // Record 2
-                    Record record2 = table.getRecords().get(1);
+                    Record record2 = tables.get(1).getRecords().get(0);
                     Assertions.assertThat(record2.getMeasurement()).isEqualTo("mem");
                     Assertions.assertThat(record2.getField()).isEqualTo("free");
 
@@ -157,7 +155,6 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
     }
 
     @Test
-    @Disabled
     void oneToManyTable() {
 
         //
