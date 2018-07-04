@@ -2,6 +2,8 @@ package org.influxdb.flux;
 
 import io.reactivex.Flowable;
 import org.assertj.core.api.Assertions;
+import org.influxdb.annotation.Column;
+import org.influxdb.annotation.Measurement;
 import org.influxdb.dto.Point;
 import org.influxdb.flux.mapper.ColumnHeader;
 import org.influxdb.flux.mapper.FluxResult;
@@ -66,13 +68,6 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                 .time(20, TimeUnit.SECONDS)
                 .build();
 
-        System.out.println("point1.lineProtocol() = " + point1.lineProtocol());
-        System.out.println("point2.lineProtocol() = " + point2.lineProtocol());
-        System.out.println("point3.lineProtocol() = " + point3.lineProtocol());
-        System.out.println("point4.lineProtocol() = " + point4.lineProtocol());
-        System.out.println("point5.lineProtocol() = " + point5.lineProtocol());
-        System.out.println("point6.lineProtocol() = " + point6.lineProtocol());
-
         LongAdder successEventCount = new LongAdder();
         influxDBReactive
                 .listenEvents(WriteSuccessEvent.class)
@@ -82,11 +77,6 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
         waitToSecondsTo(() -> successEventCount.intValue() != 6);
         waitToFlux();
-    }
-
-    @Test
-    void test() {
-        
     }
 
     @Test
@@ -347,5 +337,81 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
 
                     return true;
                 });
+    }
+
+    @Test
+    void mappingToPOJO() {
+
+        Restrictions restriction = Restrictions
+                .and(Restrictions.measurement().equal("mem"), Restrictions.field().equal("free"));
+
+        Flux flux = Flux.from(DATABASE_NAME)
+                .range(Instant.EPOCH)
+                .filter(restriction)
+                .window(10L, ChronoUnit.SECONDS)
+                .groupBy("region");
+
+        Flowable<Memory> results = fluxReactive.flux(flux, Memory.class);
+
+
+        results
+                .test()
+                .assertValueCount(4)
+                .assertValueAt(0, memory -> {
+
+                    Assertions.assertThat(memory).isNotNull();
+                    Assertions.assertThat(memory.time).isEqualTo(Instant.ofEpochSecond(10));
+                    Assertions.assertThat(memory.free).isEqualTo(10L);
+                    Assertions.assertThat(memory.host).isEqualTo("A");
+                    Assertions.assertThat(memory.region).isEqualTo("west");
+
+                    return true;
+                })
+                .assertValueAt(1, memory -> {
+
+                    Assertions.assertThat(memory).isNotNull();
+                    Assertions.assertThat(memory.time).isEqualTo(Instant.ofEpochSecond(10));
+                    Assertions.assertThat(memory.free).isEqualTo(20L);
+                    Assertions.assertThat(memory.host).isEqualTo("B");
+                    Assertions.assertThat(memory.region).isEqualTo("west");
+
+                    return true;
+                })
+                .assertValueAt(2, memory -> {
+
+                    Assertions.assertThat(memory).isNotNull();
+                    Assertions.assertThat(memory.time).isEqualTo(Instant.ofEpochSecond(20));
+                    Assertions.assertThat(memory.free).isEqualTo(11L);
+                    Assertions.assertThat(memory.host).isEqualTo("A");
+                    Assertions.assertThat(memory.region).isEqualTo("west");
+
+                    return true;
+                })
+                .assertValueAt(3, memory -> {
+
+                    Assertions.assertThat(memory).isNotNull();
+                    Assertions.assertThat(memory.time).isEqualTo(Instant.ofEpochSecond(20));
+                    Assertions.assertThat(memory.free).isEqualTo(22L);
+                    Assertions.assertThat(memory.host).isEqualTo("B");
+                    Assertions.assertThat(memory.region).isEqualTo("west");
+
+                    return true;
+                });
+    }
+
+    @Measurement(name = "mem")
+    public static class Memory {
+        
+        @Column(name = "time")
+        private Instant time;
+
+        @Column(name = "free")
+        private Long free;
+
+        @Column(name = "host", tag = true)
+        private String host;
+
+        @Column(name = "region", tag = true)
+        private String region;
     }
 }

@@ -1134,7 +1134,7 @@ Flux flux = Flux
     .yield("0");
 ```
 
-### Custom Functions
+#### Custom functions
 We assume that exist custom function measurement that filter measurement by their name. The `Flux` implementation looks like this: 
 
 ```flux
@@ -1183,38 +1183,58 @@ Flux flux = Flux
     .sum();
 ```
 
-### Examples
-#### Query
-```java
-Flux flux = Flux.from("telegraf")
-    .range(-170L, ChronoUnit.HOURS)
-    .limit(5)
-    
-Flowable<FluxResult> cpu = fluxReactive.flux(flux);
-```
-
-#### Map results to the POJO
-```java
-//  from(db:"telegraf")
-//      |> filter(fn: (r) => r["_measurement"] == "cpu" AND r["_field"] == "usage_user")
-//      |> range(start:-170h)
-//      |> sum()'
-
-Flux flux = Flux.from("telegraf")
-    .filter(...)
-    .range(-170L, ChronoUnit.HOURS)
-    .sum()
-    
-Flowable<Cpu> cpu = fluxReactive.flux(flux, Cpu.class);
-```
-
-#### Custom Flux expression
+#### Custom expressions
 ```java
 Flux flux = Flux.from("telegraf")
     .expression("map(fn: (r) => r._value * r._value)")
     .expression("sum()");
 
 Flowable<FluxResult> results = fluxReactive.flux(flux);
+```
+
+### Mapping to POJO
+Suppose that we want map the Flux response to the measurement _Memory_.
+
+The Flux response:
+```
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
+#partition,false,false,false,false,false,false,false,false,false,true
+#default,_result,,,,,,,,,
+,result,table,_start,_stop,_time,_value,_field,_measurement,host,region
+,,0,1970-01-01T00:00:10Z,1970-01-01T00:00:20Z,1970-01-01T00:00:10Z,10,free,mem,A,west
+,,0,1970-01-01T00:00:10Z,1970-01-01T00:00:20Z,1970-01-01T00:00:10Z,20,free,mem,B,west
+,,0,1970-01-01T00:00:20Z,1970-01-01T00:00:30Z,1970-01-01T00:00:20Z,11,free,mem,A,west
+,,0,1970-01-01T00:00:20Z,1970-01-01T00:00:30Z,1970-01-01T00:00:20Z,22,free,mem,B,west
+```
+
+The measurement Memory:
+```java
+@Measurement(name = "mem")
+public static class Memory {
+    
+    @Column(name = "time")
+    private Instant time;
+
+    @Column(name = "free")
+    private Long free;
+
+    @Column(name = "host", tag = true)
+    private String host;
+
+    @Column(name = "region", tag = true)
+    private String region;
+}
+```
+
+The corresponding query:
+```java
+Flux flux = Flux.from("telegraf")
+    .range(Instant.EPOCH)
+    .filter(Restrictions.and(Restrictions.measurement().equal("cpu"), Restrictions.field().equal("usage_user")))
+    .window(10L, ChronoUnit.SECONDS)
+    .groupBy("region");    
+    
+Flowable<Cpu> cpu = fluxReactive.flux(flux, Memory.class);
 ```
 
 ### Advanced Usage

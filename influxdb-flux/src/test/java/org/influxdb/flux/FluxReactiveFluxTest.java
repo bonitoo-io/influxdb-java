@@ -10,7 +10,6 @@ import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.Record;
 import org.influxdb.impl.AbstractFluxReactiveTest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -141,30 +140,6 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
                         Assertions.assertThat(rec.getTags().get("production_usage")).isEqualTo("false");
                     }
 
-                    return true;
-                });
-    }
-
-    @Test
-    @Disabled
-    void parsingToPOJO() {
-
-        // saved: ServePerformance.create(1)
-        //
-        // insert server_performance,location=Area\ 1°\ 10'\ "20,production_usage=false cpu_usage=50.0,rackNumber=1i,server\ description="Server no. 1",upTime=10000i 1530079000001000000
-        //
-        fluxServer.enqueue(createMultiTableResponse());
-
-        Flowable<ServePerformance> results = fluxReactive
-                .flux(Flux.from("flux_database").last(), ServePerformance.class);
-
-        results
-                .take(1)
-                .test()
-                .assertValueCount(1)
-                .assertValue(servePerformance -> {
-
-                    Assertions.assertThat(servePerformance).isEqualTo(ServePerformance.create(1));
                     return true;
                 });
     }
