@@ -7,7 +7,6 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import org.influxdb.BatchOptions;
 import org.influxdb.dto.Point;
-import org.influxdb.jmx.ClientStatisticsMBean;
 import org.influxdb.jmx.JmxMonitorEventListener;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -68,7 +67,7 @@ class TestJmxListenerWrite extends AbstractJmxListenerTest {
     @Test
     void testWriteBatchedMultithreadedT20() throws Exception {
 
-        BatchOptions batchOptions = BatchOptions.DEFAULTS.actions(500).flushDuration(1000);
+        BatchOptions batchOptions = BatchOptions.DEFAULTS.actions(500).flushDuration(10_000);
 
         influxDB.enableBatch(batchOptions);
         resetStatistics();
