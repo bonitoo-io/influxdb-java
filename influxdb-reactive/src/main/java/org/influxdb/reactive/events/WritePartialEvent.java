@@ -1,7 +1,7 @@
 package org.influxdb.reactive.events;
 
 import org.influxdb.InfluxDBException;
-import org.influxdb.reactive.option.WriteOptions;
+import org.influxdb.reactive.options.WriteOptions;
 
 import javax.annotation.Nonnull;
 import java.util.List;

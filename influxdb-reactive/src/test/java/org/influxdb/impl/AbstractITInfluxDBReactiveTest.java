@@ -9,7 +9,7 @@ import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.reactive.H2OFeetMeasurement;
 import org.influxdb.reactive.InfluxDBReactive;
-import org.influxdb.reactive.option.BatchOptionsReactive;
+import org.influxdb.reactive.options.BatchOptionsReactive;
 import org.junit.jupiter.api.AfterEach;
 
 import javax.annotation.Nonnull;

@@ -1,4 +1,4 @@
-package org.influxdb.reactive.option;
+package org.influxdb.reactive.options;
 
 import org.assertj.core.api.Assertions;
 import org.influxdb.InfluxDB;

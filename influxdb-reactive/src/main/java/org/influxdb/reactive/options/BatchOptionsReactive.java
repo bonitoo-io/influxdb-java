@@ -1,4 +1,4 @@
-package org.influxdb.reactive.option;
+package org.influxdb.reactive.options;
 
 import io.reactivex.BackpressureOverflowStrategy;
 import io.reactivex.Scheduler;

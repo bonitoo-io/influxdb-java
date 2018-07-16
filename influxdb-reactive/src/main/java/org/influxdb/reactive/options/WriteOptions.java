@@ -1,4 +1,4 @@
-package org.influxdb.reactive.option;
+package org.influxdb.reactive.options;
 
 import org.influxdb.InfluxDB;
 import org.influxdb.impl.Preconditions;
@@ -244,7 +244,7 @@ public final class WriteOptions {
 
     @Override
     public String toString() {
-        return "org.influxdb.reactive.option.WriteOptions{"
+        return "org.influxdb.reactive.options.WriteOptions{"
                 + "database='" + database + '\''
                 + ", retentionPolicy='" + retentionPolicy + '\''
                 + ", consistencyLevel=" + consistencyLevel

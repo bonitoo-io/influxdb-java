@@ -8,7 +8,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okio.Buffer;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.reactive.InfluxDBReactive;
-import org.influxdb.reactive.option.BatchOptionsReactive;
+import org.influxdb.reactive.options.BatchOptionsReactive;
 import org.junit.jupiter.api.AfterEach;
 
 import javax.annotation.Nonnull;

@@ -4,7 +4,7 @@ import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.flux.options.FluxOptions;
-import org.influxdb.reactive.option.BatchOptionsReactive;
+import org.influxdb.reactive.options.BatchOptionsReactive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 

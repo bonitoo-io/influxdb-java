@@ -2,9 +2,6 @@ package org.influxdb.jmx.test;
 
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
-import java.util.concurrent.TimeUnit;
-import javax.management.ObjectInstance;
-import javax.management.ObjectName;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
@@ -12,13 +9,17 @@ import org.influxdb.dto.QueryResult;
 import org.influxdb.jmx.JmxMonitorEventListener;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveFactory;
-import org.influxdb.reactive.option.BatchOptionsReactive;
+import org.influxdb.reactive.options.BatchOptionsReactive;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(JUnitPlatform.class)
 class ReactiveJmxTest extends AbstractJmxListenerTest {

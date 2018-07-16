@@ -9,7 +9,7 @@ import org.influxdb.dto.Query;
 import org.influxdb.reactive.InfluxDBReactive;
 import org.influxdb.reactive.InfluxDBReactiveFactory;
 import org.influxdb.reactive.events.BackpressureEvent;
-import org.influxdb.reactive.option.BatchOptionsReactive;
+import org.influxdb.reactive.options.BatchOptionsReactive;
 
 import java.util.concurrent.TimeUnit;
 

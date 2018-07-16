@@ -1,4 +1,4 @@
-package org.influxdb.reactive.option;
+package org.influxdb.reactive.options;
 
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.impl.Preconditions;

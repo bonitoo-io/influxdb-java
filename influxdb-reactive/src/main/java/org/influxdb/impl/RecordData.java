@@ -1,6 +1,6 @@
 package org.influxdb.impl;
 
-import org.influxdb.reactive.option.WriteOptions;
+import org.influxdb.reactive.options.WriteOptions;
 
 import javax.annotation.Nonnull;
 
