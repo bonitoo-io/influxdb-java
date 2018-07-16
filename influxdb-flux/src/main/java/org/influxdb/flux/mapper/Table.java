@@ -1,7 +1,11 @@
 package org.influxdb.flux.mapper;
 
+import org.influxdb.flux.options.FluxCsvParserOptions;
+
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represents table structure in FluxRequest.
@@ -84,11 +88,14 @@ public class Table {
      * Sets the column names and tags and returns index of "table" column.
      *
      * @param columnNames
+     * @param settings    of parsing
      * @return index of "table" column
-     *
      * @throws FluxResultMapperException
      */
-    int addColumnNamesAndTags(final List<String> columnNames) throws FluxResultMapperException {
+    int addColumnNamesAndTags(final List<String> columnNames, @Nonnull final FluxCsvParserOptions settings)
+            throws FluxResultMapperException {
+
+        Objects.requireNonNull(settings, "FluxCsvParserOptions is required");
 
         int size = columnNames.size();
         int tableIndexColumn = -1;
@@ -115,7 +122,8 @@ public class Table {
             if (!(columnName.startsWith("_")
                     || columnName.isEmpty()
                     || "result".equals(columnName)
-                    || "table".equals(columnName))) {
+                    || "table".equals(columnName)
+                    || settings.getValueDestinations().contains(columnName))) {
                 def.setTag(true);
             }
         }

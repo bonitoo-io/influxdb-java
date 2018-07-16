@@ -645,6 +645,25 @@ FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
 fluxReactive.close();
 ```
 
+### Flux query configuration
+
+The Flux query can be configured by `FluxQueryOptions`:
+
+- `parserOptions` - the CSV parser options
+    - `valueDestinations` - the column names of the record where result will be placed (see [map function](#map))
+    
+```java
+FluxCsvParserOptions parserOptions = FluxCsvParserOptions.builder()
+    .valueDestinations("value1", "_value2", "value_str")
+    .build();
+
+FluxQueryOptions queryOptions = FluxQueryOptions.builder()
+    .parserOptions(parserOptions)
+    .build();
+
+Flowable<FluxResult> results = fluxReactive.flux(Flux.from("telegraf"), queryOptions);
+```
+
 ### Events
 The `FluxReactive` produces events that allow user to be notified and react to this events:
 
@@ -881,6 +900,7 @@ Flux flux = Flux
     .from("telegraf")
     .limit(5);
 ```
+#### map
 
 #### max
 Returns the max value within the results [[doc](https://github.com/influxdata/platform/tree/master/query#max)].

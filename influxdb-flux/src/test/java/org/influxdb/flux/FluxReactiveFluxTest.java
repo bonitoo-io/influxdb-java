@@ -9,6 +9,8 @@ import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.Record;
+import org.influxdb.flux.options.FluxCsvParserOptions;
+import org.influxdb.flux.options.FluxQueryOptions;
 import org.influxdb.impl.AbstractFluxReactiveTest;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -139,6 +141,50 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
                         Assertions.assertThat(rec.getTags().get("location")).isEqualTo("Area 1° 10' \"20");
                         Assertions.assertThat(rec.getTags().get("production_usage")).isEqualTo("false");
                     }
+
+                    return true;
+                });
+    }
+
+    @Test
+    void parsingToFluxResultMultiRecordValues() {
+
+        String data = "#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,long,long,string\n"
+                + "#group,false,false,true,true,true,true,true,true,false,false,false\n"
+                + "#default,_result,,,,,,,,,,\n"
+                + ",result,table,_start,_stop,_field,_measurement,host,region,_value2,value1,value_str\n"
+                + ",,0,1677-09-21T00:12:43.145224192Z,2018-07-16T11:21:02.547596934Z,free,mem,A,west,121,11,test";
+
+        fluxServer.enqueue(createResponse(data));
+
+        FluxCsvParserOptions parserOptions = FluxCsvParserOptions.builder()
+                .valueDestinations("value1", "_value2", "value_str")
+                .build();
+
+        FluxQueryOptions queryOptions = FluxQueryOptions.builder()
+                .parserOptions(parserOptions)
+                .build();
+
+        Flowable<FluxResult> results = fluxReactive.flux(Flux.from("flux_database"), queryOptions);
+        results
+                .take(1)
+                .test()
+                .assertValueCount(1)
+                .assertValue(fluxResult -> {
+
+                    Assertions.assertThat(fluxResult.getTables().get(0).getRecords()).hasSize(1);
+
+                    Record record = fluxResult.getTables().get(0).getRecords().get(0);
+                    Assertions.assertThat(record.getTags()).hasSize(2);
+                    Assertions.assertThat(record.getTags())
+                            .hasEntrySatisfying("host", value -> Assertions.assertThat(value).isEqualTo("A"))
+                            .hasEntrySatisfying("region", value -> Assertions.assertThat(value).isEqualTo("west"));
+                    Assertions.assertThat(record.getValues()).hasSize(3);
+                    Assertions.assertThat(record.getValue()).isEqualTo(11L);
+                    Assertions.assertThat(record.getValues())
+                            .hasEntrySatisfying("value1", value -> Assertions.assertThat(value).isEqualTo(11L))
+                            .hasEntrySatisfying("_value2", value -> Assertions.assertThat(value).isEqualTo(121L))
+                            .hasEntrySatisfying("value_str", value -> Assertions.assertThat(value).isEqualTo("test"));
 
                     return true;
                 });

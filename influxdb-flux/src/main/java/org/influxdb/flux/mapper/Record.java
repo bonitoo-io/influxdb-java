@@ -13,6 +13,7 @@ public class Record {
     private Instant stop;
     private Instant time;
     private Object value;
+    private Map<String, Object> values = new HashMap<>();
 
     private String field;
     private String measurement;
@@ -72,5 +73,13 @@ public class Record {
 
     public void setTags(final Map<String, String> tags) {
         this.tags = tags;
+    }
+
+    public Map<String, Object> getValues() {
+        return values;
+    }
+
+    public void setValues(final Map<String, Object> values) {
+        this.values = values;
     }
 }

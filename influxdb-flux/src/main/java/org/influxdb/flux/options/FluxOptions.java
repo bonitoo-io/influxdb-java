@@ -12,6 +12,7 @@ import java.util.Objects;
  * FluxOptions are used to configure queries to the Flux.
  *
  * @author Jakub Bednar (bednar@github) (26/06/2018 08:59)
+ * @since 3.0.0
  */
 @ThreadSafe
 public final class FluxOptions {
@@ -125,9 +126,9 @@ public final class FluxOptions {
         }
 
         /**
-         * Build an instance of InfluxDBOptions.
+         * Build an instance of FluxOptions.
          *
-         * @return {@code InfluxDBOptions}
+         * @return {@link FluxOptions}
          */
         @Nonnull
         public FluxOptions build() {

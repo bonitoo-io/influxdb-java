@@ -3,6 +3,7 @@ package org.influxdb.flux.mapper;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.influxdb.flux.options.FluxCsvParserOptions;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.io.Reader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class us used to construct FluxResult from CSV.
@@ -18,6 +20,15 @@ class FluxCsvParser {
 
     @Nonnull
     FluxResult parseFluxResponse(@Nonnull final Reader reader) throws FluxResultMapperException, IOException {
+        return parseFluxResponse(reader, FluxCsvParserOptions.DEFAULTS);
+    }
+
+    @Nonnull
+    FluxResult parseFluxResponse(@Nonnull final Reader reader, @Nonnull final FluxCsvParserOptions settings)
+            throws FluxResultMapperException, IOException {
+
+        Objects.requireNonNull(reader, "Reader is required");
+        Objects.requireNonNull(settings, "FluxCsvParserOptions is required");
 
         final CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
         final List<CSVRecord> records = parser.getRecords();
@@ -58,7 +69,7 @@ class FluxCsvParser {
             } else {
                 // parse column names
                 if (startNewTable) {
-                    tableColumnIndex = table.addColumnNamesAndTags(toList(csvRecord));
+                    tableColumnIndex = table.addColumnNamesAndTags(toList(csvRecord), settings);
                     startNewTable = false;
                     continue;
                 }
@@ -79,16 +90,19 @@ class FluxCsvParser {
                     tableIndex++;
                 }
 
-                Record r = parseRecord(table, csvRecord);
+                Record r = parseRecord(table, csvRecord, settings);
                 table.getRecords().add(r);
             }
         }
         return new FluxResult(tables);
     }
 
-    private Record parseRecord(final Table table, final CSVRecord csvRecord) throws FluxResultMapperException {
+    private Record parseRecord(final Table table, final CSVRecord csvRecord, final FluxCsvParserOptions settings)
+            throws FluxResultMapperException {
 
         Record record = new Record();
+
+        List<String> valueDestinations = settings.getValueDestinations();
 
         for (ColumnHeader columnHeader : table.getColumnHeaders()) {
 
@@ -99,8 +113,6 @@ class FluxCsvParser {
                 record.setField(csvRecord.get(index));
             } else if ("_measurement".equals(columnName)) {
                 record.setMeasurement(csvRecord.get(index));
-            } else if ("_value".equals(columnName)) {
-                record.setValue(columnHeader.toValue(csvRecord.get(index)));
             } else if ("_start".equals(columnName)) {
                 record.setStart((Instant) columnHeader.toValue(csvRecord.get(index)));
             } else if ("_stop".equals(columnName)) {
@@ -109,6 +121,18 @@ class FluxCsvParser {
                 record.setTime((Instant) columnHeader.toValue(csvRecord.get(index)));
             } else if (columnHeader.getTag()) {
                 record.getTags().put(columnName, csvRecord.get(index));
+            }
+
+            // values
+            //
+            // Record can have multiple values see:
+            // org.influxdb.flux.options.FluxCsvParserOptions.Builder.valueDestinations
+            if (valueDestinations.contains(columnName)) {
+                record.getValues().put(columnName, columnHeader.toValue(csvRecord.get(index)));
+
+                if (valueDestinations.get(0).equals(columnName)) {
+                    record.setValue(columnHeader.toValue(csvRecord.get(index)));
+                }
             }
         }
         return record;

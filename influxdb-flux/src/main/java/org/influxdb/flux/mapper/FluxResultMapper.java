@@ -3,6 +3,7 @@ package org.influxdb.flux.mapper;
 import okio.Buffer;
 import okio.BufferedSource;
 import org.influxdb.annotation.Column;
+import org.influxdb.flux.options.FluxCsvParserOptions;
 import org.influxdb.impl.AbstractInfluxDBMapper;
 
 import javax.annotation.Nonnull;
@@ -29,17 +30,19 @@ public class FluxResultMapper extends AbstractInfluxDBMapper {
     private static final Logger LOG = Logger.getLogger(FluxResultMapper.class.getName());
 
     @Nullable
-    public FluxResult toFluxResult(@Nonnull final BufferedSource source)
+    public FluxResult toFluxResult(@Nonnull final BufferedSource source,
+                                   @Nonnull final FluxCsvParserOptions parserOptions)
             throws FluxResultMapperException, IOException {
 
         Objects.requireNonNull(source, "BufferedSource is required");
+        Objects.requireNonNull(parserOptions, "FluxCsvParserOptions are required");
 
         Buffer buffer = new Buffer();
         source.readAll(buffer);
         Reader reader = new InputStreamReader(buffer.inputStream());
         FluxCsvParser tableCsvParser = new FluxCsvParser();
 
-        return tableCsvParser.parseFluxResponse(reader);
+        return tableCsvParser.parseFluxResponse(reader, parserOptions);
     }
 
     /**
