@@ -24,8 +24,8 @@ public class ColumnHeader {
     //column name in csv
     private String columnName;
 
-    //partition
-    private String partition;
+    //group
+    private String group;
     private String defaultEmptyValue;
     private boolean tag;
 
@@ -75,12 +75,12 @@ public class ColumnHeader {
 
     }
 
-    public void setPartition(final String partition) {
-        this.partition = partition;
+    public void addGroup(final String group) {
+        this.group = group;
     }
 
-    public String getPartition() {
-        return partition;
+    public String getGroup() {
+        return group;
     }
 
     public void setDefaultEmptyValue(final String defaultEmptyValue) {

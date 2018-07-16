@@ -40,10 +40,10 @@ public class Table {
         }
     }
 
-    void addPartitions(final List<String> partitions) throws FluxResultMapperException {
+    void addGroups(final List<String> groups) throws FluxResultMapperException {
 
-        for (int i = 0; i < partitions.size(); i++) {
-            String s = partitions.get(i);
+        for (int i = 0; i < groups.size(); i++) {
+            String s = groups.get(i);
 
             if (columnHeaders.isEmpty()) {
                 throw new FluxResultMapperException("Unable to parse response, no #datatypes header found.");
@@ -51,11 +51,11 @@ public class Table {
             ColumnHeader def = columnHeaders.get(i);
 
             if (def == null) {
-                String message = "Unable to parse response, inconsistent  #datatypes and #partition header";
+                String message = "Unable to parse response, inconsistent  #datatypes and #group header";
                 throw new FluxResultMapperException(message);
             }
 
-            def.setPartition(s);
+            def.addGroup(s);
         }
 
     }
@@ -71,7 +71,7 @@ public class Table {
             ColumnHeader def = columnHeaders.get(i);
 
             if (def == null) {
-                String message = "Unable to parse response, inconsistent  #datatypes and #partition header";
+                String message = "Unable to parse response, inconsistent  #datatypes and #group header";
                 throw new FluxResultMapperException(message);
             }
 
@@ -102,7 +102,7 @@ public class Table {
             ColumnHeader def = columnHeaders.get(i);
 
             if (def == null) {
-                String message = "Unable to parse response, inconsistent  #datatypes and #partition header";
+                String message = "Unable to parse response, inconsistent  #datatypes and #group header";
                 throw new FluxResultMapperException(message);
             }
 

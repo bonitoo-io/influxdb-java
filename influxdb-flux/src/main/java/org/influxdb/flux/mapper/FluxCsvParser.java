@@ -1,14 +1,15 @@
 package org.influxdb.flux.mapper;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Reader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nonnull;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 
 /**
  * This class us used to construct FluxResult from CSV.
@@ -48,8 +49,8 @@ class FluxCsvParser {
             if ("#datatype".equals(token)) {
                 table.addDataTypes(toList(csvRecord));
 
-            } else if ("#partition".equals(token)) {
-                table.addPartitions(toList(csvRecord));
+            } else if ("#group".equals(token)) {
+                table.addGroups(toList(csvRecord));
 
             } else if (token.startsWith("#")) {
                 table.addDefaultEmptyValues(toList(csvRecord));

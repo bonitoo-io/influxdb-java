@@ -1100,7 +1100,7 @@ Flux flux = Flux
 ```
 
 #### window
-Partitions the results by a given time range [[doc](https://github.com/influxdata/platform/tree/master/query#window)].
+Groups the results by a given time range [[doc](https://github.com/influxdata/platform/tree/master/query#window)].
 - `every` - Duration of time between windows. Defaults to `period's` value [duration]. 
 - `period` - Duration of the windowed partition. Defaults to `period's` value [duration]. 
 - `start` - The time of the initial window partition [time].

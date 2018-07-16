@@ -168,7 +168,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
         //  --data-urlencode "orgName=0" http://localhost:8093/v1/query
 
         // #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
-        // #partition,false,false,true,true,false,false,true,true,true,true
+        // #group,false,false,true,true,false,false,true,true,true,true
         // #default,_result,,,,,,,,,
         // ,result,table,_start,_stop,_time,_value,_field,_measurement,host,region
         // ,,0,1970-01-01T00:00:10Z,1970-01-01T00:00:20Z,1970-01-01T00:00:10Z,10,free,mem,A,west
@@ -260,7 +260,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
         // |> group(by:["region"])' --data-urlencode "orgName=0" http://localhost:8093/v1/query
 
         // #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
-        // #partition,false,false,false,false,false,false,false,false,false,true
+        // #group,false,false,false,false,false,false,false,false,false,true
         // #default,_result,,,,,,,,,
         // ,result,table,_start,_stop,_time,_value,_field,_measurement,host,region
         // ,,0,1970-01-01T00:00:10Z,1970-01-01T00:00:20Z,1970-01-01T00:00:10Z,10,free,mem,A,west

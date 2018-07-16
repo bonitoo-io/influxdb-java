@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
- * <a href="https://github.com/influxdata/platform/tree/master/query#window">window</a> - Partitions the results by
+ * <a href="https://github.com/influxdata/platform/tree/master/query#window">window</a> - Groups the results by
  * a given time range.
  *
  * <h3>Options</h3>

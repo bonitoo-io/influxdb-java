@@ -1015,7 +1015,7 @@ public abstract class Flux {
     }
 
     /**
-     * Partitions the results by a given time range.
+     * Groups the results by a given time range.
      *
      * <h3>The parameters had to be defined by:</h3>
      * <ul>
@@ -1040,7 +1040,7 @@ public abstract class Flux {
     }
 
     /**
-     * Partitions the results by a given time range.
+     * Groups the results by a given time range.
      *
      * @param every     duration of time between windows
      * @param everyUnit a {@code ChronoUnit} determining how to interpret the {@code every}
@@ -1057,7 +1057,7 @@ public abstract class Flux {
     }
 
     /**
-     * Partitions the results by a given time range.
+     * Groups the results by a given time range.
      *
      * @param every      duration of time between windows
      * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
@@ -1083,7 +1083,7 @@ public abstract class Flux {
     }
 
     /**
-     * Partitions the results by a given time range.
+     * Groups the results by a given time range.
      *
      * @param every      duration of time between windows
      * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
@@ -1114,7 +1114,7 @@ public abstract class Flux {
     }
 
     /**
-     * Partitions the results by a given time range.
+     * Groups the results by a given time range.
      *
      * @param every      duration of time between windows
      * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
@@ -1148,7 +1148,7 @@ public abstract class Flux {
     }
 
     /**
-     * Partitions the results by a given time range.
+     * Groups the results by a given time range.
      *
      * @param every      duration of time between windows
      * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
@@ -1179,7 +1179,7 @@ public abstract class Flux {
     }
 
     /**
-     * Partitions the results by a given time range.
+     * Groups the results by a given time range.
      *
      * @param every      duration of time between windows
      * @param everyUnit  a {@code ChronoUnit} determining how to interpret the {@code every}
