@@ -33,8 +33,7 @@ if [ ! "$FLUX_DISABLE" == "true" ]; then
     # OS Type
     case "$OSTYPE" in
       darwin*)
-        archive='platform_nightly_macOS_amd64.tar.gz'
-         ;;
+        archive='platform_nightly_darwin_amd64.tar.gz' ;;
       linux*)
         archive="platform_nightly_linux_amd64.tar.gz" ;;
       msys*)

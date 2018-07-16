@@ -32,9 +32,11 @@ public abstract class AbstractITFluxReactive {
 
         String fluxIP = System.getenv().getOrDefault("FLUX_IP", "127.0.0.1");
         String fluxPort = System.getenv().getOrDefault("FLUX_PORT_API", "8093");
+        String fluxURL = "http://" + fluxIP + ":" + fluxPort;
+        LOG.log(Level.FINEST, "Flux URL: {0}", fluxURL);
 
         FluxOptions fluxOptions = FluxOptions.builder()
-                .url("http://" + fluxIP + ":" + fluxPort)
+                .url(fluxURL)
                 .orgID("00")
                 .build();
 
@@ -42,8 +44,11 @@ public abstract class AbstractITFluxReactive {
 
         String influxdbIP = System.getenv().getOrDefault("INFLUXDB_IP", "127.0.0.1");
         String influxdbPort = System.getenv().getOrDefault("INFLUXDB_PORT_API", "8086");
+        String influxURL = "http://" + influxdbIP + ":" + influxdbPort;
+        LOG.log(Level.FINEST, "Influx URL: {0}", influxURL);
+
         InfluxDBOptions options = InfluxDBOptions.builder()
-                .url("http://" + influxdbIP + ":" + influxdbPort)
+                .url(influxURL)
                 .username("admin")
                 .password("admin")
                 .database(DATABASE_NAME)
@@ -58,7 +63,7 @@ public abstract class AbstractITFluxReactive {
     @AfterEach
     protected void after() {
 
-//        simpleQuery("DROP DATABASE " + DATABASE_NAME);
+        simpleQuery("DROP DATABASE " + DATABASE_NAME);
 
         fluxReactive.close();
         influxDBReactive.close();
