@@ -786,9 +786,32 @@ Flux flux = Flux
         .withTimeSrc("_timeColumn");
 ```
 
+#### difference
+Difference computes the difference between subsequent non null records [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#difference)].
+- `nonNegative` - Indicates if the derivative is allowed to be negative. If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero [boolean].
+- `columns` -  The list of columns on which to compute the difference. Defaults `["_value"]` [array of strings].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .groupBy("_measurement")
+    .difference();
+```
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .range(-5L, ChronoUnit.MINUTES)
+    .difference(new String[]{"_value", "_time"}, false;
+```
+
 #### distinct
 Distinct produces the unique values for a given column [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#distinct)].
 - `column` - The column on which to track unique values [string].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .groupBy("_measurement")
+    .distinct("_measurement");
+```
 
 #### filter
 

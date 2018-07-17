@@ -18,6 +18,10 @@ import javax.annotation.Nonnull;
  *
  * <h3>Example</h3>
  * <pre>
+ * Flux flux = Flux
+ *     .from("telegraf")
+ *     .groupBy("_measurement")
+ *     .distinct("_measurement");
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (17/07/2018 12:08)

@@ -3,6 +3,7 @@ package org.influxdb.flux;
 import org.influxdb.flux.operators.AbstractParametrizedFlux;
 import org.influxdb.flux.operators.CountFlux;
 import org.influxdb.flux.operators.DerivativeFlux;
+import org.influxdb.flux.operators.DifferenceFlux;
 import org.influxdb.flux.operators.DistinctFlux;
 import org.influxdb.flux.operators.ExpressionFlux;
 import org.influxdb.flux.operators.FilterFlux;
@@ -57,7 +58,7 @@ import java.util.Objects;
  * <li>TODO - covariance - https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#covariance</li>
  * <li>cumulativeSum - Not defined in documentation</li>
  * <li>{@link DerivativeFlux}</li>
- * <li>TODO - difference - https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#difference</li>
+ * <li>{@link DifferenceFlux}</li>
  * <li>{@link DistinctFlux}</li>
  * <li>{@link FilterFlux}</li>
  * <li>{@link FirstFlux}</li>
@@ -198,6 +199,83 @@ public abstract class Flux {
     @Nonnull
     public final DerivativeFlux derivative(@Nonnull final Long duration, @Nonnull final ChronoUnit unit) {
         return new DerivativeFlux(this).withUnit(duration, unit);
+    }
+
+    /**
+     * Difference computes the difference between subsequent non null records.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link DifferenceFlux#withNonNegative(boolean)}</li>
+     * <li>{@link DifferenceFlux#withColumns(String[])}</li>
+     * <li>{@link DifferenceFlux#withColumns(Collection)}</li>
+     * <li>{@link DifferenceFlux#withPropertyNamed(String)}</li>
+     * <li>{@link DifferenceFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link DifferenceFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link DifferenceFlux}
+     */
+    @Nonnull
+    public final DifferenceFlux difference() {
+        return new DifferenceFlux(this);
+    }
+
+    /**
+     * Difference computes the difference between subsequent non null records.
+     *
+     * @param nonNegative indicates if the derivative is allowed to be negative
+     * @return {@link DifferenceFlux}
+     */
+    @Nonnull
+    public final DifferenceFlux difference(final boolean nonNegative) {
+        return new DifferenceFlux(this).withNonNegative(nonNegative);
+    }
+
+    /**
+     * Difference computes the difference between subsequent non null records.
+     *
+     * @param columns list of columns on which to compute the difference
+     * @return {@link DifferenceFlux}
+     */
+    @Nonnull
+    public final DifferenceFlux difference(@Nonnull final Collection<String> columns) {
+        return new DifferenceFlux(this).withColumns(columns);
+    }
+
+    /**
+     * Difference computes the difference between subsequent non null records.
+     *
+     * @param columns list of columns on which to compute the difference
+     * @return {@link DifferenceFlux}
+     */
+    @Nonnull
+    public final DifferenceFlux difference(@Nonnull final String[] columns) {
+        return new DifferenceFlux(this).withColumns(columns);
+    }
+
+    /**
+     * Difference computes the difference between subsequent non null records.
+     *
+     * @param nonNegative indicates if the derivative is allowed to be negative
+     * @param columns     list of columns on which to compute the difference
+     * @return {@link DifferenceFlux}
+     */
+    @Nonnull
+    public final DifferenceFlux difference(@Nonnull final Collection<String> columns, final boolean nonNegative) {
+        return new DifferenceFlux(this).withColumns(columns).withNonNegative(nonNegative);
+    }
+
+    /**
+     * Difference computes the difference between subsequent non null records.
+     *
+     * @param nonNegative indicates if the derivative is allowed to be negative
+     * @param columns     list of columns on which to compute the difference
+     * @return {@link DifferenceFlux}
+     */
+    @Nonnull
+    public final DifferenceFlux difference(@Nonnull final String[] columns, final boolean nonNegative) {
+        return new DifferenceFlux(this).withColumns(columns).withNonNegative(nonNegative);
     }
 
     /**
