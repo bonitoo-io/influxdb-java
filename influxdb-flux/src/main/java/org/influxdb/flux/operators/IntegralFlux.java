@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * <h3>Options</h3>
  * <ul>
- * <li><b>unit</b> - Time duration to use when computing the integral [duration]
+ * <li><b>unit</b> - Time duration to use when computing the integral [duration]</li>
  * </ul>
  *
  * <h3>Example</h3>

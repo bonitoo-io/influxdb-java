@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
  *
  * <h3>Options</h3>
  * <ul>
- * <li><b>useStartTime</b> - Use the start time as the timestamp of the resulting aggregate [boolean]
+ * <li><b>useStartTime</b> - Use the start time as the timestamp of the resulting aggregate [boolean]</li>
  * </ul>
  *
  * <h3>Example</h3>

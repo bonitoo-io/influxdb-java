@@ -72,7 +72,7 @@ import java.util.Objects;
  * <li>{@link MaxFlux}</li>
  * <li>{@link MeanFlux}</li>
  * <li>{@link MinFlux}</li>
- * <li>TODO - percentile - https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#percentile</li>
+ * <li>percentile - Not defined in documentation or SPEC</li>
  * <li>{@link RangeFlux}</li>
  * <li>{@link SampleFlux}</li>
  * <li>{@link SetFlux}</li>

@@ -747,7 +747,7 @@ Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
 #### from
 
 Starting point for all queries. Get data from the specified database [[doc](https://github.com/influxdata/platform/tree/master/query#from)].
-- `db` - The name of the database to query [string].
+- `db` - The name of the database to query. [string]
 - `hosts` - [array of strings]
 
 ```java
@@ -761,13 +761,13 @@ Flux flux = Flux
 
 #### count
 Counts the number of results [[doc](https://github.com/influxdata/platform/tree/master/query#count)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 #### covariance
 Covariance is an aggregate operation. Covariance computes the covariance between two columns [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#covariance)].
-- `columns` - List of columns on which to compute the covariance. Exactly two columns must be provided [array of strings].
-- `pearsonr` -  Indicates whether the result should be normalized to be the [Pearson R coefficient](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) [boolean].
-- `valueDst` - The column into which the result will be placed. Defaults to `_value` [string].
+- `columns` - List of columns on which to compute the covariance. Exactly two columns must be provided. [array of strings]
+- `pearsonr` -  Indicates whether the result should be normalized to be the [Pearson R coefficient](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient). [boolean]
+- `valueDst` - The column into which the result will be placed. Defaults to `_value`. [string]
 ```java
 Flux flux = Flux
     .from("telegraf")
@@ -776,10 +776,10 @@ Flux flux = Flux
 
 #### derivative
 Computes the time based difference between subsequent non null records [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#derivative)].
-- `unit` - The time duration to use for the result [duration].
-- `nonNegative` - Indicates if the derivative is allowed to be negative [boolean].
-- `columns` - List of columns on which to compute the derivative [array of strings].
-- `timeSrc` - The source column for the time values. Defaults to `_time` [string].
+- `unit` - The time duration to use for the result. [duration]
+- `nonNegative` - Indicates if the derivative is allowed to be negative. [boolean]
+- `columns` - List of columns on which to compute the derivative. [array of strings]
+- `timeSrc` - The source column for the time values. Defaults to `_time`. [string]
 
 ```java
 Flux flux = Flux
@@ -799,8 +799,8 @@ Flux flux = Flux
 
 #### difference
 Difference computes the difference between subsequent non null records [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#difference)].
-- `nonNegative` - Indicates if the derivative is allowed to be negative. If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero [boolean].
-- `columns` -  The list of columns on which to compute the difference. Defaults `["_value"]` [array of strings].
+- `nonNegative` - Indicates if the derivative is allowed to be negative. If a value is encountered which is less than the previous value then it is assumed the previous value should have been a zero. [boolean]
+- `columns` -  The list of columns on which to compute the difference. Defaults `["_value"]`. [array of strings]
 ```java
 Flux flux = Flux
     .from("telegraf")
@@ -816,7 +816,7 @@ Flux flux = Flux
 
 #### distinct
 Distinct produces the unique values for a given column [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#distinct)].
-- `column` - The column on which to track unique values [string].
+- `column` - The column on which to track unique values. [string]
 ```java
 Flux flux = Flux
     .from("telegraf")
@@ -828,7 +828,7 @@ Flux flux = Flux
 
 Filters the results using an expression [[doc](https://github.com/influxdata/platform/tree/master/query#filter)].
 - `fn` - Function to when filtering the records. The function must accept a single parameter which will be 
-the records and return a boolean value. Records which evaluate to true, will be included in the results [function(record) bool].
+the records and return a boolean value. Records which evaluate to true, will be included in the results. [function(record) bool]
 
 Supported Record columns:
 - `_measurement`
@@ -878,7 +878,7 @@ Flux flux = Flux
 
 #### first
 Returns the first result of the query [[doc](https://github.com/influxdata/platform/tree/master/query#first)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 ```java
 Flux flux = Flux
@@ -888,9 +888,9 @@ Flux flux = Flux
 
 #### group
 Groups results by a user-specified set of tags [[doc](https://github.com/influxdata/platform/tree/master/query#group)].
-- `by` - Group by these specific tag names. Cannot be used with `except` option [array of strings].
-- `keep` - Keep specific tag keys that were not in `by` in the results [array of strings].
-- `except` - Group by all but these tag keys. Cannot be used with `by` option [array of strings].
+- `by` - Group by these specific tag names. Cannot be used with `except` option. [array of strings]
+- `keep` - Keep specific tag keys that were not in `by` in the results. [array of strings]
+- `except` - Group by all but these tag keys. Cannot be used with `by` option. [array of strings]
 
 ```java
 Flux.from("telegraf")
@@ -913,16 +913,22 @@ Flux.from("telegraf")
 ### integral
 For each aggregate column, it outputs the area under the curve of non null records. 
 The curve is defined as function where the domain is the record times and the range is the record values. [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#integral)].
-- `unit` - Time duration to use when computing the integral [duration].
+- `unit` - Time duration to use when computing the integral. [duration]
 ```java
 Flux flux = Flux
     .from("telegraf")
     .integral(1L, ChronoUnit.MINUTES);
 ```
 
+#### join
+Join two time series together on time and the list of `on` keys [[doc](https://github.com/influxdata/platform/tree/master/query#join)].
+- `tables` - Map of tables to join. Currently only two tables are allowed. [map of tables]
+- `on` - List of tag keys that when equal produces a result set. [array of strings]
+- `fn` - Defines the function that merges the values of the tables. The function must defined to accept a single parameter. The parameter is a map, which uses the same keys found in the tables map. The function is called for each joined set of records from the tables. [function(tables)]
+
 #### last
 Returns the last result of the query [[doc](https://github.com/influxdata/platform/tree/master/query#last)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 ```java
 Flux flux = Flux
@@ -932,7 +938,7 @@ Flux flux = Flux
 
 #### limit
 Restricts the number of rows returned in the results [[doc](https://github.com/influxdata/platform/tree/master/query#limit)].
-- `n` - The maximum number of records to output [int]. 
+- `n` - The maximum number of records to output. [int] 
 ```java
 Flux flux = Flux
     .from("telegraf")
@@ -976,7 +982,7 @@ Flux flux = Flux
 
 #### max
 Returns the max value within the results [[doc](https://github.com/influxdata/platform/tree/master/query#max)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 ```java
 Flux flux = Flux
@@ -988,7 +994,7 @@ Flux flux = Flux
 
 #### mean
 Returns the mean of the values within the results [[doc](https://github.com/influxdata/platform/tree/master/query#mean)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 ```java
 Flux flux = Flux
@@ -1000,7 +1006,7 @@ Flux flux = Flux
 
 #### min
 Returns the min value within the results [[doc](https://github.com/influxdata/platform/tree/master/query#min)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 ```java
 Flux flux = Flux
@@ -1012,8 +1018,8 @@ Flux flux = Flux
 
 #### range
 Filters the results by time boundaries [[doc](https://github.com/influxdata/platform/tree/master/query#range)].
-- `start` - Specifies the oldest time to be included in the results [duration or timestamp].
-- `stop` - Specifies the exclusive newest time to be included in the results. Defaults to `"now"` [duration or timestamp].
+- `start` - Specifies the oldest time to be included in the results. [duration or timestamp]
+- `stop` - Specifies the exclusive newest time to be included in the results. Defaults to `"now"`. [duration or timestamp]
 
 ```java
 // by interval
@@ -1032,8 +1038,8 @@ Flux flux = Flux
 
 #### sample
 Sample values from a table [[doc](https://github.com/influxdata/platform/tree/master/query#sample)].
-- `n` - Sample every Nth element [int].
-- `pos` - Position offset from start of results to begin sampling. `pos` must be less than `n`. If `pos` less than 0, a random offset is used. Default is -1 (random offset) [int].
+- `n` - Sample every Nth element. [int]
+- `pos` - Position offset from start of results to begin sampling. `pos` must be less than `n`. If `pos` less than 0, a random offset is used. Default is -1 (random offset). [int]
 ```java
 Flux flux = Flux.from("telegraf")
     .filter(and(measurement().equal("cpu"), field().equal("usage_system")))
@@ -1049,8 +1055,8 @@ Flux flux = Flux.from("telegraf")
 
 #### set
 Assigns a static value to each record [[doc](https://github.com/influxdata/platform/tree/master/query#set)].
-- `key` - Label for the column to set [string].
-- `value` - Value for the column to set [string].
+- `key` - Label for the column to set. [string]
+- `value` - Value for the column to set. [string]
 
 ```java
 Flux flux = Flux
@@ -1060,8 +1066,8 @@ Flux flux = Flux
 
 #### shift
 Shift add a fixed duration to time columns [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#shift)].
-- `shift` - The amount to add to each time value [duration].
-- `columns` - The list of all columns that should be shifted. Defaults `["_start", "_stop", "_time"]` [array of strings].
+- `shift` - The amount to add to each time value. [duration]
+- `columns` - The list of all columns that should be shifted. Defaults `["_start", "_stop", "_time"]`. [array of strings]
 ```java
 Flux flux = Flux
     .from("telegraf")
@@ -1075,7 +1081,7 @@ Flux flux = Flux
 
 #### skew
 Skew of the results [[doc](https://github.com/influxdata/platform/tree/master/query#skew)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 ```java
 Flux flux = Flux
@@ -1086,8 +1092,8 @@ Flux flux = Flux
 
 #### sort
 Sorts the results by the specified columns. Default sort is ascending [[doc](https://github.com/influxdata/platform/tree/master/query#skew)].
-- `cols` - List of columns used to sort. Precedence from left to right. Default is `"value"` [array of strings].
-- `desc` - Sort results descending. Default false [bool].
+- `cols` - List of columns used to sort. Precedence from left to right. Default is `"value"`. [array of strings]
+- `desc` - Sort results descending. Default false. [boolean]
 
 ```java
 Flux flux = Flux
@@ -1102,7 +1108,7 @@ Flux flux = Flux
 
 #### spread
 Difference between min and max values [[doc](https://github.com/influxdata/platform/tree/master/query#spread)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 ```java
 Flux flux = Flux
@@ -1112,7 +1118,7 @@ Flux flux = Flux
 
 #### stddev
 Standard Deviation of the results [[doc](https://github.com/influxdata/platform/tree/master/query#stddev)].
-- `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
+- `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
 
 ```java
 Flux flux = Flux
@@ -1193,13 +1199,13 @@ Flux flux = Flux
 
 #### window
 Groups the results by a given time range [[doc](https://github.com/influxdata/platform/tree/master/query#window)].
-- `every` - Duration of time between windows. Defaults to `period's` value [duration]. 
-- `period` - Duration of the windowed partition. Defaults to `period's` value [duration]. 
-- `start` - The time of the initial window partition [time].
-- `round` - Rounds a window's bounds to the nearest duration. Defaults to `every's` value [duration].
-- `column` - Name of the time column to use. Defaults to `_time` [string].
-- `startCol` - Name of the column containing the window start time. Defaults to `_start` [string].
-- `stopCol` - Name of the column containing the window stop time. Defaults to `_stop` [string].
+- `every` - Duration of time between windows. Defaults to `period's` value. [duration] 
+- `period` - Duration of the windowed partition. Defaults to `period's` value. [duration] 
+- `start` - The time of the initial window partition. [time]
+- `round` - Rounds a window's bounds to the nearest duration. Defaults to `every's` value. [duration]
+- `column` - Name of the time column to use. Defaults to `_time`. [string]
+- `startCol` - Name of the column containing the window start time. Defaults to `_start`. [string]
+- `stopCol` - Name of the column containing the window stop time. Defaults to `_stop`. [string]
 
 ```java
 Flux flux = Flux
@@ -1219,7 +1225,7 @@ Flux flux = Flux
 
 #### yield
 Yield a query results to yielded results [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#yield)].
-- `name` - The unique name to give to yielded results [string].
+- `name` - The unique name to give to yielded results. [string]
 ```java
 Flux flux = Flux
     .from("telegraf")
