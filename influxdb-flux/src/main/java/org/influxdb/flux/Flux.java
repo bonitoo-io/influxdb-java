@@ -3,6 +3,7 @@ package org.influxdb.flux;
 import org.influxdb.flux.operators.AbstractParametrizedFlux;
 import org.influxdb.flux.operators.CountFlux;
 import org.influxdb.flux.operators.DerivativeFlux;
+import org.influxdb.flux.operators.DistinctFlux;
 import org.influxdb.flux.operators.ExpressionFlux;
 import org.influxdb.flux.operators.FilterFlux;
 import org.influxdb.flux.operators.FirstFlux;
@@ -53,23 +54,23 @@ import java.util.Objects;
  * <ul>
  * <li>{@link FromFlux}</li>
  * <li>{@link CountFlux}</li>
- * <li>covariance - SPEC</li>
- * <li>cumulativeSum - SPEC</li>
+ * <li>TODO - covariance - https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#covariance</li>
+ * <li>cumulativeSum - Not defined in documentation</li>
  * <li>{@link DerivativeFlux}</li>
- * <li>difference - SPEC</li>
- * <li>distinct - SPEC</li>
+ * <li>TODO - difference - https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#difference</li>
+ * <li>{@link DistinctFlux}</li>
  * <li>{@link FilterFlux}</li>
  * <li>{@link FirstFlux}</li>
  * <li>{@link GroupFlux}</li>
  * <li>{@link IntegralFlux}</li>
- * <li>join - UNSUPPORTED</li>
+ * <li>TODO - join</li>
  * <li>{@link LastFlux}</li>
  * <li>{@link LimitFlux}</li>
  * <li>{@link MapFlux}</li>
  * <li>{@link MaxFlux}</li>
  * <li>{@link MeanFlux}</li>
  * <li>{@link MinFlux}</li>
- * <li>percentile - SPEC</li>
+ * <li>TODO - percentile - https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#percentile</li>
  * <li>{@link RangeFlux}</li>
  * <li>{@link SampleFlux}</li>
  * <li>{@link SetFlux}</li>
@@ -77,7 +78,7 @@ import java.util.Objects;
  * <li>{@link SkewFlux}</li>
  * <li>{@link SortFlux}</li>
  * <li>{@link SpreadFlux}</li>
- * <li>stateTracking - SPEC</li>
+ * <li>stateTracking - Not defined in documentation</li>
  * <li>{@link StddevFlux}</li>
  * <li>{@link SumFlux}</li>
  * <li>{@link ToBoolFlux}</li>
@@ -89,8 +90,8 @@ import java.util.Objects;
  * <li>{@link ToUIntFlux}</li>
  * <li>{@link WindowFlux}</li>
  * <li>{@link YieldFlux}</li>
- * <li>toHttp - UNSUPPORTED</li>
- * <li>toKafka - UNSUPPORTED</li>
+ * <li>toHttp - Not defined in documentation</li>
+ * <li>toKafka - Not defined in documentation</li>
  * <li>{@link ExpressionFlux}</li>
  * </ul>
  *
@@ -197,6 +198,35 @@ public abstract class Flux {
     @Nonnull
     public final DerivativeFlux derivative(@Nonnull final Long duration, @Nonnull final ChronoUnit unit) {
         return new DerivativeFlux(this).withUnit(duration, unit);
+    }
+
+    /**
+     * Distinct produces the unique values for a given column.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link DistinctFlux#withColumn(String)}</li>
+     * <li>{@link DistinctFlux#withPropertyNamed(String)}</li>
+     * <li>{@link DistinctFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link DistinctFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link DistinctFlux}
+     */
+    @Nonnull
+    public final DistinctFlux distinct() {
+        return new DistinctFlux(this);
+    }
+
+    /**
+     * Distinct produces the unique values for a given column.
+     *
+     * @param column The column on which to track unique values.
+     * @return {@link DistinctFlux}
+     */
+    @Nonnull
+    public final DistinctFlux distinct(@Nonnull final String column) {
+        return new DistinctFlux(this).withColumn(column);
     }
 
     /**

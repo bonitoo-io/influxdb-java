@@ -786,6 +786,10 @@ Flux flux = Flux
         .withTimeSrc("_timeColumn");
 ```
 
+#### distinct
+Distinct produces the unique values for a given column [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#distinct)].
+- `column` - The column on which to track unique values [string].
+
 #### filter
 
 Filters the results using an expression [[doc](https://github.com/influxdata/platform/tree/master/query#filter)].
