@@ -14,10 +14,10 @@ import java.util.Objects;
  *
  * <h3>Options</h3>
  * <ul>
- * <li><b>unit</b> - The time duration to use for the result [duration]
- * <li><b>nonNegative</b> - Indicates if the derivative is allowed to be negative [boolean].
- * <li><b>columns</b> - List of columns on which to compute the derivative [array of strings].
- * <li><b>timeSrc</b> - The source column for the time values. Defaults to `_time` [string].
+ * <li><b>unit</b> - The time duration to use for the result [duration]</li>
+ * <li><b>nonNegative</b> - Indicates if the derivative is allowed to be negative [boolean].</li>
+ * <li><b>columns</b> - List of columns on which to compute the derivative [array of strings].</li>
+ * <li><b>timeSrc</b> - The source column for the time values. Defaults to `_time` [string].</li>
  * </ul>
  *
  * <h3>Example</h3>

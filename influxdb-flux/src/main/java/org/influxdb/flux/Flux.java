@@ -2,6 +2,7 @@ package org.influxdb.flux;
 
 import org.influxdb.flux.operators.AbstractParametrizedFlux;
 import org.influxdb.flux.operators.CountFlux;
+import org.influxdb.flux.operators.CovarianceFlux;
 import org.influxdb.flux.operators.DerivativeFlux;
 import org.influxdb.flux.operators.DifferenceFlux;
 import org.influxdb.flux.operators.DistinctFlux;
@@ -55,8 +56,8 @@ import java.util.Objects;
  * <ul>
  * <li>{@link FromFlux}</li>
  * <li>{@link CountFlux}</li>
- * <li>TODO - covariance - https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#covariance</li>
- * <li>cumulativeSum - Not defined in documentation</li>
+ * <li>{@link CovarianceFlux}</li>
+ * <li>cumulativeSum - Not defined in documentation or SPEC</li>
  * <li>{@link DerivativeFlux}</li>
  * <li>{@link DifferenceFlux}</li>
  * <li>{@link DistinctFlux}</li>
@@ -79,7 +80,7 @@ import java.util.Objects;
  * <li>{@link SkewFlux}</li>
  * <li>{@link SortFlux}</li>
  * <li>{@link SpreadFlux}</li>
- * <li>stateTracking - Not defined in documentation</li>
+ * <li>stateTracking - Not defined in documentation or SPEC</li>
  * <li>{@link StddevFlux}</li>
  * <li>{@link SumFlux}</li>
  * <li>{@link ToBoolFlux}</li>
@@ -91,8 +92,8 @@ import java.util.Objects;
  * <li>{@link ToUIntFlux}</li>
  * <li>{@link WindowFlux}</li>
  * <li>{@link YieldFlux}</li>
- * <li>toHttp - Not defined in documentation</li>
- * <li>toKafka - Not defined in documentation</li>
+ * <li>toHttp - Not defined in documentation or SPEC</li>
+ * <li>toKafka - Not defined in documentation or SPEC</li>
  * <li>{@link ExpressionFlux}</li>
  * </ul>
  *
@@ -166,6 +167,129 @@ public abstract class Flux {
     public final CountFlux count(final boolean useStartTime) {
         return new CountFlux(this)
                 .withUseStartTime(useStartTime);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link CovarianceFlux#withColumns(String[])}</li>
+     * <li>{@link CovarianceFlux#withColumns(Collection)}</li>
+     * <li>{@link CovarianceFlux#withPearsonr(boolean)}</li>
+     * <li>{@link CovarianceFlux#withValueDst(String)}</li>
+     * <li>{@link CovarianceFlux#withPropertyNamed(String)}</li>
+     * <li>{@link CovarianceFlux#withPropertyNamed(String, String)}</li>
+     * <li>{@link CovarianceFlux#withPropertyValueEscaped(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance() {
+        return new CovarianceFlux(this);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * @param columns list of columns on which to compute the covariance. Exactly two columns must be provided.
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance(@Nonnull final Collection<String> columns) {
+        return new CovarianceFlux(this).withColumns(columns);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * @param columns list of columns on which to compute the covariance. Exactly two columns must be provided.
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance(@Nonnull final String[] columns) {
+        return new CovarianceFlux(this).withColumns(columns);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * @param columns  list of columns on which to compute the covariance. Exactly two columns must be provided.
+     * @param pearsonr indicates whether the result should be normalized to be the Pearson R coefficient
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance(@Nonnull final Collection<String> columns, final boolean pearsonr) {
+        return new CovarianceFlux(this).withColumns(columns).withPearsonr(pearsonr);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * @param columns  list of columns on which to compute the covariance. Exactly two columns must be provided.
+     * @param pearsonr indicates whether the result should be normalized to be the Pearson R coefficient
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance(@Nonnull final String[] columns, final boolean pearsonr) {
+        return new CovarianceFlux(this).withColumns(columns).withPearsonr(pearsonr);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * @param columns  list of columns on which to compute the covariance. Exactly two columns must be provided.
+     * @param valueDst column into which the result will be placed.
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance(@Nonnull final Collection<String> columns,
+                                           @Nonnull final String valueDst) {
+        return new CovarianceFlux(this).withColumns(columns).withValueDst(valueDst);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * @param columns  list of columns on which to compute the covariance. Exactly two columns must be provided.
+     * @param valueDst column into which the result will be placed.
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance(@Nonnull final String[] columns,
+                                           @Nonnull final String valueDst) {
+        return new CovarianceFlux(this).withColumns(columns).withValueDst(valueDst);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * @param columns  list of columns on which to compute the covariance. Exactly two columns must be provided.
+     * @param pearsonr indicates whether the result should be normalized to be the Pearson R coefficient
+     * @param valueDst column into which the result will be placed.
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance(@Nonnull final Collection<String> columns,
+                                           final boolean pearsonr,
+                                           @Nonnull final String valueDst) {
+        return new CovarianceFlux(this).withColumns(columns).withPearsonr(pearsonr).withValueDst(valueDst);
+    }
+
+    /**
+     * Covariance computes the covariance between two columns.
+     *
+     * @param columns  list of columns on which to compute the covariance. Exactly two columns must be provided.
+     * @param pearsonr indicates whether the result should be normalized to be the Pearson R coefficient
+     * @param valueDst column into which the result will be placed.
+     * @return {@link CovarianceFlux}
+     */
+    @Nonnull
+    public final CovarianceFlux covariance(@Nonnull final String[] columns,
+                                           final boolean pearsonr,
+                                           @Nonnull final String valueDst) {
+        return new CovarianceFlux(this).withColumns(columns).withPearsonr(pearsonr).withValueDst(valueDst);
     }
 
     /**

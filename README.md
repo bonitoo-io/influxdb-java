@@ -763,6 +763,17 @@ Flux flux = Flux
 Counts the number of results [[doc](https://github.com/influxdata/platform/tree/master/query#count)].
 - `useStartTime` - Use the start time as the timestamp of the resulting aggregate [boolean].
 
+#### covariance
+Covariance is an aggregate operation. Covariance computes the covariance between two columns [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#covariance)].
+- `columns` - List of columns on which to compute the covariance. Exactly two columns must be provided [array of strings].
+- `pearsonr` -  Indicates whether the result should be normalized to be the [Pearson R coefficient](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) [boolean].
+- `valueDst` - The column into which the result will be placed. Defaults to `_value` [string].
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .covariance(new String[]{"_value", "_valueSquare"});
+```
+
 #### derivative
 Computes the time based difference between subsequent non null records [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#derivative)].
 - `unit` - The time duration to use for the result [duration].
