@@ -65,7 +65,7 @@ import java.util.Objects;
  * <li>join - UNSUPPORTED</li>
  * <li>{@link LastFlux}</li>
  * <li>{@link LimitFlux}</li>
- * <li>map - UNSUPPORTED 1</li>
+ * <li>{@link MapFlux}</li>
  * <li>{@link MaxFlux}</li>
  * <li>{@link MeanFlux}</li>
  * <li>{@link MinFlux}</li>
@@ -150,7 +150,7 @@ public abstract class Flux {
      * @return {@link CountFlux}
      */
     @Nonnull
-    public CountFlux count() {
+    public final CountFlux count() {
         return new CountFlux(this);
     }
 
@@ -161,7 +161,7 @@ public abstract class Flux {
      * @return {@link CountFlux}
      */
     @Nonnull
-    public CountFlux count(final boolean useStartTime) {
+    public final CountFlux count(final boolean useStartTime) {
         return new CountFlux(this)
                 .withUseStartTime(useStartTime);
     }
@@ -183,7 +183,7 @@ public abstract class Flux {
      * @return {@link DerivativeFlux}
      */
     @Nonnull
-    public DerivativeFlux derivative() {
+    public final DerivativeFlux derivative() {
         return new DerivativeFlux(this);
     }
 
@@ -195,7 +195,7 @@ public abstract class Flux {
      * @return {@link DerivativeFlux}
      */
     @Nonnull
-    public DerivativeFlux derivative(@Nonnull final Long duration, @Nonnull final ChronoUnit unit) {
+    public final DerivativeFlux derivative(@Nonnull final Long duration, @Nonnull final ChronoUnit unit) {
         return new DerivativeFlux(this).withUnit(duration, unit);
     }
 
@@ -213,7 +213,7 @@ public abstract class Flux {
      * @return {@link FilterFlux}
      */
     @Nonnull
-    public FilterFlux filter() {
+    public final FilterFlux filter() {
         return new FilterFlux(this);
     }
 
@@ -224,7 +224,7 @@ public abstract class Flux {
      * @return {@link FilterFlux}
      */
     @Nonnull
-    public FilterFlux filter(@Nonnull final Restrictions restrictions) {
+    public final FilterFlux filter(@Nonnull final Restrictions restrictions) {
 
         Objects.requireNonNull(restrictions, "Restrictions are required");
 
@@ -237,7 +237,7 @@ public abstract class Flux {
      * @return {@link FirstFlux}
      */
     @Nonnull
-    public FirstFlux first() {
+    public final FirstFlux first() {
         return new FirstFlux(this);
     }
 
@@ -248,7 +248,7 @@ public abstract class Flux {
      * @return {@link FirstFlux}
      */
     @Nonnull
-    public FirstFlux first(final boolean useStartTime) {
+    public final FirstFlux first(final boolean useStartTime) {
         return new FirstFlux(this)
                 .withUseStartTime(useStartTime);
     }
@@ -272,7 +272,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux group() {
+    public final GroupFlux group() {
 
         return new GroupFlux(this);
     }
@@ -284,7 +284,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupBy(@Nonnull final String groupBy) {
+    public final GroupFlux groupBy(@Nonnull final String groupBy) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
         return new GroupFlux(this).withBy(groupBy);
@@ -297,7 +297,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupBy(@Nonnull final Collection<String> groupBy) {
+    public final GroupFlux groupBy(@Nonnull final Collection<String> groupBy) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
         return new GroupFlux(this).withBy(groupBy);
@@ -311,7 +311,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupBy(@Nonnull final Collection<String> groupBy, @Nonnull final Collection<String> keep) {
+    public final GroupFlux groupBy(@Nonnull final Collection<String> groupBy, @Nonnull final Collection<String> keep) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
@@ -325,7 +325,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupBy(@Nonnull final String[] groupBy) {
+    public final GroupFlux groupBy(@Nonnull final String[] groupBy) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
 
         return new GroupFlux(this).withBy(groupBy);
@@ -339,7 +339,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupBy(@Nonnull final String[] groupBy, @Nonnull final String[] keep) {
+    public final GroupFlux groupBy(@Nonnull final String[] groupBy, @Nonnull final String[] keep) {
         Objects.requireNonNull(groupBy, "GroupBy Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
@@ -353,7 +353,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupExcept(@Nonnull final Collection<String> except) {
+    public final GroupFlux groupExcept(@Nonnull final Collection<String> except) {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
 
         return new GroupFlux(this).withExcept(except);
@@ -367,7 +367,9 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupExcept(@Nonnull final Collection<String> except, @Nonnull final Collection<String> keep) {
+    public final GroupFlux groupExcept(@Nonnull final Collection<String> except,
+                                       @Nonnull final Collection<String> keep) {
+
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
@@ -381,7 +383,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupExcept(@Nonnull final String[] except) {
+    public final GroupFlux groupExcept(@Nonnull final String[] except) {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
 
         return new GroupFlux(this).withExcept(except);
@@ -395,7 +397,7 @@ public abstract class Flux {
      * @return {@link GroupFlux}
      */
     @Nonnull
-    public GroupFlux groupExcept(@Nonnull final String[] except, @Nonnull final String[] keep) {
+    public final GroupFlux groupExcept(@Nonnull final String[] except, @Nonnull final String[] keep) {
         Objects.requireNonNull(except, "GroupBy Except Columns are required");
         Objects.requireNonNull(keep, "Keep Columns are required");
 
@@ -415,8 +417,7 @@ public abstract class Flux {
      * @return {@link IntegralFlux}
      */
     @Nonnull
-    public IntegralFlux integral() {
-
+    public final IntegralFlux integral() {
 
         return new IntegralFlux(this);
     }
@@ -429,7 +430,7 @@ public abstract class Flux {
      * @return {@link IntegralFlux}
      */
     @Nonnull
-    public IntegralFlux integral(@Nonnull final Long duration, @Nonnull final ChronoUnit unit) {
+    public final IntegralFlux integral(@Nonnull final Long duration, @Nonnull final ChronoUnit unit) {
 
         Objects.requireNonNull(duration, "Duration is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
@@ -443,7 +444,7 @@ public abstract class Flux {
      * @return {@link LastFlux}
      */
     @Nonnull
-    public LastFlux last() {
+    public final LastFlux last() {
         return new LastFlux(this);
     }
 
@@ -454,7 +455,7 @@ public abstract class Flux {
      * @return {@link LastFlux}
      */
     @Nonnull
-    public LastFlux last(final boolean useStartTime) {
+    public final LastFlux last(final boolean useStartTime) {
         return new LastFlux(this).withUseStartTime(useStartTime);
     }
 
@@ -472,7 +473,7 @@ public abstract class Flux {
      * @return {@link LimitFlux}
      */
     @Nonnull
-    public LimitFlux limit() {
+    public final LimitFlux limit() {
 
         return new LimitFlux(this);
     }
@@ -484,7 +485,7 @@ public abstract class Flux {
      * @return {@link LimitFlux}
      */
     @Nonnull
-    public LimitFlux limit(final int numberOfResults) {
+    public final LimitFlux limit(final int numberOfResults) {
 
         return new LimitFlux(this).withN(numberOfResults);
     }
@@ -502,7 +503,7 @@ public abstract class Flux {
      * @return {@link MapFlux}
      */
     @Nonnull
-    public MapFlux map() {
+    public final MapFlux map() {
 
         return new MapFlux(this);
     }
@@ -514,7 +515,7 @@ public abstract class Flux {
      * @return {@link MapFlux}
      */
     @Nonnull
-    public MapFlux map(@Nonnull final String function) {
+    public final MapFlux map(@Nonnull final String function) {
 
         return new MapFlux(this).withFunction(function);
     }
@@ -525,7 +526,7 @@ public abstract class Flux {
      * @return {@link MaxFlux}
      */
     @Nonnull
-    public MaxFlux max() {
+    public final MaxFlux max() {
         return new MaxFlux(this);
     }
 
@@ -536,7 +537,7 @@ public abstract class Flux {
      * @return {@link MaxFlux}
      */
     @Nonnull
-    public MaxFlux max(final boolean useStartTime) {
+    public final MaxFlux max(final boolean useStartTime) {
         return new MaxFlux(this).withUseStartTime(useStartTime);
     }
 
@@ -546,7 +547,7 @@ public abstract class Flux {
      * @return {@link MeanFlux}
      */
     @Nonnull
-    public MeanFlux mean() {
+    public final MeanFlux mean() {
         return new MeanFlux(this);
     }
 
@@ -557,7 +558,7 @@ public abstract class Flux {
      * @return {@link MeanFlux}
      */
     @Nonnull
-    public MeanFlux mean(final boolean useStartTime) {
+    public final MeanFlux mean(final boolean useStartTime) {
         return new MeanFlux(this).withUseStartTime(useStartTime);
     }
 
@@ -567,7 +568,7 @@ public abstract class Flux {
      * @return {@link MinFlux}
      */
     @Nonnull
-    public MinFlux min() {
+    public final MinFlux min() {
         return new MinFlux(this);
     }
 
@@ -578,7 +579,7 @@ public abstract class Flux {
      * @return {@link MinFlux}
      */
     @Nonnull
-    public MinFlux min(final boolean useStartTime) {
+    public final MinFlux min(final boolean useStartTime) {
         return new MinFlux(this).withUseStartTime(useStartTime);
     }
 
@@ -599,7 +600,7 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public RangeFlux range() {
+    public final RangeFlux range() {
 
         return new RangeFlux(this);
     }
@@ -611,7 +612,7 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public RangeFlux range(@Nonnull final Instant start) {
+    public final RangeFlux range(@Nonnull final Instant start) {
         Objects.requireNonNull(start, "Start is required");
 
         return new RangeFlux(this).withStart(start);
@@ -625,7 +626,7 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public RangeFlux range(@Nonnull final Instant start, @Nonnull final Instant stop) {
+    public final RangeFlux range(@Nonnull final Instant start, @Nonnull final Instant stop) {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(stop, "Stop is required");
 
@@ -640,7 +641,7 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public RangeFlux range(@Nonnull final Long start, @Nonnull final ChronoUnit unit) {
+    public final RangeFlux range(@Nonnull final Long start, @Nonnull final ChronoUnit unit) {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
 
@@ -656,7 +657,7 @@ public abstract class Flux {
      * @return {@link RangeFlux}
      */
     @Nonnull
-    public RangeFlux range(@Nonnull final Long start, @Nonnull final Long stop, @Nonnull final ChronoUnit unit) {
+    public final RangeFlux range(@Nonnull final Long start, @Nonnull final Long stop, @Nonnull final ChronoUnit unit) {
         Objects.requireNonNull(start, "Start is required");
         Objects.requireNonNull(stop, "Stop is required");
         Objects.requireNonNull(unit, "ChronoUnit is required");
@@ -679,7 +680,7 @@ public abstract class Flux {
      * @return {@link SampleFlux}
      */
     @Nonnull
-    public SampleFlux sample() {
+    public final SampleFlux sample() {
 
         return new SampleFlux(this);
     }
@@ -691,7 +692,7 @@ public abstract class Flux {
      * @return {@link SampleFlux}
      */
     @Nonnull
-    public SampleFlux sample(final int n) {
+    public final SampleFlux sample(final int n) {
 
         return new SampleFlux(this)
                 .withN(n);
@@ -705,7 +706,7 @@ public abstract class Flux {
      * @return {@link SampleFlux}
      */
     @Nonnull
-    public SampleFlux sample(final int n, final int pos) {
+    public final SampleFlux sample(final int n, final int pos) {
 
         if (pos >= n) {
             throw new IllegalArgumentException("pos must be less than n");
@@ -730,7 +731,7 @@ public abstract class Flux {
      * @return {@link SetFlux}
      */
     @Nonnull
-    public SetFlux set() {
+    public final SetFlux set() {
         return new SetFlux(this);
     }
 
@@ -742,7 +743,7 @@ public abstract class Flux {
      * @return {@link SetFlux}
      */
     @Nonnull
-    public SetFlux set(@Nonnull final String key, @Nonnull final String value) {
+    public final SetFlux set(@Nonnull final String key, @Nonnull final String value) {
         return new SetFlux(this).withKeyValue(key, value);
     }
 
@@ -762,7 +763,7 @@ public abstract class Flux {
      * @return {@link ShiftFlux}
      */
     @Nonnull
-    public ShiftFlux shift() {
+    public final ShiftFlux shift() {
         return new ShiftFlux(this);
     }
 
@@ -774,8 +775,8 @@ public abstract class Flux {
      * @return {@link ShiftFlux}
      */
     @Nonnull
-    public ShiftFlux shift(@Nonnull final Long amount,
-                           @Nonnull final ChronoUnit unit) {
+    public final ShiftFlux shift(@Nonnull final Long amount,
+                                 @Nonnull final ChronoUnit unit) {
 
         return new ShiftFlux(this).withShift(amount, unit);
     }
@@ -789,9 +790,9 @@ public abstract class Flux {
      * @return {@link ShiftFlux}
      */
     @Nonnull
-    public ShiftFlux shift(@Nonnull final Long amount,
-                           @Nonnull final ChronoUnit unit,
-                           @Nonnull final String[] columns) {
+    public final ShiftFlux shift(@Nonnull final Long amount,
+                                 @Nonnull final ChronoUnit unit,
+                                 @Nonnull final String[] columns) {
 
         return new ShiftFlux(this).withShift(amount, unit).withColumns(columns);
     }
@@ -805,9 +806,9 @@ public abstract class Flux {
      * @return {@link ShiftFlux}
      */
     @Nonnull
-    public ShiftFlux shift(@Nonnull final Long amount,
-                           @Nonnull final ChronoUnit unit,
-                           @Nonnull final Collection<String> columns) {
+    public final ShiftFlux shift(@Nonnull final Long amount,
+                                 @Nonnull final ChronoUnit unit,
+                                 @Nonnull final Collection<String> columns) {
 
         return new ShiftFlux(this).withShift(amount, unit).withColumns(columns);
     }
@@ -818,7 +819,7 @@ public abstract class Flux {
      * @return {@link SkewFlux}
      */
     @Nonnull
-    public SkewFlux skew() {
+    public final SkewFlux skew() {
         return new SkewFlux(this);
     }
 
@@ -829,7 +830,7 @@ public abstract class Flux {
      * @return {@link SkewFlux}
      */
     @Nonnull
-    public SkewFlux skew(final boolean useStartTime) {
+    public final SkewFlux skew(final boolean useStartTime) {
         return new SkewFlux(this).withUseStartTime(useStartTime);
     }
 
@@ -839,7 +840,7 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public SortFlux sort() {
+    public final SortFlux sort() {
         return new SortFlux(this);
     }
 
@@ -850,7 +851,7 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public SortFlux sort(final boolean desc) {
+    public final SortFlux sort(final boolean desc) {
         return new SortFlux(this).withDesc(desc);
     }
 
@@ -861,7 +862,7 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public SortFlux sort(@Nonnull final String[] columns) {
+    public final SortFlux sort(@Nonnull final String[] columns) {
         Objects.requireNonNull(columns, "Columns are required");
 
         return new SortFlux(this).withCols(columns);
@@ -874,7 +875,7 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public SortFlux sort(@Nonnull final Collection<String> columns) {
+    public final SortFlux sort(@Nonnull final Collection<String> columns) {
         Objects.requireNonNull(columns, "Columns are required");
 
         return new SortFlux(this).withCols(columns);
@@ -888,7 +889,7 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public SortFlux sort(@Nonnull final String[] columns, final boolean desc) {
+    public final SortFlux sort(@Nonnull final String[] columns, final boolean desc) {
         Objects.requireNonNull(columns, "Columns are required");
 
         return new SortFlux(this)
@@ -904,7 +905,7 @@ public abstract class Flux {
      * @return {@link SortFlux}
      */
     @Nonnull
-    public SortFlux sort(@Nonnull final Collection<String> columns, final boolean desc) {
+    public final SortFlux sort(@Nonnull final Collection<String> columns, final boolean desc) {
         Objects.requireNonNull(columns, "Columns are required");
 
         return new SortFlux(this)
@@ -918,7 +919,7 @@ public abstract class Flux {
      * @return {@link SpreadFlux}
      */
     @Nonnull
-    public SpreadFlux spread() {
+    public final SpreadFlux spread() {
         return new SpreadFlux(this);
     }
 
@@ -929,7 +930,7 @@ public abstract class Flux {
      * @return {@link SpreadFlux}
      */
     @Nonnull
-    public SpreadFlux spread(final boolean useStartTime) {
+    public final SpreadFlux spread(final boolean useStartTime) {
         return new SpreadFlux(this).withUseStartTime(useStartTime);
     }
 
@@ -939,7 +940,7 @@ public abstract class Flux {
      * @return {@link StddevFlux}
      */
     @Nonnull
-    public StddevFlux stddev() {
+    public final StddevFlux stddev() {
         return new StddevFlux(this);
     }
 
@@ -950,7 +951,7 @@ public abstract class Flux {
      * @return {@link StddevFlux}
      */
     @Nonnull
-    public StddevFlux stddev(final boolean useStartTime) {
+    public final StddevFlux stddev(final boolean useStartTime) {
         return new StddevFlux(this).withUseStartTime(useStartTime);
     }
 
@@ -960,7 +961,7 @@ public abstract class Flux {
      * @return {@link SumFlux}
      */
     @Nonnull
-    public SumFlux sum() {
+    public final SumFlux sum() {
         return new SumFlux(this);
     }
 
@@ -971,7 +972,7 @@ public abstract class Flux {
      * @return {@link SumFlux}
      */
     @Nonnull
-    public SumFlux sum(final boolean useStartTime) {
+    public final SumFlux sum(final boolean useStartTime) {
         return new SumFlux(this).withUseStartTime(useStartTime);
     }
 
@@ -981,7 +982,7 @@ public abstract class Flux {
      * @return {@link ToBoolFlux}
      */
     @Nonnull
-    public ToBoolFlux toBool() {
+    public final ToBoolFlux toBool() {
         return new ToBoolFlux(this);
     }
 
@@ -991,7 +992,7 @@ public abstract class Flux {
      * @return {@link ToIntFlux}
      */
     @Nonnull
-    public ToIntFlux toInt() {
+    public final ToIntFlux toInt() {
         return new ToIntFlux(this);
     }
 
@@ -1001,7 +1002,7 @@ public abstract class Flux {
      * @return {@link ToFloatFlux}
      */
     @Nonnull
-    public ToFloatFlux toFloat() {
+    public final ToFloatFlux toFloat() {
         return new ToFloatFlux(this);
     }
 
@@ -1011,7 +1012,7 @@ public abstract class Flux {
      * @return {@link ToDurationFlux}
      */
     @Nonnull
-    public ToDurationFlux toDuration() {
+    public final ToDurationFlux toDuration() {
         return new ToDurationFlux(this);
     }
 
@@ -1021,7 +1022,7 @@ public abstract class Flux {
      * @return {@link ToStringFlux}
      */
     @Nonnull
-    public ToStringFlux toStringConvert() {
+    public final ToStringFlux toStringConvert() {
         return new ToStringFlux(this);
     }
 
@@ -1031,7 +1032,7 @@ public abstract class Flux {
      * @return {@link ToTimeFlux}
      */
     @Nonnull
-    public ToTimeFlux toTime() {
+    public final ToTimeFlux toTime() {
         return new ToTimeFlux(this);
     }
 
@@ -1041,7 +1042,7 @@ public abstract class Flux {
      * @return {@link ToUIntFlux}
      */
     @Nonnull
-    public ToUIntFlux toUInt() {
+    public final ToUIntFlux toUInt() {
         return new ToUIntFlux(this);
     }
 
@@ -1066,7 +1067,7 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window() {
+    public final WindowFlux window() {
         return new WindowFlux(this);
     }
 
@@ -1078,8 +1079,8 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window(@Nonnull final Long every,
-                             @Nonnull final ChronoUnit everyUnit) {
+    public final WindowFlux window(@Nonnull final Long every,
+                                   @Nonnull final ChronoUnit everyUnit) {
 
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
@@ -1097,10 +1098,10 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window(@Nonnull final Long every,
-                             @Nonnull final ChronoUnit everyUnit,
-                             @Nonnull final Long period,
-                             @Nonnull final ChronoUnit periodUnit) {
+    public final WindowFlux window(@Nonnull final Long every,
+                                   @Nonnull final ChronoUnit everyUnit,
+                                   @Nonnull final Long period,
+                                   @Nonnull final ChronoUnit periodUnit) {
 
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
@@ -1124,11 +1125,11 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window(@Nonnull final Long every,
-                             @Nonnull final ChronoUnit everyUnit,
-                             @Nonnull final Long period,
-                             @Nonnull final ChronoUnit periodUnit,
-                             @Nonnull final Instant start) {
+    public final WindowFlux window(@Nonnull final Long every,
+                                   @Nonnull final ChronoUnit everyUnit,
+                                   @Nonnull final Long period,
+                                   @Nonnull final ChronoUnit periodUnit,
+                                   @Nonnull final Instant start) {
 
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
@@ -1156,12 +1157,12 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window(@Nonnull final Long every,
-                             @Nonnull final ChronoUnit everyUnit,
-                             @Nonnull final Long period,
-                             @Nonnull final ChronoUnit periodUnit,
-                             @Nonnull final Long start,
-                             @Nonnull final ChronoUnit startUnit) {
+    public final WindowFlux window(@Nonnull final Long every,
+                                   @Nonnull final ChronoUnit everyUnit,
+                                   @Nonnull final Long period,
+                                   @Nonnull final ChronoUnit periodUnit,
+                                   @Nonnull final Long start,
+                                   @Nonnull final ChronoUnit startUnit) {
 
         Objects.requireNonNull(every, "Every is required");
         Objects.requireNonNull(everyUnit, "Every ChronoUnit is required");
@@ -1192,14 +1193,14 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window(@Nonnull final Long every,
-                             @Nonnull final ChronoUnit everyUnit,
-                             @Nonnull final Long period,
-                             @Nonnull final ChronoUnit periodUnit,
-                             @Nonnull final Long start,
-                             @Nonnull final ChronoUnit startUnit,
-                             @Nonnull final Long round,
-                             @Nonnull final ChronoUnit roundUnit) {
+    public final WindowFlux window(@Nonnull final Long every,
+                                   @Nonnull final ChronoUnit everyUnit,
+                                   @Nonnull final Long period,
+                                   @Nonnull final ChronoUnit periodUnit,
+                                   @Nonnull final Long start,
+                                   @Nonnull final ChronoUnit startUnit,
+                                   @Nonnull final Long round,
+                                   @Nonnull final ChronoUnit roundUnit) {
 
         return new WindowFlux(this)
                 .withEvery(every, everyUnit)
@@ -1222,13 +1223,13 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window(@Nonnull final Long every,
-                             @Nonnull final ChronoUnit everyUnit,
-                             @Nonnull final Long period,
-                             @Nonnull final ChronoUnit periodUnit,
-                             @Nonnull final Instant start,
-                             @Nonnull final Long round,
-                             @Nonnull final ChronoUnit roundUnit) {
+    public final WindowFlux window(@Nonnull final Long every,
+                                   @Nonnull final ChronoUnit everyUnit,
+                                   @Nonnull final Long period,
+                                   @Nonnull final ChronoUnit periodUnit,
+                                   @Nonnull final Instant start,
+                                   @Nonnull final Long round,
+                                   @Nonnull final ChronoUnit roundUnit) {
 
         return new WindowFlux(this)
                 .withEvery(every, everyUnit)
@@ -1255,17 +1256,17 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window(@Nonnull final Long every,
-                             @Nonnull final ChronoUnit everyUnit,
-                             @Nonnull final Long period,
-                             @Nonnull final ChronoUnit periodUnit,
-                             @Nonnull final Long start,
-                             @Nonnull final ChronoUnit startUnit,
-                             @Nonnull final Long round,
-                             @Nonnull final ChronoUnit roundUnit,
-                             @Nonnull final String timeColumn,
-                             @Nonnull final String startCol,
-                             @Nonnull final String stopCol) {
+    public final WindowFlux window(@Nonnull final Long every,
+                                   @Nonnull final ChronoUnit everyUnit,
+                                   @Nonnull final Long period,
+                                   @Nonnull final ChronoUnit periodUnit,
+                                   @Nonnull final Long start,
+                                   @Nonnull final ChronoUnit startUnit,
+                                   @Nonnull final Long round,
+                                   @Nonnull final ChronoUnit roundUnit,
+                                   @Nonnull final String timeColumn,
+                                   @Nonnull final String startCol,
+                                   @Nonnull final String stopCol) {
 
         return new WindowFlux(this)
                 .withEvery(every, everyUnit)
@@ -1294,16 +1295,16 @@ public abstract class Flux {
      * @return {@link WindowFlux}
      */
     @Nonnull
-    public WindowFlux window(@Nonnull final Long every,
-                             @Nonnull final ChronoUnit everyUnit,
-                             @Nonnull final Long period,
-                             @Nonnull final ChronoUnit periodUnit,
-                             @Nonnull final Instant start,
-                             @Nonnull final Long round,
-                             @Nonnull final ChronoUnit roundUnit,
-                             @Nonnull final String timeColumn,
-                             @Nonnull final String startCol,
-                             @Nonnull final String stopCol) {
+    public final WindowFlux window(@Nonnull final Long every,
+                                   @Nonnull final ChronoUnit everyUnit,
+                                   @Nonnull final Long period,
+                                   @Nonnull final ChronoUnit periodUnit,
+                                   @Nonnull final Instant start,
+                                   @Nonnull final Long round,
+                                   @Nonnull final ChronoUnit roundUnit,
+                                   @Nonnull final String timeColumn,
+                                   @Nonnull final String startCol,
+                                   @Nonnull final String stopCol) {
 
         return new WindowFlux(this)
                 .withEvery(every, everyUnit)
@@ -1329,7 +1330,7 @@ public abstract class Flux {
      * @return {@link YieldFlux}
      */
     @Nonnull
-    public YieldFlux yield() {
+    public final YieldFlux yield() {
         return new YieldFlux(this);
     }
 
@@ -1340,7 +1341,7 @@ public abstract class Flux {
      * @return {@link YieldFlux}
      */
     @Nonnull
-    public YieldFlux yield(@Nonnull final String name) {
+    public final YieldFlux yield(@Nonnull final String name) {
         return new YieldFlux(this).withName(name);
     }
 
@@ -1351,7 +1352,7 @@ public abstract class Flux {
      * @return {@link ExpressionFlux}
      */
     @Nonnull
-    public ExpressionFlux expression(@Nonnull final String expression) {
+    public final ExpressionFlux expression(@Nonnull final String expression) {
 
         Preconditions.checkNonEmptyString(expression, "Expression");
 
@@ -1374,7 +1375,7 @@ public abstract class Flux {
      * @return operator with {@code type}
      */
     @Nonnull
-    public <F extends AbstractParametrizedFlux> F operator(@Nonnull final Class<F> type) {
+    public final <F extends AbstractParametrizedFlux> F operator(@Nonnull final Class<F> type) {
 
         Objects.requireNonNull(type, "Operator type is required");
 
@@ -1410,7 +1411,7 @@ public abstract class Flux {
      * @return a current operator.
      */
     @Nonnull
-    public Flux withPropertyNamed(@Nonnull final String property) {
+    public final Flux withPropertyNamed(@Nonnull final String property) {
         return withPropertyNamed(property, property);
     }
 
@@ -1435,7 +1436,7 @@ public abstract class Flux {
      * @return a current operator
      */
     @Nonnull
-    public Flux withPropertyNamed(@Nonnull final String fluxName, @Nonnull final String namedProperty) {
+    public final Flux withPropertyNamed(@Nonnull final String fluxName, @Nonnull final String namedProperty) {
 
         Preconditions.checkNonEmptyString(fluxName, "Flux property name");
         Preconditions.checkNonEmptyString(namedProperty, "Named property");
@@ -1461,7 +1462,7 @@ public abstract class Flux {
      * @return a current operator
      */
     @Nonnull
-    public Flux withPropertyValue(@Nonnull final String propertyName, @Nullable final Object value) {
+    public final Flux withPropertyValue(@Nonnull final String propertyName, @Nullable final Object value) {
 
         Preconditions.checkNonEmptyString(propertyName, "Flux property name");
 
@@ -1487,7 +1488,8 @@ public abstract class Flux {
      * @return a current operator
      */
     @Nonnull
-    public Flux withPropertyValue(@Nonnull final String property, final long amount, @Nonnull final ChronoUnit unit) {
+    public final Flux withPropertyValue(@Nonnull final String property, final long amount,
+                                        @Nonnull final ChronoUnit unit) {
 
         Preconditions.checkNonEmptyString(property, "Flux property name");
 
@@ -1512,7 +1514,7 @@ public abstract class Flux {
      * @return a current operator
      */
     @Nonnull
-    public Flux withPropertyValueEscaped(@Nonnull final String property, @Nullable final String value) {
+    public final Flux withPropertyValueEscaped(@Nonnull final String property, @Nullable final String value) {
 
         Preconditions.checkNonEmptyString(property, "Flux property name");
 
@@ -1534,7 +1536,7 @@ public abstract class Flux {
      * @return Flux script
      */
     @Nonnull
-    public String print() {
+    public final String print() {
         return print(new FluxChain());
     }
 
@@ -1545,7 +1547,7 @@ public abstract class Flux {
      * @return Flux script
      */
     @Nonnull
-    public String print(@Nonnull final FluxChain fluxChain) {
+    public final String print(@Nonnull final FluxChain fluxChain) {
 
         Objects.requireNonNull(fluxChain, "FluxChain is required");
 
