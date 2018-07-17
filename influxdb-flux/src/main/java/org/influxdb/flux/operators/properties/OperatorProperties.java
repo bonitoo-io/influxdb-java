@@ -1,6 +1,5 @@
 package org.influxdb.flux.operators.properties;
 
-import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
@@ -152,10 +151,6 @@ public final class OperatorProperties {
 
         if (serializedValue instanceof Instant) {
             serializedValue = DATE_FORMATTER.format((Instant) value);
-        }
-
-        if (serializedValue instanceof Restrictions) {
-            return "(r) => " + serializedValue.toString();
         }
 
         return serializedValue.toString();

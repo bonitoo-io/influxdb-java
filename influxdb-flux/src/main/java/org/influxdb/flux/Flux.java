@@ -11,6 +11,7 @@ import org.influxdb.flux.operators.GroupFlux;
 import org.influxdb.flux.operators.IntegralFlux;
 import org.influxdb.flux.operators.LastFlux;
 import org.influxdb.flux.operators.LimitFlux;
+import org.influxdb.flux.operators.MapFlux;
 import org.influxdb.flux.operators.MaxFlux;
 import org.influxdb.flux.operators.MeanFlux;
 import org.influxdb.flux.operators.MinFlux;
@@ -486,6 +487,36 @@ public abstract class Flux {
     public LimitFlux limit(final int numberOfResults) {
 
         return new LimitFlux(this).withN(numberOfResults);
+    }
+
+    /**
+     * Applies a function to each row of the table.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link MapFlux#withFunction(String)}</li>
+     * <li>{@link MapFlux#withPropertyNamed(String)}</li>
+     * <li>{@link MapFlux#withPropertyNamed(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link MapFlux}
+     */
+    @Nonnull
+    public MapFlux map() {
+
+        return new MapFlux(this);
+    }
+
+    /**
+     * Applies a function to each row of the table.
+     *
+     * @param function The function for map row of table. Example: "r._value * r._value".
+     * @return {@link MapFlux}
+     */
+    @Nonnull
+    public MapFlux map(@Nonnull final String function) {
+
+        return new MapFlux(this).withFunction(function);
     }
 
     /**

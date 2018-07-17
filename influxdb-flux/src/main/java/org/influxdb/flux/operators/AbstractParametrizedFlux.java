@@ -49,6 +49,17 @@ public abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream 
     protected abstract String operatorName();
 
     /**
+     * For value property it is ": ", but for function it is "=&gt;".
+     *
+     * @return property value delimiter
+     * @see MapFlux#propertyDelimiter()
+     */
+    @Nonnull
+    protected String propertyDelimiter() {
+        return ": ";
+    }
+
+    /**
      * @return {@link Boolean#TRUE} if was appended parameter
      */
     private boolean appendParameterTo(@Nonnull final String propertyName,
@@ -68,10 +79,9 @@ public abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream 
         // n: 5
         operator
                 .append(propertyName)
-                .append(": ")
+                .append(propertyDelimiter())
                 .append(propertyValue);
 
         return true;
     }
-
 }

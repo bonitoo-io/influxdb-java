@@ -49,6 +49,12 @@ public final class FilterFlux extends AbstractParametrizedFlux {
         return "filter";
     }
 
+    @Nonnull
+    @Override
+    protected String propertyDelimiter() {
+        return " => ";
+    }
+
     /**
      * @param restrictions filter restrictions
      * @return this
@@ -58,7 +64,7 @@ public final class FilterFlux extends AbstractParametrizedFlux {
 
         Objects.requireNonNull(restrictions, "Restrictions are required");
 
-        this.withPropertyValue("fn", restrictions);
+        this.withPropertyValue("fn: (r)", restrictions);
 
         return this;
     }

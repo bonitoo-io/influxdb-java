@@ -901,6 +901,40 @@ Flux flux = Flux
     .limit(5);
 ```
 #### map
+Applies a function to each row of the table [[doc](https://github.com/influxdata/platform/tree/master/query#map)].
+- `fn` - The function to apply to each row. The return value of the function may be a single value or an object.
+
+```java
+// Square the value
+
+Restrictions restriction = Restrictions.and(
+    Restrictions.measurement().equal("cpu"),
+    Restrictions.field().equal("usage_system"),
+    Restrictions.tag("service").equal("app-server")
+);
+
+Flux flux = Flux
+    .from("telegraf")
+    .filter(restriction)
+    .range(-12L, ChronoUnit.HOURS)
+    .map("r._value * r._value");
+```
+
+```java
+// Square the value and keep the original value
+
+Restrictions restriction = Restrictions.and(
+    Restrictions.measurement().equal("cpu"),
+    Restrictions.field().equal("usage_system"),
+    Restrictions.tag("service").equal("app-server")
+);
+
+Flux flux = Flux
+    .from("telegraf")
+    .filter(restriction)
+    .range(-12L, ChronoUnit.HOURS)
+    .map("{value: r._value, value2:r._value * r._value}");
+```
 
 #### max
 Returns the max value within the results [[doc](https://github.com/influxdata/platform/tree/master/query#max)].
