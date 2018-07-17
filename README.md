@@ -762,6 +762,11 @@ Flux flux = Flux
 #### count
 Counts the number of results [[doc](https://github.com/influxdata/platform/tree/master/query#count)].
 - `useStartTime` - Use the start time as the timestamp of the resulting aggregate. [boolean]
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .count();
+```
 
 #### covariance
 Covariance is an aggregate operation. Covariance computes the covariance between two columns [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#covariance)].
@@ -772,6 +777,14 @@ Covariance is an aggregate operation. Covariance computes the covariance between
 Flux flux = Flux
     .from("telegraf")
     .covariance(new String[]{"_value", "_valueSquare"});
+```
+```java
+Flux flux = Flux
+    .from("telegraf")
+    .covariance()
+        .withColumns(new String[]{"columnA", "columnB"})
+        .withPearsonr(true)
+        .withValueDst("_newColumn");
 ```
 
 #### derivative
@@ -811,7 +824,7 @@ Flux flux = Flux
 Flux flux = Flux
     .from("telegraf")
     .range(-5L, ChronoUnit.MINUTES)
-    .difference(new String[]{"_value", "_time"}, false;
+    .difference(new String[]{"_value", "_time"}, false);
 ```
 
 #### distinct
@@ -925,6 +938,9 @@ Join two time series together on time and the list of `on` keys [[doc](https://g
 - `tables` - Map of tables to join. Currently only two tables are allowed. [map of tables]
 - `on` - List of tag keys that when equal produces a result set. [array of strings]
 - `fn` - Defines the function that merges the values of the tables. The function must defined to accept a single parameter. The parameter is a map, which uses the same keys found in the tables map. The function is called for each joined set of records from the tables. [function(tables)]
+```java
+TBD
+```
 
 #### last
 Returns the last result of the query [[doc](https://github.com/influxdata/platform/tree/master/query#last)].

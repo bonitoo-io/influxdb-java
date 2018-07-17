@@ -33,7 +33,7 @@ import java.util.Objects;
  * Flux flux = Flux
  *     .from("telegraf")
  *     .range(-5L, ChronoUnit.MINUTES)
- *     .difference(new String[]{"_value", "_time"}, false
+ *     .difference(new String[]{"_value", "_time"}, false)
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (17/07/2018 12:28)
