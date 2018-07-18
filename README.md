@@ -923,7 +923,7 @@ Flux.from("telegraf")
     .groupExcept(new String[]{"tag_a"}, new String[]{"tag_b", "tag_c"});
 ```
 
-### integral
+#### integral
 For each aggregate column, it outputs the area under the curve of non null records. 
 The curve is defined as function where the domain is the record times and the range is the record values. [[doc](https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md#integral)].
 - `unit` - Time duration to use when computing the integral. [duration]
