@@ -1348,7 +1348,7 @@ Flux flux = Flux.from("telegraf")
     .window(10L, ChronoUnit.SECONDS)
     .groupBy("region");    
     
-Flowable<Cpu> cpu = fluxReactive.flux(flux, Memory.class);
+Flowable<Memory> memory = fluxReactive.flux(flux, Memory.class);
 ```
 
 ### Advanced Usage
