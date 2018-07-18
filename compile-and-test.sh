@@ -13,7 +13,7 @@ MAVEN_JAVA_VERSION="${MAVEN_JAVA_VERSION:-$DEFAULT_MAVEN_JAVA_VERSION}"
 FLUX_VERSION="nightly"
 FLUX_DISABLE="${FLUX_DISABLE:-$DEFAULT_FLUX_DISABLE}"
 
-echo "Run tests with maven:${MAVEN_JAVA_VERSION} on fluxdb-${INFLUXDB_VERSION} with flux disabled:${FLUX_DISABLE}"
+echo "Run tests with maven:${MAVEN_JAVA_VERSION} on influxdb-${INFLUXDB_VERSION} with flux disabled:${FLUX_DISABLE}"
 
 docker kill influxdb || true
 docker rm influxdb || true
@@ -35,6 +35,7 @@ if [ ! "$FLUX_DISABLE" == "true" ]; then
 
     docker pull quay.io/influxdb/flux:${FLUX_VERSION}
 
+    # wait for InfluxDB
     sleep 3
     docker run --detach --name flux --publish 8093:8093 quay.io/influxdb/flux:${FLUX_VERSION}
 
