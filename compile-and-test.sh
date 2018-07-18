@@ -51,7 +51,7 @@ docker run -i ${USE_TTY} --rm  \
       ${FLUX_CONTAINER_LINK} \
       --env INFLUXDB_IP=influxdb \
       --env FLUX_IP=flux \
-        maven:${MAVEN_JAVA_VERSION} mvn clean install -rf :influxdb-flux -DFLUX_DISABLE=${FLUX_DISABLE}
+        maven:${MAVEN_JAVA_VERSION} mvn clean install -DFLUX_DISABLE=${FLUX_DISABLE}
 
 docker kill influxdb || true
 
