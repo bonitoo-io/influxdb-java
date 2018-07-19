@@ -3,6 +3,7 @@ package org.influxdb.flux.mapper;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * Represents the record in CSV response.
@@ -81,5 +82,18 @@ public class Record {
 
     public void setValues(final Map<String, Object> values) {
         this.values = values;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", Record.class.getSimpleName() + "[", "]")
+                .add("measurement='" + measurement + "'")
+                .add("field='" + field + "'")
+                .add("start=" + start)
+                .add("stop=" + stop)
+                .add("time=" + time)
+                .add("tags=" + tags)
+                .add("value=" + value)
+                .toString();
     }
 }
