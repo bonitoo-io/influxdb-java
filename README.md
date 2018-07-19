@@ -1297,6 +1297,12 @@ Flux flux = Flux
     .sum();
 ```
 
+The Flux script:
+```
+from(db:"telegraf")
+    |> measurement(m: "cpu")
+    |> sum()
+```
 #### Custom expressions
 ```java
 Flux flux = Flux.from("telegraf")
