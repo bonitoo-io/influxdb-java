@@ -57,7 +57,7 @@ public final class MapFlux extends AbstractParametrizedFlux {
 
     @Nonnull
     @Override
-    protected String propertyDelimiter() {
+    protected String propertyDelimiter(@Nonnull final String operatorName) {
         return " => ";
     }
 

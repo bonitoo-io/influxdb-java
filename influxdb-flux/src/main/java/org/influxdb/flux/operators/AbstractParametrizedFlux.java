@@ -11,6 +11,10 @@ import javax.annotation.Nullable;
  */
 public abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream {
 
+    protected AbstractParametrizedFlux() {
+        super();
+    }
+
     protected AbstractParametrizedFlux(@Nonnull final Flux source) {
         super(source);
     }
@@ -19,6 +23,11 @@ public abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream 
     protected final void appendAfterUpstream(@Nonnull final FluxChain fluxChain) {
 
         StringBuilder operator = new StringBuilder();
+        //
+        // see JoinFlux
+        beforeAppendOperatorName(operator, fluxChain);
+        //
+
         //
         // operator(
         //
@@ -51,18 +60,29 @@ public abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream 
     /**
      * For value property it is ": ", but for function it is "=&gt;".
      *
+     * @param operatorName operator name
      * @return property value delimiter
-     * @see MapFlux#propertyDelimiter()
+     * @see AbstractParametrizedFlux#propertyDelimiter(String)
      */
     @Nonnull
-    protected String propertyDelimiter() {
+    protected String propertyDelimiter(@Nonnull final String operatorName) {
         return ": ";
+    }
+
+    /**
+     * Possibility to customize operator.
+     *
+     * @param operator  current Flux operator
+     * @param fluxChain the incoming {@link FluxChain}, never null
+     * @see JoinFlux
+     */
+    protected void beforeAppendOperatorName(@Nonnull final StringBuilder operator, @Nonnull final FluxChain fluxChain) {
     }
 
     /**
      * @return {@link Boolean#TRUE} if was appended parameter
      */
-    private boolean appendParameterTo(@Nonnull final String propertyName,
+    private boolean appendParameterTo(@Nonnull final String operatorName,
                                       @Nullable final String propertyValue,
                                       @Nonnull final StringBuilder operator,
                                       final boolean wasAppendProperty) {
@@ -78,8 +98,8 @@ public abstract class AbstractParametrizedFlux extends AbstractFluxWithUpstream 
 
         // n: 5
         operator
-                .append(propertyName)
-                .append(propertyDelimiter())
+                .append(operatorName)
+                .append(propertyDelimiter(operatorName))
                 .append(propertyValue);
 
         return true;

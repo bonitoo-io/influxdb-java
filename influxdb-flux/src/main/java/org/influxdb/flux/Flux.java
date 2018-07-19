@@ -12,6 +12,7 @@ import org.influxdb.flux.operators.FirstFlux;
 import org.influxdb.flux.operators.FromFlux;
 import org.influxdb.flux.operators.GroupFlux;
 import org.influxdb.flux.operators.IntegralFlux;
+import org.influxdb.flux.operators.JoinFlux;
 import org.influxdb.flux.operators.LastFlux;
 import org.influxdb.flux.operators.LimitFlux;
 import org.influxdb.flux.operators.MapFlux;
@@ -65,7 +66,7 @@ import java.util.Objects;
  * <li>{@link FirstFlux}</li>
  * <li>{@link GroupFlux}</li>
  * <li>{@link IntegralFlux}</li>
- * <li>TODO - join</li>
+ * <li>{@link JoinFlux}</li>
  * <li>{@link LastFlux}</li>
  * <li>{@link LimitFlux}</li>
  * <li>{@link MapFlux}</li>
@@ -668,6 +669,54 @@ public abstract class Flux {
         Objects.requireNonNull(unit, "ChronoUnit is required");
 
         return new IntegralFlux(this).withUnit(duration, unit);
+    }
+
+    /**
+     * Join two time series together on time and the list of tags.
+     *
+     * <h3>The parameters had to be defined by:</h3>
+     * <ul>
+     * <li>{@link JoinFlux#withTable(String, Flux)}</li>
+     * <li>{@link JoinFlux#withOn(String)}</li>
+     * <li>{@link JoinFlux#withOn(String[])}</li>
+     * <li>{@link JoinFlux#withOn(Collection)}</li>
+     * <li>{@link JoinFlux#withFunction(String)}</li>
+     * <li>{@link JoinFlux#withPropertyNamed(String)}</li>
+     * <li>{@link JoinFlux#withPropertyNamed(String, String)}</li>
+     * </ul>
+     *
+     * @return {@link JoinFlux}
+     */
+    @Nonnull
+    public static JoinFlux join() {
+
+        return new JoinFlux();
+    }
+
+    /**
+     * Join two time series together on time and the list of tags.
+     *
+     * @param name1    table 1 name
+     * @param table1   table 1 Flux script
+     * @param name2    table 2 name
+     * @param table2   table 2 Flux script
+     * @param tag      tag key to join
+     * @param function function to merge values
+     * @return {@link JoinFlux}
+     */
+    @Nonnull
+    public static JoinFlux join(@Nonnull final String name1,
+                                @Nonnull final Flux table1,
+                                @Nonnull final String name2,
+                                @Nonnull final Flux table2,
+                                @Nonnull final String tag,
+                                @Nonnull final String function) {
+
+        return new JoinFlux()
+                .withTable(name1, table1)
+                .withTable(name2, table2)
+                .withOn(tag)
+                .withFunction(function);
     }
 
     /**

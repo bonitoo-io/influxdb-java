@@ -939,7 +939,19 @@ Join two time series together on time and the list of `on` keys [[doc](https://g
 - `on` - List of tag keys that when equal produces a result set. [array of strings]
 - `fn` - Defines the function that merges the values of the tables. The function must defined to accept a single parameter. The parameter is a map, which uses the same keys found in the tables map. The function is called for each joined set of records from the tables. [function(tables)]
 ```java
-TBD
+Flux cpu = Flux.from("telegraf")
+    .filter(Restrictions.and(Restrictions.measurement().equal("cpu"), Restrictions.field().equal("usage_user")))
+    .range(-30L, ChronoUnit.MINUTES);
+
+Flux mem = Flux.from("telegraf")
+    .filter(Restrictions.and(Restrictions.measurement().equal("mem"), Restrictions.field().equal("used_percent")))
+    .range(-30L, ChronoUnit.MINUTES);
+
+Flux flux = Flux.join()
+    .withTable("cpu", cpu)
+    .withTable("mem", mem)
+    .withOn("host")
+    .withFunction("tables.cpu[\"_value\"] + tables.mem[\"_value\"]");
 ```
 
 #### last

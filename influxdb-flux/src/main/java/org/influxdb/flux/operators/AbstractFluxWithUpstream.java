@@ -4,6 +4,7 @@ import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -13,7 +14,11 @@ import java.util.Objects;
  */
 abstract class AbstractFluxWithUpstream extends Flux {
 
+    @Nullable
     Flux source;
+
+    AbstractFluxWithUpstream() {
+    }
 
     AbstractFluxWithUpstream(@Nonnull final Flux source) {
 
@@ -24,7 +29,10 @@ abstract class AbstractFluxWithUpstream extends Flux {
 
     @Override
     protected final void appendActual(@Nonnull final FluxChain fluxChain) {
-        fluxChain.append(source);
+
+        if (source != null) {
+            fluxChain.append(source);
+        }
 
         appendAfterUpstream(fluxChain);
     }

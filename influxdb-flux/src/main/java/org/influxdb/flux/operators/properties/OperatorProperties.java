@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -151,6 +152,10 @@ public final class OperatorProperties {
 
         if (serializedValue instanceof Instant) {
             serializedValue = DATE_FORMATTER.format((Instant) value);
+        }
+
+        if (serializedValue instanceof Supplier) {
+            return serializeValue(((Supplier) serializedValue).get());
         }
 
         return serializedValue.toString();

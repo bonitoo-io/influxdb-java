@@ -1,8 +1,16 @@
 package org.influxdb.flux.operators;
 
 import org.influxdb.flux.Flux;
+import org.influxdb.flux.FluxChain;
+import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.function.Supplier;
 
 /**
  * <a href="https://github.com/influxdata/platform/tree/master/query#join">join</a> -
@@ -29,13 +37,121 @@ import javax.annotation.Nonnull;
  */
 public final class JoinFlux extends AbstractParametrizedFlux {
 
-    public JoinFlux(@Nonnull final Flux source) {
-        super(source);
+    private Map<String, Flux> tables = new LinkedHashMap<>();
+
+    public JoinFlux() {
+        super();
+
+        // add tables: property
+        withPropertyValue("tables", (Supplier<String>) () -> {
+
+            StringJoiner tablesValue = new StringJoiner(", ", "{", "}");
+
+            tables.keySet().forEach(key -> tablesValue.add(String.format("%s:%s", key, key)));
+            return tablesValue.toString();
+        });
     }
 
     @Nonnull
     @Override
     protected String operatorName() {
         return "join";
+    }
+
+    @Override
+    protected void beforeAppendOperatorName(@Nonnull final StringBuilder operator,
+                                            @Nonnull final FluxChain fluxChain) {
+
+        // add tables Flux scripts
+        tables.keySet().forEach(key -> {
+            FluxChain tableFluxChain = new FluxChain().addParameters(fluxChain.getParameters());
+
+            operator.append(String.format("%s = %s\n", key, tables.get(key).print(tableFluxChain)));
+        });
+    }
+
+    @Nonnull
+    @Override
+    protected String propertyDelimiter(@Nonnull final String operatorName) {
+
+        switch (operatorName) {
+            case "fn: (tables)":
+                return " => ";
+
+            default:
+                return super.propertyDelimiter(operatorName);
+        }
+    }
+
+    /**
+     * Map of table to join. Currently only two tables are allowed.
+     *
+     * @param name  table name
+     * @param table Flux script to map table
+     * @return this
+     */
+    @Nonnull
+    public JoinFlux withTable(@Nonnull final String name, @Nonnull final Flux table) {
+
+        Preconditions.checkNonEmptyString(name, "Table name");
+        Objects.requireNonNull(table, "Flux script to map table");
+
+        tables.put(name, table);
+
+        return this;
+    }
+
+    /**
+     * @param tag Tag key that when equal produces a result set.
+     * @return this
+     */
+    @Nonnull
+    public JoinFlux withOn(@Nonnull final String tag) {
+
+        Preconditions.checkNonEmptyString(tag, "Tag name");
+
+        return withOn(new String[]{tag});
+    }
+
+    /**
+     * @param tags List of tag keys that when equal produces a result set.
+     * @return this
+     */
+    @Nonnull
+    public JoinFlux withOn(@Nonnull final String[] tags) {
+
+        Objects.requireNonNull(tags, "Tags are required");
+
+        withPropertyValue("on", tags);
+
+        return this;
+    }
+
+    /**
+     * @param tags List of tag keys that when equal produces a result set.
+     * @return this
+     */
+    @Nonnull
+    public JoinFlux withOn(@Nonnull final Collection<String> tags) {
+
+        Objects.requireNonNull(tags, "Tags are required");
+
+        withPropertyValue("on", tags);
+
+        return this;
+    }
+
+    /**
+     * @param function Defines the function that merges the values of the tables.
+     * @return this
+     */
+    @Nonnull
+    public JoinFlux withFunction(@Nonnull final String function) {
+
+        Preconditions.checkNonEmptyString(function, "Function");
+
+        this.withPropertyValue("fn: (tables)", function);
+
+        return this;
     }
 }
