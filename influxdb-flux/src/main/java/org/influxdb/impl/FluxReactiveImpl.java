@@ -2,6 +2,7 @@ package org.influxdb.impl;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import io.reactivex.subjects.PublishSubject;
@@ -22,6 +23,7 @@ import org.influxdb.flux.options.FluxCsvParserOptions;
 import org.influxdb.flux.options.FluxOptions;
 import org.influxdb.flux.options.FluxQueryOptions;
 import org.reactivestreams.Publisher;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
@@ -273,6 +275,15 @@ public class FluxReactiveImpl implements FluxReactive {
     @Override
     public boolean isGzipEnabled() {
         return this.gzipRequestInterceptor.isEnabled();
+    }
+
+    @Override
+    @Nonnull
+    public Maybe<Boolean> ping() {
+
+        return fluxService
+                .ping()
+                .map(Response::isSuccessful);
     }
 
     @Nonnull

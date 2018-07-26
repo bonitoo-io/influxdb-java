@@ -1,6 +1,7 @@
 package org.influxdb.flux;
 
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.annotations.Experimental;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -203,6 +204,14 @@ public interface FluxReactive {
      * @return true if gzip is enabled.
      */
     boolean isGzipEnabled();
+
+    /**
+     * Check the status of Flux Server.
+     *
+     * @return {@link Boolean#TRUE} if server is healthy otherwise return {@link Boolean#FALSE}
+     */
+    @Nonnull
+    Maybe<Boolean> ping();
 
     /**
      * @return the {@link HttpLoggingInterceptor.Level} that is used for logging requests and responses

@@ -1380,6 +1380,20 @@ The Requests and Responses can be logged by changing OkHttp LogLevel.
 fluxReactive.setLogLevel(HttpLoggingInterceptor.Level.HEADERS);
 ```
 
+#### Check the status of Flux instance
+The Flux HTTP API [/ping](https://github.com/influxdata/platform/blob/master/http/swagger.yml) endpoint provides ability 
+to check the status of your Flux instance:
+
+```java
+// report if service is running
+fluxReactive
+    .ping()
+    .subscribe(running -> {
+        
+        System.out.println("Flux service running: " + runnning);
+    });
+```
+
 ## Version
 
 The latest version for maven dependence:

@@ -1,10 +1,13 @@
 package org.influxdb.impl;
 
+import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.influxdb.flux.options.FluxOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 
 /**
@@ -36,5 +39,16 @@ public abstract class AbstractFluxReactiveTest {
     @AfterEach
     protected void after() {
         fluxReactive.close();
+    }
+
+    @Nonnull
+    protected MockResponse createErrorResponse(@Nullable final String influxDBError) {
+
+        String body = String.format("{\"error\":\"%s\"}", influxDBError);
+
+        return new MockResponse()
+                .setResponseCode(500)
+                .addHeader("X-Influxdb-Error", influxDBError)
+                .setBody(body);
     }
 }

@@ -399,6 +399,15 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                 });
     }
 
+    @Test
+    void ping() {
+
+        fluxReactive
+                .ping()
+                .test()
+                .assertValue(true);
+    }
+
     @Measurement(name = "mem")
     public static class Memory {
         

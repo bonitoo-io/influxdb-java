@@ -17,7 +17,6 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.time.Instant;
 
 /**
@@ -242,16 +241,5 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
                 .setHeader("Content-Type", "text/csv; charset=utf-8")
                 .setHeader("Date", "Tue, 26 Jun 2018 13:15:01 GMT")
                 .setChunkedBody(data, data.length());
-    }
-
-    @Nonnull
-    private MockResponse createErrorResponse(@Nullable final String influxDBError) {
-
-        String body = String.format("{\"error\":\"%s\"}", influxDBError);
-
-        return new MockResponse()
-                .setResponseCode(500)
-                .addHeader("X-Influxdb-Error", influxDBError)
-                .setBody(body);
     }
 }
