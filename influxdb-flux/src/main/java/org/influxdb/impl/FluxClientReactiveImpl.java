@@ -91,137 +91,137 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
     }
 
     @Override
-    public <M> Flowable<M> flux(@Nonnull final Flux flux, final @Nonnull Class<M> measurementType) {
+    public <M> Flowable<M> flux(@Nonnull final Flux query, final @Nonnull Class<M> measurementType) {
 
-        Objects.requireNonNull(flux, "Flux is required");
+        Objects.requireNonNull(query, "Flux is required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
 
-        return flux(flux, measurementType, FluxOptions.DEFAULTS);
+        return flux(query, measurementType, FluxOptions.DEFAULTS);
     }
 
     @Override
-    public <M> Flowable<M> flux(@Nonnull final Flux flux,
+    public <M> Flowable<M> flux(@Nonnull final Flux query,
                                 @Nonnull final Class<M> measurementType,
                                 @Nonnull final FluxOptions options) {
 
-        Objects.requireNonNull(flux, "Flux is required");
+        Objects.requireNonNull(query, "Flux is required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
         Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(flux, new HashMap<>(), measurementType, options);
+        return flux(query, new HashMap<>(), measurementType, options);
     }
 
     @Override
-    public <M> Flowable<M> flux(@Nonnull final Flux flux,
+    public <M> Flowable<M> flux(@Nonnull final Flux query,
                                 @Nonnull final Map<String, Object> properties,
                                 @Nonnull final Class<M> measurementType) {
 
-        Objects.requireNonNull(flux, "Flux is required");
+        Objects.requireNonNull(query, "Flux is required");
         Objects.requireNonNull(properties, "Properties are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
 
-        return flux(flux, properties, measurementType, FluxOptions.DEFAULTS);
+        return flux(query, properties, measurementType, FluxOptions.DEFAULTS);
     }
 
     @Override
-    public <M> Flowable<M> flux(@Nonnull final Flux flux,
+    public <M> Flowable<M> flux(@Nonnull final Flux query,
                                 @Nonnull final Map<String, Object> properties,
                                 @Nonnull final Class<M> measurementType,
                                 @Nonnull final FluxOptions options) {
 
-        Objects.requireNonNull(flux, "Flux is required");
+        Objects.requireNonNull(query, "Flux is required");
         Objects.requireNonNull(properties, "Properties are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
         Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(Flowable.just(flux), properties, measurementType, options);
+        return flux(Flowable.just(query), properties, measurementType, options);
     }
 
     @Override
-    public <M> Flowable<M> flux(@Nonnull final Publisher<Flux> fluxStream,
+    public <M> Flowable<M> flux(@Nonnull final Publisher<Flux> queryStream,
                                 @Nonnull final Map<String, Object> properties,
                                 @Nonnull final Class<M> measurementType) {
 
-        Objects.requireNonNull(fluxStream, "Flux stream is required");
+        Objects.requireNonNull(queryStream, "Flux stream is required");
         Objects.requireNonNull(properties, "Parameters are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
 
-        return flux(fluxStream, properties, measurementType, FluxOptions.DEFAULTS);
+        return flux(queryStream, properties, measurementType, FluxOptions.DEFAULTS);
     }
 
     @Override
-    public <M> Flowable<M> flux(@Nonnull final Publisher<Flux> fluxStream,
+    public <M> Flowable<M> flux(@Nonnull final Publisher<Flux> queryStream,
                                 @Nonnull final Map<String, Object> properties,
                                 @Nonnull final Class<M> measurementType,
                                 @Nonnull final FluxOptions options) {
 
-        Objects.requireNonNull(fluxStream, "Flux stream is required");
+        Objects.requireNonNull(queryStream, "Flux stream is required");
         Objects.requireNonNull(properties, "Properties are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
         Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(fluxStream, properties, options)
+        return flux(queryStream, properties, options)
                 .map(fluxResults -> mapper.toPOJO(fluxResults, measurementType))
                 .concatMap(Flowable::fromIterable);
     }
 
     @Override
-    public Flowable<FluxResult> flux(@Nonnull final Flux flux) {
+    public Flowable<FluxResult> flux(@Nonnull final Flux query) {
 
-        Objects.requireNonNull(flux, "Flux is required");
+        Objects.requireNonNull(query, "Flux is required");
 
-        return flux(flux, FluxOptions.DEFAULTS);
+        return flux(query, FluxOptions.DEFAULTS);
     }
 
     @Override
-    public Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final FluxOptions options) {
+    public Flowable<FluxResult> flux(@Nonnull final Flux query, @Nonnull final FluxOptions options) {
 
-        Objects.requireNonNull(flux, "Flux is required");
+        Objects.requireNonNull(query, "Flux is required");
         Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(flux, new HashMap<>(), options);
+        return flux(query, new HashMap<>(), options);
     }
 
     @Override
-    public Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final Map<String, Object> properties) {
+    public Flowable<FluxResult> flux(@Nonnull final Flux query, @Nonnull final Map<String, Object> properties) {
 
-        Objects.requireNonNull(flux, "Flux is required");
+        Objects.requireNonNull(query, "Flux is required");
         Objects.requireNonNull(properties, "Parameters are required");
 
-        return flux(flux, properties, FluxOptions.DEFAULTS);
+        return flux(query, properties, FluxOptions.DEFAULTS);
     }
 
     @Override
-    public Flowable<FluxResult> flux(@Nonnull final Flux flux,
+    public Flowable<FluxResult> flux(@Nonnull final Flux query,
                                      @Nonnull final Map<String, Object> properties,
                                      @Nonnull final FluxOptions options) {
 
-        Objects.requireNonNull(flux, "Flux is required");
+        Objects.requireNonNull(query, "Flux is required");
         Objects.requireNonNull(properties, "Parameters are required");
         Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(Flowable.just(flux), properties, options);
+        return flux(Flowable.just(query), properties, options);
     }
 
     @Override
-    public Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> fluxStream,
+    public Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> queryStream,
                                      @Nonnull final Map<String, Object> properties) {
-        Objects.requireNonNull(fluxStream, "Flux stream is required");
+        Objects.requireNonNull(queryStream, "Flux stream is required");
         Objects.requireNonNull(properties, "Parameters are required");
 
-        return flux(fluxStream, properties, FluxOptions.DEFAULTS);
+        return flux(queryStream, properties, FluxOptions.DEFAULTS);
     }
 
     @Override
-    public Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> fluxStream,
+    public Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> queryStream,
                                      @Nonnull final Map<String, Object> properties,
                                      @Nonnull final FluxOptions options) {
 
-        Objects.requireNonNull(fluxStream, "Flux stream is required");
+        Objects.requireNonNull(queryStream, "Flux stream is required");
         Objects.requireNonNull(properties, "Parameters are required");
         Objects.requireNonNull(options, "FluxOptions are required");
 
-        return Flowable.fromPublisher(fluxStream).concatMap((Function<Flux, Publisher<FluxResult>>) flux -> {
+        return Flowable.fromPublisher(queryStream).concatMap((Function<Flux, Publisher<FluxResult>>) flux -> {
 
             //
             // Parameters
