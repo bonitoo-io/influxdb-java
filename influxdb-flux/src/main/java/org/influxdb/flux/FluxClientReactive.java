@@ -157,7 +157,8 @@ public interface FluxClientReactive {
      * @return {@link Flowable} emitting a {@link FluxResult} which are matched the query or
      * {@link Flowable#empty()} if none found.
      */
-    Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> queryStream, @Nonnull final Map<String, Object> properties);
+    Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> queryStream,
+                              @Nonnull final Map<String, Object> properties);
 
     /**
      * Execute a Flux against the Flux service.
