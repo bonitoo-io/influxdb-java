@@ -12,18 +12,18 @@ import java.util.Objects;
  * @since 3.0.0
  */
 @ThreadSafe
-public final class FluxQueryOptions {
+public final class FluxOptions {
 
     /**
-     * Default FluxQueryOptions settings.
+     * Default FluxOptions settings.
      */
-    public static final FluxQueryOptions DEFAULTS = FluxQueryOptions.builder().build();
+    public static final FluxOptions DEFAULTS = FluxOptions.builder().build();
 
     private final FluxCsvParserOptions parserOptions;
 
-    private FluxQueryOptions(@Nonnull final Builder builder) {
+    private FluxOptions(@Nonnull final Builder builder) {
 
-        Objects.requireNonNull(builder, "FluxQueryOptions.Builder is required");
+        Objects.requireNonNull(builder, "FluxOptions.Builder is required");
 
         this.parserOptions = builder.parserOptions;
     }
@@ -44,12 +44,12 @@ public final class FluxQueryOptions {
      * @since 3.0.0
      */
     @Nonnull
-    public static FluxQueryOptions.Builder builder() {
-        return new FluxQueryOptions.Builder();
+    public static FluxOptions.Builder builder() {
+        return new FluxOptions.Builder();
     }
 
     /**
-     * A builder for {@code FluxQueryOptions}.
+     * A builder for {@code FluxOptions}.
      *
      * @since 3.0.0
      */
@@ -66,7 +66,7 @@ public final class FluxQueryOptions {
          * @since 3.0.0
          */
         @Nonnull
-        public FluxQueryOptions.Builder parserOptions(@Nonnull final FluxCsvParserOptions parserOptions) {
+        public FluxOptions.Builder parserOptions(@Nonnull final FluxCsvParserOptions parserOptions) {
 
             Objects.requireNonNull(parserOptions, "FluxCsvParserOptions is required");
 
@@ -76,14 +76,14 @@ public final class FluxQueryOptions {
         }
 
         /**
-         * Build an instance of FluxQueryOptions.
+         * Build an instance of FluxOptions.
          *
-         * @return {@link FluxQueryOptions}
+         * @return {@link FluxOptions}
          */
         @Nonnull
-        public FluxQueryOptions build() {
+        public FluxOptions build() {
 
-            return new FluxQueryOptions(this);
+            return new FluxOptions(this);
         }
     }
 }

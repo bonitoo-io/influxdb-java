@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.LongAdder;
  */
 @DisabledIfSystemProperty(named = "FLUX_DISABLE", matches = "true")
 @RunWith(JUnitPlatform.class)
-class ITFluxReactiveFluxClient extends AbstractITFluxClientReactive {
+class ITFluxClientReactive extends AbstractITFluxClientReactive {
 
     @BeforeEach
     void prepareDate() {

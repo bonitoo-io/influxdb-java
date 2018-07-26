@@ -10,7 +10,7 @@ import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.Record;
 import org.influxdb.flux.options.FluxCsvParserOptions;
-import org.influxdb.flux.options.FluxQueryOptions;
+import org.influxdb.flux.options.FluxOptions;
 import org.influxdb.impl.AbstractFluxClientReactiveTest;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -23,7 +23,7 @@ import java.time.Instant;
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:54)
  */
 @RunWith(JUnitPlatform.class)
-class FluxReactiveFluxClientTest extends AbstractFluxClientReactiveTest {
+class FluxClientReactiveQueryTest extends AbstractFluxClientReactiveTest {
 
     @Test
     void successFluxResponseEvent() {
@@ -160,7 +160,7 @@ class FluxReactiveFluxClientTest extends AbstractFluxClientReactiveTest {
                 .valueDestinations("value1", "_value2", "value_str")
                 .build();
 
-        FluxQueryOptions queryOptions = FluxQueryOptions.builder()
+        FluxOptions queryOptions = FluxOptions.builder()
                 .parserOptions(parserOptions)
                 .build();
 

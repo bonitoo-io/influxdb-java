@@ -9,12 +9,12 @@ import org.junit.runner.RunWith;
  * @author Jakub Bednar (bednar@github) (16/07/2018 14:05)
  */
 @RunWith(JUnitPlatform.class)
-class FluxQueryOptionsTest {
+class FluxOptionsTest {
 
     @Test
     void defaultSettings() {
 
-        Assertions.assertThat(FluxQueryOptions.DEFAULTS.getParserOptions().getValueDestinations())
+        Assertions.assertThat(FluxOptions.DEFAULTS.getParserOptions().getValueDestinations())
                 .hasSize(1)
                 .containsExactlyInAnyOrder("_value");
     }
@@ -27,7 +27,7 @@ class FluxQueryOptionsTest {
                 .valueDestinations("val", "val2")
                 .build();
 
-        FluxQueryOptions queryOptions = FluxQueryOptions
+        FluxOptions queryOptions = FluxOptions
                 .builder()
                 .parserOptions(parserOptions)
                 .build();

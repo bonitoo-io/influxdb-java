@@ -30,6 +30,19 @@ import java.util.function.Supplier;
  *
  * <h3>Example</h3>
  * <pre>
+ * Flux cpu = Flux.from("telegraf")
+ *     .filter(Restrictions.and(Restrictions.measurement().equal("cpu"), Restrictions.field().equal("usage_user")))
+ *     .range(-30L, ChronoUnit.MINUTES);
+ *
+ * Flux mem = Flux.from("telegraf")
+ *     .filter(Restrictions.and(Restrictions.measurement().equal("mem"), Restrictions.field().equal("used_percent")))
+ *     .range(-30L, ChronoUnit.MINUTES);
+ *
+ * Flux flux = Flux.join()
+ *     .withTable("cpu", cpu)
+ *     .withTable("mem", mem)
+ *     .withOn("host")
+ *     .withFunction("tables.cpu[\"_value\"] + tables.mem[\"_value\"]");
  * </pre>
  *
  * @author Jakub Bednar (bednar@github) (17/07/2018 14:47)

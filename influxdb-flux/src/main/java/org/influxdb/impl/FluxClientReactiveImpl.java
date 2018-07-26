@@ -21,7 +21,7 @@ import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.FluxResultMapper;
 import org.influxdb.flux.options.FluxConnectionOptions;
 import org.influxdb.flux.options.FluxCsvParserOptions;
-import org.influxdb.flux.options.FluxQueryOptions;
+import org.influxdb.flux.options.FluxOptions;
 import org.reactivestreams.Publisher;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -59,7 +59,8 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
         this(fluxConnectionOptions, null);
     }
 
-    FluxClientReactiveImpl(@Nonnull final FluxConnectionOptions fluxConnectionOptions, @Nullable final FluxServiceReactive fluxService) {
+    FluxClientReactiveImpl(@Nonnull final FluxConnectionOptions fluxConnectionOptions,
+                           @Nullable final FluxServiceReactive fluxService) {
 
         Objects.requireNonNull(fluxConnectionOptions, "FluxConnectionOptions are required");
 
@@ -95,19 +96,19 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
         Objects.requireNonNull(flux, "Flux is required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
 
-        return flux(flux, measurementType, FluxQueryOptions.DEFAULTS);
+        return flux(flux, measurementType, FluxOptions.DEFAULTS);
     }
 
     @Override
     public <M> Flowable<M> flux(@Nonnull final Flux flux,
                                 @Nonnull final Class<M> measurementType,
-                                @Nonnull final FluxQueryOptions queryOptions) {
+                                @Nonnull final FluxOptions options) {
 
         Objects.requireNonNull(flux, "Flux is required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
-        Objects.requireNonNull(queryOptions, "FluxQueryOptions are required");
+        Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(flux, new HashMap<>(), measurementType, queryOptions);
+        return flux(flux, new HashMap<>(), measurementType, options);
     }
 
     @Override
@@ -119,21 +120,21 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
         Objects.requireNonNull(properties, "Properties are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
 
-        return flux(flux, properties, measurementType, FluxQueryOptions.DEFAULTS);
+        return flux(flux, properties, measurementType, FluxOptions.DEFAULTS);
     }
 
     @Override
     public <M> Flowable<M> flux(@Nonnull final Flux flux,
                                 @Nonnull final Map<String, Object> properties,
                                 @Nonnull final Class<M> measurementType,
-                                @Nonnull final FluxQueryOptions queryOptions) {
+                                @Nonnull final FluxOptions options) {
 
         Objects.requireNonNull(flux, "Flux is required");
         Objects.requireNonNull(properties, "Properties are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
-        Objects.requireNonNull(queryOptions, "FluxQueryOptions are required");
+        Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(Flowable.just(flux), properties, measurementType, queryOptions);
+        return flux(Flowable.just(flux), properties, measurementType, options);
     }
 
     @Override
@@ -145,21 +146,21 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
         Objects.requireNonNull(properties, "Parameters are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
 
-        return flux(fluxStream, properties, measurementType, FluxQueryOptions.DEFAULTS);
+        return flux(fluxStream, properties, measurementType, FluxOptions.DEFAULTS);
     }
 
     @Override
     public <M> Flowable<M> flux(@Nonnull final Publisher<Flux> fluxStream,
                                 @Nonnull final Map<String, Object> properties,
                                 @Nonnull final Class<M> measurementType,
-                                @Nonnull final FluxQueryOptions queryOptions) {
+                                @Nonnull final FluxOptions options) {
 
         Objects.requireNonNull(fluxStream, "Flux stream is required");
         Objects.requireNonNull(properties, "Properties are required");
         Objects.requireNonNull(measurementType, "Measurement type si required");
-        Objects.requireNonNull(queryOptions, "FluxQueryOptions are required");
+        Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(fluxStream, properties, queryOptions)
+        return flux(fluxStream, properties, options)
                 .map(fluxResults -> mapper.toPOJO(fluxResults, measurementType))
                 .concatMap(Flowable::fromIterable);
     }
@@ -169,16 +170,16 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
 
         Objects.requireNonNull(flux, "Flux is required");
 
-        return flux(flux, FluxQueryOptions.DEFAULTS);
+        return flux(flux, FluxOptions.DEFAULTS);
     }
 
     @Override
-    public Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final FluxQueryOptions queryOptions) {
+    public Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final FluxOptions options) {
 
         Objects.requireNonNull(flux, "Flux is required");
-        Objects.requireNonNull(queryOptions, "FluxQueryOptions are required");
+        Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(flux, new HashMap<>(), queryOptions);
+        return flux(flux, new HashMap<>(), options);
     }
 
     @Override
@@ -187,19 +188,19 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
         Objects.requireNonNull(flux, "Flux is required");
         Objects.requireNonNull(properties, "Parameters are required");
 
-        return flux(flux, properties, FluxQueryOptions.DEFAULTS);
+        return flux(flux, properties, FluxOptions.DEFAULTS);
     }
 
     @Override
     public Flowable<FluxResult> flux(@Nonnull final Flux flux,
                                      @Nonnull final Map<String, Object> properties,
-                                     @Nonnull final FluxQueryOptions queryOptions) {
+                                     @Nonnull final FluxOptions options) {
 
         Objects.requireNonNull(flux, "Flux is required");
         Objects.requireNonNull(properties, "Parameters are required");
-        Objects.requireNonNull(queryOptions, "FluxQueryOptions are required");
+        Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(Flowable.just(flux), properties, queryOptions);
+        return flux(Flowable.just(flux), properties, options);
     }
 
     @Override
@@ -208,17 +209,17 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
         Objects.requireNonNull(fluxStream, "Flux stream is required");
         Objects.requireNonNull(properties, "Parameters are required");
 
-        return flux(fluxStream, properties, FluxQueryOptions.DEFAULTS);
+        return flux(fluxStream, properties, FluxOptions.DEFAULTS);
     }
 
     @Override
     public Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> fluxStream,
                                      @Nonnull final Map<String, Object> properties,
-                                     @Nonnull final FluxQueryOptions queryOptions) {
+                                     @Nonnull final FluxOptions options) {
 
         Objects.requireNonNull(fluxStream, "Flux stream is required");
         Objects.requireNonNull(properties, "Parameters are required");
-        Objects.requireNonNull(queryOptions, "FluxQueryOptions are required");
+        Objects.requireNonNull(options, "FluxOptions are required");
 
         return Flowable.fromPublisher(fluxStream).concatMap((Function<Flux, Publisher<FluxResult>>) flux -> {
 
@@ -232,7 +233,7 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
                     .query(query, orgID)
                     .flatMap(
                             // success response
-                            body -> chunkReader(query, this.fluxConnectionOptions, body, queryOptions.getParserOptions()),
+                            body -> chunkReader(query, this.fluxConnectionOptions, body, options.getParserOptions()),
                             // error response
                             throwable -> (observer -> {
 

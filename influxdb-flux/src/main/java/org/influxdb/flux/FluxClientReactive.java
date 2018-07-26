@@ -7,7 +7,7 @@ import io.reactivex.annotations.Experimental;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.influxdb.flux.events.AbstractFluxEvent;
 import org.influxdb.flux.mapper.FluxResult;
-import org.influxdb.flux.options.FluxQueryOptions;
+import org.influxdb.flux.options.FluxOptions;
 import org.reactivestreams.Publisher;
 
 import javax.annotation.Nonnull;
@@ -39,13 +39,13 @@ public interface FluxClientReactive {
      * @param flux            the flux query to execute
      * @param measurementType the type of the measurement (POJO)
      * @param <M>             the type of the measurement (POJO)
-     * @param queryOptions    the options for the query
+     * @param options         the options for the query
      * @return {@link Flowable} emitting a {@link FluxResult} mapped to {@code measurementType} which are matched
      * the query or {@link Flowable#empty()} if none found.
      */
     <M> Flowable<M> flux(@Nonnull final Flux flux,
                          @Nonnull final Class<M> measurementType,
-                         @Nonnull final FluxQueryOptions queryOptions);
+                         @Nonnull final FluxOptions options);
 
     /**
      * Execute a Flux against the Flux service.
@@ -68,14 +68,14 @@ public interface FluxClientReactive {
      * @param properties      named properties
      * @param measurementType the type of the measurement (POJO)
      * @param <M>             the type of the measurement (POJO)
-     * @param queryOptions    the options for the query
+     * @param options         the options for the query
      * @return {@link Flowable} emitting a {@link FluxResult} mapped to {@code measurementType} which are matched
      * the query or {@link Flowable#empty()} if none found.
      */
     <M> Flowable<M> flux(@Nonnull final Flux flux,
                          @Nonnull final Map<String, Object> properties,
                          @Nonnull final Class<M> measurementType,
-                         @Nonnull final FluxQueryOptions queryOptions);
+                         @Nonnull final FluxOptions options);
 
     /**
      * Execute a Flux against the Flux service.
@@ -98,14 +98,14 @@ public interface FluxClientReactive {
      * @param properties      named properties
      * @param measurementType the type of the measurement (POJO)
      * @param <M>             the type of the measurement (POJO)
-     * @param queryOptions    the options for the query
+     * @param options    the options for the query
      * @return {@link Flowable} emitting a {@link FluxResult} mapped to {@code measurementType} which are matched
      * the query or {@link Flowable#empty()} if none found.
      */
     <M> Flowable<M> flux(@Nonnull final Publisher<Flux> fluxStream,
                          @Nonnull final Map<String, Object> properties,
                          @Nonnull final Class<M> measurementType,
-                         @Nonnull final FluxQueryOptions queryOptions);
+                         @Nonnull final FluxOptions options);
 
     /**
      * Execute a Flux against the Flux service.
@@ -120,11 +120,11 @@ public interface FluxClientReactive {
      * Execute a Flux against the Flux service.
      *
      * @param flux         the flux query to execute
-     * @param queryOptions the options for the query
+     * @param options the options for the query
      * @return {@link Flowable} emitting a {@link FluxResult} which are matched the query or
      * {@link Flowable#empty()} if none found.
      */
-    Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final FluxQueryOptions queryOptions);
+    Flowable<FluxResult> flux(@Nonnull final Flux flux, @Nonnull final FluxOptions options);
 
     /**
      * Execute a Flux against the Flux service.
@@ -141,13 +141,13 @@ public interface FluxClientReactive {
      *
      * @param flux         the flux query to execute
      * @param properties   named properties
-     * @param queryOptions the options for the query
+     * @param options the options for the query
      * @return {@link Flowable} emitting a {@link FluxResult} which are matched the query or
      * {@link Flowable#empty()} if none found.
      */
     Flowable<FluxResult> flux(@Nonnull final Flux flux,
                               @Nonnull final Map<String, Object> properties,
-                              @Nonnull final FluxQueryOptions queryOptions);
+                              @Nonnull final FluxOptions options);
 
     /**
      * Execute a Flux against the Flux service.
@@ -164,13 +164,13 @@ public interface FluxClientReactive {
      *
      * @param fluxStream   the flux query to execute
      * @param properties   named properties
-     * @param queryOptions the options for the query
+     * @param options the options for the query
      * @return {@link Flowable} emitting a {@link FluxResult} which are matched the query or
      * {@link Flowable#empty()} if none found.
      */
     Flowable<FluxResult> flux(@Nonnull final Publisher<Flux> fluxStream,
                               @Nonnull final Map<String, Object> properties,
-                              @Nonnull final FluxQueryOptions queryOptions);
+                              @Nonnull final FluxOptions options);
 
     /**
      * Listen the events produced by {@link FluxClientReactive}.

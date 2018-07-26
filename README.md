@@ -647,7 +647,7 @@ fluxClient.close();
 
 ### Flux query configuration
 
-The Flux query can be configured by `FluxQueryOptions`:
+The Flux query can be configured by `FluxOptions`:
 
 - `parserOptions` - the CSV parser options
     - `valueDestinations` - the column names of the record where result will be placed (see [map function](#map))
@@ -657,7 +657,7 @@ FluxCsvParserOptions parserOptions = FluxCsvParserOptions.builder()
     .valueDestinations("value1", "_value2", "value_str")
     .build();
 
-FluxQueryOptions queryOptions = FluxQueryOptions.builder()
+FluxOptions queryOptions = FluxOptions.builder()
     .parserOptions(parserOptions)
     .build();
 
