@@ -20,7 +20,7 @@ import java.util.Map;
  * @since 3.0.0
  */
 @Experimental
-public interface FluxReactive {
+public interface FluxClientReactive {
 
     /**
      * Execute a Flux against the Flux service.
@@ -173,7 +173,7 @@ public interface FluxReactive {
                               @Nonnull final FluxQueryOptions queryOptions);
 
     /**
-     * Listen the events produced by {@link FluxReactive}.
+     * Listen the events produced by {@link FluxClientReactive}.
      *
      * @param eventType type of event to listen
      * @param <T>       type of event to listen
@@ -185,18 +185,18 @@ public interface FluxReactive {
     /**
      * Enable Gzip compress for http request body.
      *
-     * @return the FluxReactive instance to be able to use it in a fluent manner.
+     * @return the FluxClientReactive instance to be able to use it in a fluent manner.
      */
     @Nonnull
-    FluxReactive enableGzip();
+    FluxClientReactive enableGzip();
 
     /**
      * Disable Gzip compress for http request body.
      *
-     * @return the FluxReactive instance to be able to use it in a fluent manner.
+     * @return the FluxClientReactive instance to be able to use it in a fluent manner.
      */
     @Nonnull
-    FluxReactive disableGzip();
+    FluxClientReactive disableGzip();
 
     /**
      * Returns whether Gzip compress for http request body is enabled.
@@ -223,18 +223,18 @@ public interface FluxReactive {
      * Set the log level for the request and response information.
      *
      * @param logLevel the log level to set.
-     * @return the FluxReactive instance to be able to use it in a fluent manner.
+     * @return the FluxClientReactive instance to be able to use it in a fluent manner.
      */
     @Nonnull
-    FluxReactive setLogLevel(@Nonnull final HttpLoggingInterceptor.Level logLevel);
+    FluxClientReactive setLogLevel(@Nonnull final HttpLoggingInterceptor.Level logLevel);
 
     /**
      * Dispose all event listeners before shutdown.
      *
-     * @return the FluxReactive instance to be able to use it in a fluent manner.
+     * @return the FluxClientReactive instance to be able to use it in a fluent manner.
      */
     @Nonnull
-    FluxReactive close();
+    FluxClientReactive close();
 
     /**
      * @return {@link Boolean#TRUE} if all listeners are disposed

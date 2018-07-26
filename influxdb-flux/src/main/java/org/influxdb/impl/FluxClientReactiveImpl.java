@@ -13,14 +13,14 @@ import okio.BufferedSource;
 import org.influxdb.InfluxDBException;
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxChain;
-import org.influxdb.flux.FluxReactive;
+import org.influxdb.flux.FluxClientReactive;
 import org.influxdb.flux.events.AbstractFluxEvent;
 import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.FluxResultMapper;
+import org.influxdb.flux.options.FluxConnectionOptions;
 import org.influxdb.flux.options.FluxCsvParserOptions;
-import org.influxdb.flux.options.FluxOptions;
 import org.influxdb.flux.options.FluxQueryOptions;
 import org.reactivestreams.Publisher;
 import retrofit2.Response;
@@ -41,29 +41,29 @@ import java.util.logging.Logger;
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 11:59)
  */
-public class FluxReactiveImpl implements FluxReactive {
+public class FluxClientReactiveImpl implements FluxClientReactive {
 
-    private static final Logger LOG = Logger.getLogger(FluxReactiveImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(FluxClientReactiveImpl.class.getName());
 
     private final FluxResultMapper mapper = new FluxResultMapper();
 
-    private final FluxOptions fluxOptions;
+    private final FluxConnectionOptions fluxConnectionOptions;
     private final FluxServiceReactive fluxService;
     private final HttpLoggingInterceptor loggingInterceptor;
     private final GzipRequestInterceptor gzipRequestInterceptor;
 
     private final PublishSubject<Object> eventPublisher;
 
-    public FluxReactiveImpl(@Nonnull final FluxOptions fluxOptions) {
+    public FluxClientReactiveImpl(@Nonnull final FluxConnectionOptions fluxConnectionOptions) {
 
-        this(fluxOptions, null);
+        this(fluxConnectionOptions, null);
     }
 
-    FluxReactiveImpl(@Nonnull final FluxOptions fluxOptions, @Nullable final FluxServiceReactive fluxService) {
+    FluxClientReactiveImpl(@Nonnull final FluxConnectionOptions fluxConnectionOptions, @Nullable final FluxServiceReactive fluxService) {
 
-        Objects.requireNonNull(fluxOptions, "FluxOptions are required");
+        Objects.requireNonNull(fluxConnectionOptions, "FluxConnectionOptions are required");
 
-        this.fluxOptions = fluxOptions;
+        this.fluxConnectionOptions = fluxConnectionOptions;
 
         this.loggingInterceptor = new HttpLoggingInterceptor();
         this.loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
@@ -73,13 +73,13 @@ public class FluxReactiveImpl implements FluxReactive {
             this.fluxService = fluxService;
         } else {
 
-            OkHttpClient okHttpClient = fluxOptions.getOkHttpClient()
+            OkHttpClient okHttpClient = fluxConnectionOptions.getOkHttpClient()
                     .addInterceptor(loggingInterceptor)
                     .addInterceptor(gzipRequestInterceptor)
                     .build();
 
             this.fluxService = new Retrofit.Builder()
-                    .baseUrl(fluxOptions.getUrl())
+                    .baseUrl(fluxConnectionOptions.getUrl())
                     .client(okHttpClient)
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build()
@@ -225,14 +225,14 @@ public class FluxReactiveImpl implements FluxReactive {
             //
             // Parameters
             //
-            String orgID = this.fluxOptions.getOrgID();
+            String orgID = this.fluxConnectionOptions.getOrgID();
             String query = flux.print(new FluxChain().addParameters(properties));
 
             return fluxService
                     .query(query, orgID)
                     .flatMap(
                             // success response
-                            body -> chunkReader(query, this.fluxOptions, body, queryOptions.getParserOptions()),
+                            body -> chunkReader(query, this.fluxConnectionOptions, body, queryOptions.getParserOptions()),
                             // error response
                             throwable -> (observer -> {
 
@@ -240,7 +240,7 @@ public class FluxReactiveImpl implements FluxReactive {
                                         .buildExceptionForThrowable(throwable);
 
                                 // publish event
-                                publishEvent(new FluxErrorEvent(fluxOptions, query, influxDBException));
+                                publishEvent(new FluxErrorEvent(fluxConnectionOptions, query, influxDBException));
                                 observer.onError(influxDBException);
                             }),
                             // end of response
@@ -260,14 +260,14 @@ public class FluxReactiveImpl implements FluxReactive {
 
     @Nonnull
     @Override
-    public FluxReactive enableGzip() {
+    public FluxClientReactive enableGzip() {
         this.gzipRequestInterceptor.enable();
         return this;
     }
 
     @Nonnull
     @Override
-    public FluxReactive disableGzip() {
+    public FluxClientReactive disableGzip() {
         this.gzipRequestInterceptor.disable();
         return this;
     }
@@ -294,7 +294,7 @@ public class FluxReactiveImpl implements FluxReactive {
 
     @Nonnull
     @Override
-    public FluxReactive setLogLevel(@Nonnull final HttpLoggingInterceptor.Level logLevel) {
+    public FluxClientReactive setLogLevel(@Nonnull final HttpLoggingInterceptor.Level logLevel) {
 
         Objects.requireNonNull(logLevel, "Log level is required");
 
@@ -305,7 +305,7 @@ public class FluxReactiveImpl implements FluxReactive {
 
     @Nonnull
     @Override
-    public FluxReactive close() {
+    public FluxClientReactive close() {
 
         LOG.log(Level.INFO, "Dispose all event listeners before shutdown.");
 
@@ -321,11 +321,11 @@ public class FluxReactiveImpl implements FluxReactive {
 
     @Nonnull
     private Observable<FluxResult> chunkReader(@Nonnull final String query,
-                                               @Nonnull final FluxOptions options,
+                                               @Nonnull final FluxConnectionOptions options,
                                                @Nonnull final ResponseBody body,
                                                @Nonnull final FluxCsvParserOptions parserOptions) {
 
-        Objects.requireNonNull(options, "FluxOptions are required");
+        Objects.requireNonNull(options, "FluxConnectionOptions are required");
         Preconditions.checkNonEmptyString(query, "Flux query");
         Objects.requireNonNull(body, "ResponseBody is required");
         Objects.requireNonNull(parserOptions, "FluxCsvParserOptions are required");

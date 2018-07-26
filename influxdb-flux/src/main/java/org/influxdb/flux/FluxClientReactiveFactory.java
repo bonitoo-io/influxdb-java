@@ -1,7 +1,7 @@
 package org.influxdb.flux;
 
-import org.influxdb.flux.options.FluxOptions;
-import org.influxdb.impl.FluxReactiveImpl;
+import org.influxdb.flux.options.FluxConnectionOptions;
+import org.influxdb.impl.FluxClientReactiveImpl;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -12,9 +12,9 @@ import java.util.Objects;
  * @author Jakub Bednar (bednar@github) (26/06/2018 11:13)
  * @since 3.0.0
  */
-public final class FluxReactiveFactory {
+public final class FluxClientReactiveFactory {
 
-    private FluxReactiveFactory() {
+    private FluxClientReactiveFactory() {
     }
 
     /**
@@ -24,10 +24,10 @@ public final class FluxReactiveFactory {
      * @return 3.0.0
      */
     @Nonnull
-    public static FluxReactive connect(@Nonnull final FluxOptions options) {
+    public static FluxClientReactive connect(@Nonnull final FluxConnectionOptions options) {
 
-        Objects.requireNonNull(options, "FluxOptions are required");
+        Objects.requireNonNull(options, "FluxConnectionOptions are required");
 
-        return new FluxReactiveImpl(options);
+        return new FluxClientReactiveImpl(options);
     }
 }

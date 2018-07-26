@@ -9,20 +9,20 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.util.Objects;
 
 /**
- * FluxOptions are used to configure queries to the Flux.
+ * FluxConnectionOptions are used to configure queries to the Flux.
  *
  * @author Jakub Bednar (bednar@github) (26/06/2018 08:59)
  * @since 3.0.0
  */
 @ThreadSafe
-public final class FluxOptions {
+public final class FluxConnectionOptions {
 
     private final String url;
     private final String orgID;
     private OkHttpClient.Builder okHttpClient;
 
-    private FluxOptions(@Nonnull final Builder builder) {
-        Objects.requireNonNull(builder, "FluxOptions.Builder is required");
+    private FluxConnectionOptions(@Nonnull final Builder builder) {
+        Objects.requireNonNull(builder, "FluxConnectionOptions.Builder is required");
 
         url = builder.url;
         orgID = builder.orgID;
@@ -31,7 +31,7 @@ public final class FluxOptions {
 
     /**
      * @return the url to connect to Flux
-     * @see FluxOptions.Builder#url(String)
+     * @see FluxConnectionOptions.Builder#url(String)
      * @since 3.0.0
      */
     @Nonnull
@@ -41,7 +41,7 @@ public final class FluxOptions {
 
     /**
      * @return the organization id required by Flux
-     * @see FluxOptions.Builder#orgID(String)
+     * @see FluxConnectionOptions.Builder#orgID(String)
      * @since 3.0.0
      */
 
@@ -52,7 +52,7 @@ public final class FluxOptions {
 
     /**
      * @return HTTP client to use for communication with Flux
-     * @see FluxOptions.Builder#okHttpClient(OkHttpClient.Builder)
+     * @see FluxConnectionOptions.Builder#okHttpClient(OkHttpClient.Builder)
      * @since 3.0.0
      */
     @Nonnull
@@ -67,12 +67,12 @@ public final class FluxOptions {
      * @since 3.0.0
      */
     @Nonnull
-    public static FluxOptions.Builder builder() {
-        return new FluxOptions.Builder();
+    public static FluxConnectionOptions.Builder builder() {
+        return new FluxConnectionOptions.Builder();
     }
 
     /**
-     * A builder for {@code FluxOptions}.
+     * A builder for {@code FluxConnectionOptions}.
      *
      * @since 3.0.0
      */
@@ -126,12 +126,12 @@ public final class FluxOptions {
         }
 
         /**
-         * Build an instance of FluxOptions.
+         * Build an instance of FluxConnectionOptions.
          *
-         * @return {@link FluxOptions}
+         * @return {@link FluxConnectionOptions}
          */
         @Nonnull
-        public FluxOptions build() {
+        public FluxConnectionOptions build() {
 
             if (url == null || url.isEmpty()) {
                 throw new IllegalStateException("The url to connect to Flux has to be defined.");
@@ -141,7 +141,7 @@ public final class FluxOptions {
                 throw new IllegalStateException("The organization id required by Flux has to be defined.");
             }
 
-            return new FluxOptions(this);
+            return new FluxConnectionOptions(this);
         }
     }
 }

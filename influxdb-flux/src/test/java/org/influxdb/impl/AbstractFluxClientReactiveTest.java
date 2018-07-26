@@ -2,7 +2,7 @@ package org.influxdb.impl;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.influxdb.flux.options.FluxOptions;
+import org.influxdb.flux.options.FluxConnectionOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -13,10 +13,10 @@ import java.io.IOException;
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:15)
  */
-public abstract class AbstractFluxReactiveTest {
+public abstract class AbstractFluxClientReactiveTest {
 
     protected MockWebServer fluxServer;
-    protected FluxReactiveImpl fluxReactive;
+    protected FluxClientReactiveImpl fluxClient;
 
     @BeforeEach
     protected void setUp() {
@@ -28,17 +28,17 @@ public abstract class AbstractFluxReactiveTest {
             throw new RuntimeException(e);
         }
 
-        FluxOptions fluxOptions = FluxOptions.builder()
+        FluxConnectionOptions fluxConnectionOptions = FluxConnectionOptions.builder()
                 .url(fluxServer.url("/").url().toString())
                 .orgID("0")
                 .build();
 
-        fluxReactive = new FluxReactiveImpl(fluxOptions);
+        fluxClient = new FluxClientReactiveImpl(fluxConnectionOptions);
     }
 
     @AfterEach
     protected void after() {
-        fluxReactive.close();
+        fluxClient.close();
     }
 
     @Nonnull

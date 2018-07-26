@@ -1,6 +1,6 @@
 package org.influxdb.flux.events;
 
-import org.influxdb.flux.options.FluxOptions;
+import org.influxdb.flux.options.FluxConnectionOptions;
 
 import javax.annotation.Nonnull;
 import java.util.logging.Level;
@@ -16,7 +16,7 @@ public class FluxSuccessEvent extends AbstractFluxEvent {
 
     private static final Logger LOG = Logger.getLogger(FluxSuccessEvent.class.getName());
 
-    public FluxSuccessEvent(@Nonnull final FluxOptions options, @Nonnull final String fluxQuery) {
+    public FluxSuccessEvent(@Nonnull final FluxConnectionOptions options, @Nonnull final String fluxQuery) {
 
         super(options, fluxQuery);
     }

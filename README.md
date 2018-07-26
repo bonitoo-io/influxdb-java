@@ -619,11 +619,11 @@ influxDBReactive
 
 ## Flux - Data Scripting Language (version 3.0+ required)
 The [Flux](https://github.com/influxdata/platform/tree/master/query#flux---influx-data-language) is a Functional Language for defining a query to execute.
-The `FluxReactive` is reactive client that support the Flux Language.
+The `FluxClientReactive` is reactive client that support the Flux Language.
 
 ### Factory
 
-The `FluxReactiveFactory` creates the reactive instance of a Flux client. The `FluxReactive` client can be configured by `FluxOptions`.
+The `FluxClientReactiveFactory` creates the reactive instance of a Flux client. The `FluxClientReactive` client can be configured by `FluxConnectionOptions`.
 
 #### Flux configuration
 - `url` -  the url to connect to Flux
@@ -632,17 +632,17 @@ The `FluxReactiveFactory` creates the reactive instance of a Flux client. The `F
 
 ```java
 // Connection configuration
-FluxOptions fluxOptions = FluxOptions.builder()
+FluxConnectionOptions fluxConnectionOptions = FluxConnectionOptions.builder()
     .url("http://localhost:8093")
     .orgID("0")
     .build();
 
 // Reactive client
-FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
+FluxClientReactive fluxClient = FluxClientReactiveFactory.connect(fluxConnectionOptions);
 
 ...
 
-fluxReactive.close();
+fluxClient.close();
 ```
 
 ### Flux query configuration
@@ -661,19 +661,19 @@ FluxQueryOptions queryOptions = FluxQueryOptions.builder()
     .parserOptions(parserOptions)
     .build();
 
-Flowable<FluxResult> results = fluxReactive.flux(Flux.from("telegraf"), queryOptions);
+Flowable<FluxResult> results = fluxClient.flux(Flux.from("telegraf"), queryOptions);
 ```
 
 ### Events
-The `FluxReactive` produces events that allow user to be notified and react to this events:
+The `FluxClientReactive` produces events that allow user to be notified and react to this events:
 
 - `FluxSuccessEvent` - published when arrived the success response from Flux server
 - `FluxErrorEvent` - published when arrived the error response from Flux server
 
 #### Handling success response
 ```java
-FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
-fluxReactive.listenEvents(FluxSuccessEvent.class).subscribe(event -> {
+FluxClientReactive fluxClient = FluxClientReactiveFactory.connect(fluxConnectionOptions);
+fluxClient.listenEvents(FluxSuccessEvent.class).subscribe(event -> {
 
     // handle success
     
@@ -683,8 +683,8 @@ fluxReactive.listenEvents(FluxSuccessEvent.class).subscribe(event -> {
 ```
 #### Handling error response
 ```java
-FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
-fluxReactive.listenEvents(FluxErrorEvent.class).subscribe(event -> {
+FluxClientReactive fluxClient = FluxClientReactiveFactory.connect(fluxConnectionOptions);
+fluxClient.listenEvents(FluxErrorEvent.class).subscribe(event -> {
     
     // handle error
     
@@ -703,7 +703,7 @@ Flux flux = Flux
     .window(15L, ChronoUnit.MINUTES, 20L, ChronoUnit.SECONDS)
     .sum();
 
-Flowable<FluxResult> results = fluxReactive.flux(flux);
+Flowable<FluxResult> results = fluxClient.flux(flux);
 ```
 #### Use build-in properties
 ```java
@@ -713,7 +713,7 @@ Flux.from("telegraf")
         .withPeriod(20L, ChronoUnit.SECONDS)
     .sum();
 
-Flowable<FluxResult> results = fluxReactive.flux(flux);
+Flowable<FluxResult> results = fluxClient.flux(flux);
 ```
 
 #### Specify the property name and value
@@ -724,7 +724,7 @@ Flux.from("telegraf")
         .withPropertyValue("period", 20L, ChronoUnit.SECONDS)
     .sum();
 
-Flowable<FluxResult> results = fluxReactive.flux(flux);
+Flowable<FluxResult> results = fluxClient.flux(flux);
 ```
 #### Specify the named properties
 ```java
@@ -739,7 +739,7 @@ Flux flux = Flux
         .withPropertyNamed("period")
     .sum();
 
-Flowable<FluxResult> cpu = fluxReactive.flux(flux, properties);
+Flowable<FluxResult> cpu = fluxClient.flux(flux, properties);
 ```
 
 ### Supported Functions
@@ -1321,7 +1321,7 @@ Flux flux = Flux.from("telegraf")
     .expression("map(fn: (r) => r._value * r._value)")
     .expression("sum()");
 
-Flowable<FluxResult> results = fluxReactive.flux(flux);
+Flowable<FluxResult> results = fluxClient.flux(flux);
 ```
 
 ### Mapping to POJO
@@ -1366,7 +1366,7 @@ Flux flux = Flux.from("telegraf")
     .window(10L, ChronoUnit.SECONDS)
     .groupBy("region");    
     
-Flowable<Memory> memory = fluxReactive.flux(flux, Memory.class);
+Flowable<Memory> memory = fluxClient.flux(flux, Memory.class);
 ```
 
 ### Advanced Usage
@@ -1377,7 +1377,7 @@ Same as the non reactive client. For detail information see [documentation](#use
 #### Log HTTP Request and Response
 The Requests and Responses can be logged by changing OkHttp LogLevel.
 ```java
-fluxReactive.setLogLevel(HttpLoggingInterceptor.Level.HEADERS);
+fluxClient.setLogLevel(HttpLoggingInterceptor.Level.HEADERS);
 ```
 
 #### Check the status of Flux instance
@@ -1386,7 +1386,7 @@ to check the status of your Flux instance:
 
 ```java
 // report if service is running
-fluxReactive
+fluxClient
     .ping()
     .subscribe(running -> {
         

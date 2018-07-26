@@ -2,7 +2,7 @@ package org.influxdb.flux;
 
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
-import org.influxdb.impl.AbstractFluxReactiveTest;
+import org.influxdb.impl.AbstractFluxClientReactiveTest;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -11,14 +11,14 @@ import org.junit.runner.RunWith;
  * @author Jakub Bednar (bednar@github) (26/07/2018 09:52)
  */
 @RunWith(JUnitPlatform.class)
-class FluxReactivePingTest extends AbstractFluxReactiveTest {
+class FluxClientReactivePingTest extends AbstractFluxClientReactiveTest {
 
     @Test
     void serverError() {
 
         fluxServer.enqueue(createErrorResponse(""));
 
-        fluxReactive
+        fluxClient
                 .ping()
                 .test()
                 .assertValueCount(1)
@@ -36,7 +36,7 @@ class FluxReactivePingTest extends AbstractFluxReactiveTest {
 
         fluxServer.enqueue(new MockResponse().setResponseCode(204));
 
-        fluxReactive
+        fluxClient
                 .ping()
                 .test()
                 .assertValueCount(1)

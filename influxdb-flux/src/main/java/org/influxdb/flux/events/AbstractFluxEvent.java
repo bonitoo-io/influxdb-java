@@ -1,24 +1,25 @@
 package org.influxdb.flux.events;
 
-import org.influxdb.flux.options.FluxOptions;
+import org.influxdb.flux.FluxClientReactive;
+import org.influxdb.flux.options.FluxConnectionOptions;
 import org.influxdb.impl.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
- * Base event triggered by {@link org.influxdb.flux.FluxReactive} client.
+ * Base event triggered by {@link FluxClientReactive} client.
  *
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:58)
  */
 public abstract class AbstractFluxEvent {
 
-    private final FluxOptions options;
+    private final FluxConnectionOptions options;
     private final String fluxQuery;
 
-    AbstractFluxEvent(@Nonnull final FluxOptions options, @Nonnull final String fluxQuery) {
+    AbstractFluxEvent(@Nonnull final FluxConnectionOptions options, @Nonnull final String fluxQuery) {
 
-        Objects.requireNonNull(options, "FluxOptions are required");
+        Objects.requireNonNull(options, "FluxConnectionOptions are required");
         Preconditions.checkNonEmptyString(fluxQuery, "Flux query");
 
         this.options = options;
@@ -26,10 +27,10 @@ public abstract class AbstractFluxEvent {
     }
 
     /**
-     * @return {@link FluxOptions} that was used in query
+     * @return {@link FluxConnectionOptions} that was used in query
      */
     @Nonnull
-    public FluxOptions getOptions() {
+    public FluxConnectionOptions getOptions() {
         return options;
     }
 

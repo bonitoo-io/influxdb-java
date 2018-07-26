@@ -1,7 +1,7 @@
 package org.influxdb.flux;
 
 import org.assertj.core.api.Assertions;
-import org.influxdb.flux.options.FluxOptions;
+import org.influxdb.flux.options.FluxConnectionOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -10,18 +10,18 @@ import org.junit.runner.RunWith;
  * @author Jakub Bednar (bednar@github) (26/06/2018 12:11)
  */
 @RunWith(JUnitPlatform.class)
-class FluxReactiveFactoryTest {
+class FluxClientReactiveFactoryTest {
     
     @Test
     void connect() {
 
-        FluxOptions fluxOptions = FluxOptions.builder()
+        FluxConnectionOptions fluxConnectionOptions = FluxConnectionOptions.builder()
                 .url("http://localhost:8093")
                 .orgID("00")
                 .build();
 
-        FluxReactive fluxReactive = FluxReactiveFactory.connect(fluxOptions);
+        FluxClientReactive fluxClient = FluxClientReactiveFactory.connect(fluxConnectionOptions);
 
-        Assertions.assertThat(fluxReactive).isNotNull();
+        Assertions.assertThat(fluxClient).isNotNull();
     }
 }

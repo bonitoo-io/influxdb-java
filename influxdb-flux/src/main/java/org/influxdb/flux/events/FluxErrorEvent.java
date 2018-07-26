@@ -1,7 +1,7 @@
 package org.influxdb.flux.events;
 
 import org.influxdb.InfluxDBException;
-import org.influxdb.flux.options.FluxOptions;
+import org.influxdb.flux.options.FluxConnectionOptions;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -19,7 +19,7 @@ public class FluxErrorEvent extends AbstractFluxEvent {
 
     private final InfluxDBException exception;
 
-    public FluxErrorEvent(@Nonnull final FluxOptions options,
+    public FluxErrorEvent(@Nonnull final FluxConnectionOptions options,
                           @Nonnull final String fluxQuery,
                           @Nonnull final InfluxDBException exception) {
 

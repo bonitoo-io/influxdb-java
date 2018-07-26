@@ -1,13 +1,13 @@
 package org.influxdb.examples;
 
 import org.influxdb.flux.Flux;
-import org.influxdb.flux.FluxReactive;
+import org.influxdb.flux.FluxClientReactive;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.Record;
 import org.influxdb.flux.mapper.Table;
 import org.influxdb.flux.operators.restriction.Restrictions;
-import org.influxdb.flux.options.FluxOptions;
-import org.influxdb.impl.FluxReactiveImpl;
+import org.influxdb.flux.options.FluxConnectionOptions;
+import org.influxdb.impl.FluxClientReactiveImpl;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -41,13 +41,13 @@ public class FluxQueryExample {
         System.out.println("--------- Flux script results  ---------");
         System.out.println();
 
-        FluxOptions fluxOptions = FluxOptions.builder()
+        FluxConnectionOptions fluxConnectionOptions = FluxConnectionOptions.builder()
                 .url("http://127.0.0.1:8093")
                 .orgID("00")
                 .build();
 
-        FluxReactive fluxReactive = new FluxReactiveImpl(fluxOptions);
-        List<FluxResult> fluxResults = fluxReactive.flux(flux).toList().blockingGet();
+        FluxClientReactive fluxClient = new FluxClientReactiveImpl(fluxConnectionOptions);
+        List<FluxResult> fluxResults = fluxClient.flux(flux).toList().blockingGet();
         for (FluxResult fluxResult : fluxResults) {
 
             for (Table table : fluxResult.getTables())

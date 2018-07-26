@@ -11,7 +11,7 @@ import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.Record;
 import org.influxdb.flux.options.FluxCsvParserOptions;
 import org.influxdb.flux.options.FluxQueryOptions;
-import org.influxdb.impl.AbstractFluxReactiveTest;
+import org.influxdb.impl.AbstractFluxClientReactiveTest;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
@@ -23,18 +23,18 @@ import java.time.Instant;
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:54)
  */
 @RunWith(JUnitPlatform.class)
-class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
+class FluxReactiveFluxClientTest extends AbstractFluxClientReactiveTest {
 
     @Test
     void successFluxResponseEvent() {
 
         fluxServer.enqueue(createResponse());
 
-        TestObserver<FluxSuccessEvent> listener = fluxReactive
+        TestObserver<FluxSuccessEvent> listener = fluxClient
                 .listenEvents(FluxSuccessEvent.class)
                 .test();
 
-        Flowable<FluxResult> results = fluxReactive.flux(Flux.from("flux_database"));
+        Flowable<FluxResult> results = fluxClient.flux(Flux.from("flux_database"));
         results
                 .take(1)
                 .test()
@@ -55,11 +55,11 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
         String influxDBError = "must pass organization name or ID as string in orgName or orgID parameter";
         fluxServer.enqueue(createErrorResponse(influxDBError));
 
-        TestObserver<FluxErrorEvent> listener = fluxReactive
+        TestObserver<FluxErrorEvent> listener = fluxClient
                 .listenEvents(FluxErrorEvent.class)
                 .test();
 
-        Flowable<FluxResult> results = fluxReactive.flux(Flux.from("flux_database"));
+        Flowable<FluxResult> results = fluxClient.flux(Flux.from("flux_database"));
         results
                 .take(1)
                 .test()
@@ -84,7 +84,7 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
 
         fluxServer.enqueue(createResponse());
 
-        Flowable<FluxResult> results = fluxReactive.flux(Flux.from("flux_database"));
+        Flowable<FluxResult> results = fluxClient.flux(Flux.from("flux_database"));
         results
                 .take(1)
                 .test()
@@ -101,7 +101,7 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
 
         fluxServer.enqueue(createMultiTableResponse());
 
-        Flowable<FluxResult> results = fluxReactive.flux(Flux.from("flux_database"));
+        Flowable<FluxResult> results = fluxClient.flux(Flux.from("flux_database"));
         results
                 .take(1)
                 .test()
@@ -164,7 +164,7 @@ class FluxReactiveFluxTest extends AbstractFluxReactiveTest {
                 .parserOptions(parserOptions)
                 .build();
 
-        Flowable<FluxResult> results = fluxReactive.flux(Flux.from("flux_database"), queryOptions);
+        Flowable<FluxResult> results = fluxClient.flux(Flux.from("flux_database"), queryOptions);
         results
                 .take(1)
                 .test()

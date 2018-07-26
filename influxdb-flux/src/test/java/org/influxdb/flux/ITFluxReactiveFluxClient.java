@@ -10,7 +10,7 @@ import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.Record;
 import org.influxdb.flux.mapper.Table;
 import org.influxdb.flux.operators.restriction.Restrictions;
-import org.influxdb.impl.AbstractITFluxReactive;
+import org.influxdb.impl.AbstractITFluxClientReactive;
 import org.influxdb.reactive.events.WriteSuccessEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.LongAdder;
  */
 @DisabledIfSystemProperty(named = "FLUX_DISABLE", matches = "true")
 @RunWith(JUnitPlatform.class)
-class ITFluxReactiveFlux extends AbstractITFluxReactive {
+class ITFluxReactiveFluxClient extends AbstractITFluxClientReactive {
 
     @BeforeEach
     void prepareDate() {
@@ -97,7 +97,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                 .filter(restriction)
                 .sum();
 
-        Flowable<FluxResult> results = fluxReactive.flux(flux);
+        Flowable<FluxResult> results = fluxClient.flux(flux);
 
         results
                 .test()
@@ -184,7 +184,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                 .filter(restriction)
                 .window(10L, ChronoUnit.SECONDS);
 
-        Flowable<FluxResult> results = fluxReactive.flux(flux);
+        Flowable<FluxResult> results = fluxClient.flux(flux);
 
         results
                 .test()
@@ -277,7 +277,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                 .window(10L, ChronoUnit.SECONDS)
                 .groupBy("region");
 
-        Flowable<FluxResult> results = fluxReactive.flux(flux);
+        Flowable<FluxResult> results = fluxClient.flux(flux);
 
         results
                 .test()
@@ -351,7 +351,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
                 .window(10L, ChronoUnit.SECONDS)
                 .groupBy("region");
 
-        Flowable<Memory> results = fluxReactive.flux(flux, Memory.class);
+        Flowable<Memory> results = fluxClient.flux(flux, Memory.class);
 
 
         results
@@ -402,7 +402,7 @@ class ITFluxReactiveFlux extends AbstractITFluxReactive {
     @Test
     void ping() {
 
-        fluxReactive
+        fluxClient
                 .ping()
                 .test()
                 .assertValue(true);

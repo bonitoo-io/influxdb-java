@@ -3,7 +3,7 @@ package org.influxdb.impl;
 import org.influxdb.InfluxDBOptions;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
-import org.influxdb.flux.options.FluxOptions;
+import org.influxdb.flux.options.FluxConnectionOptions;
 import org.influxdb.reactive.options.BatchOptionsReactive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,13 +18,13 @@ import java.util.logging.Logger;
 /**
  * @author Jakub Bednar (bednar@github) (28/06/2018 08:20)
  */
-public abstract class AbstractITFluxReactive {
+public abstract class AbstractITFluxClientReactive {
 
-    private static final Logger LOG = Logger.getLogger(AbstractITFluxReactive.class.getName());
+    private static final Logger LOG = Logger.getLogger(AbstractITFluxClientReactive.class.getName());
 
     protected static final String DATABASE_NAME = "flux_database";
 
-    protected FluxReactiveImpl fluxReactive;
+    protected FluxClientReactiveImpl fluxClient;
     protected InfluxDBReactiveImpl influxDBReactive;
 
     @BeforeEach
@@ -35,12 +35,12 @@ public abstract class AbstractITFluxReactive {
         String fluxURL = "http://" + fluxIP + ":" + fluxPort;
         LOG.log(Level.FINEST, "Flux URL: {0}", fluxURL);
 
-        FluxOptions fluxOptions = FluxOptions.builder()
+        FluxConnectionOptions fluxConnectionOptions = FluxConnectionOptions.builder()
                 .url(fluxURL)
                 .orgID("00")
                 .build();
 
-        fluxReactive = new FluxReactiveImpl(fluxOptions);
+        fluxClient = new FluxClientReactiveImpl(fluxConnectionOptions);
 
         String influxdbIP = System.getenv().getOrDefault("INFLUXDB_IP", "127.0.0.1");
         String influxdbPort = System.getenv().getOrDefault("INFLUXDB_PORT_API", "8086");
@@ -65,7 +65,7 @@ public abstract class AbstractITFluxReactive {
 
         simpleQuery("DROP DATABASE " + DATABASE_NAME);
 
-        fluxReactive.close();
+        fluxClient.close();
         influxDBReactive.close();
     }
 

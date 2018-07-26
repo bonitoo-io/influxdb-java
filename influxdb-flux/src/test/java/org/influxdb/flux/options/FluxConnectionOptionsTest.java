@@ -10,26 +10,26 @@ import org.junit.runner.RunWith;
  * @author Jakub Bednar (bednar@github) (26/06/2018 09:09)
  */
 @RunWith(JUnitPlatform.class)
-class FluxOptionsTest {
+class FluxConnectionOptionsTest {
 
     @Test
     void value() {
-        FluxOptions fluxOptions = FluxOptions.builder()
+        FluxConnectionOptions fluxConnectionOptions = FluxConnectionOptions.builder()
                 .url("http://localhost:8093")
                 .orgID("00")
                 .build();
 
-        Assertions.assertThat(fluxOptions.getUrl()).isEqualTo("http://localhost:8093");
-        Assertions.assertThat(fluxOptions.getOrgID()).isEqualTo("00");
-        Assertions.assertThat(fluxOptions.getOkHttpClient()).isNotNull();
+        Assertions.assertThat(fluxConnectionOptions.getUrl()).isEqualTo("http://localhost:8093");
+        Assertions.assertThat(fluxConnectionOptions.getOrgID()).isEqualTo("00");
+        Assertions.assertThat(fluxConnectionOptions.getOkHttpClient()).isNotNull();
     }
 
     @Test
     void urlRequired() {
 
-        FluxOptions.Builder fluxOptions = FluxOptions.builder().orgID("00");
+        FluxConnectionOptions.Builder fluxConnectionOptions = FluxConnectionOptions.builder().orgID("00");
 
-        Assertions.assertThatThrownBy(fluxOptions::build)
+        Assertions.assertThatThrownBy(fluxConnectionOptions::build)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("The url to connect to Flux has to be defined.");
     }
@@ -37,9 +37,9 @@ class FluxOptionsTest {
     @Test
     void orgIdRequired() {
 
-        FluxOptions.Builder fluxOptions = FluxOptions.builder().url("http://localhost:8093");
+        FluxConnectionOptions.Builder fluxConnectionOptions = FluxConnectionOptions.builder().url("http://localhost:8093");
 
-        Assertions.assertThatThrownBy(fluxOptions::build)
+        Assertions.assertThatThrownBy(fluxConnectionOptions::build)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("The organization id required by Flux has to be defined.");
     }
@@ -49,12 +49,12 @@ class FluxOptionsTest {
 
         OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
 
-        FluxOptions fluxOptions = FluxOptions.builder()
+        FluxConnectionOptions fluxConnectionOptions = FluxConnectionOptions.builder()
                 .url("http://localhost:8093")
                 .orgID("00")
                 .okHttpClient(okHttpClient)
                 .build();
 
-        Assertions.assertThat(fluxOptions.getOkHttpClient()).isEqualTo(okHttpClient);
+        Assertions.assertThat(fluxConnectionOptions.getOkHttpClient()).isEqualTo(okHttpClient);
     }
 }
