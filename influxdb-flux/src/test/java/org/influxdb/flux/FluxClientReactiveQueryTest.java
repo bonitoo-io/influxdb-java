@@ -11,6 +11,7 @@ import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.mapper.Record;
 import org.influxdb.flux.options.FluxCsvParserOptions;
 import org.influxdb.flux.options.FluxOptions;
+import org.influxdb.flux.options.query.TaskOption;
 import org.influxdb.impl.AbstractFluxClientReactiveTest;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.runner.JUnitPlatform;
@@ -18,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:54)
@@ -43,6 +45,42 @@ class FluxClientReactiveQueryTest extends AbstractFluxClientReactiveTest {
         listener.assertValueCount(1).assertValue(event -> {
 
             Assertions.assertThat(event.getFluxQuery()).isEqualTo("from(db:\"flux_database\")");
+            Assertions.assertThat(event.getOptions()).isNotNull();
+
+            return true;
+        });
+    }
+
+    @Test
+    void fluxQueryWithOptions() {
+
+        fluxServer.enqueue(createResponse());
+
+        TestObserver<FluxSuccessEvent> listener = fluxClient
+                .listenEvents(FluxSuccessEvent.class)
+                .test();
+
+        TaskOption task = TaskOption.builder("foo")
+                .every(1L, ChronoUnit.HOURS)
+                .delay(10L, ChronoUnit.MINUTES)
+                .cron("0 2 * * *")
+                .retry(5)
+                .build();
+
+        FluxOptions options = FluxOptions.builder().addOption(task).build();
+
+        Flowable<FluxResult> results = fluxClient.flux(Flux.from("flux_database"), options);
+        results
+                .take(1)
+                .test()
+                .assertValueCount(1);
+
+        listener.assertValueCount(1).assertValue(event -> {
+
+            String expected = "option task = {name: \"foo\", every: 1h, delay: 10m, cron: \"0 2 * * *\", retry: 5} "
+                    + "from(db:\"flux_database\")";
+
+            Assertions.assertThat(event.getFluxQuery()).isEqualToIgnoringWhitespace(expected);
             Assertions.assertThat(event.getOptions()).isNotNull();
 
             return true;

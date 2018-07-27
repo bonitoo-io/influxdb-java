@@ -1,8 +1,12 @@
 package org.influxdb.flux.options;
 
+import org.influxdb.flux.options.query.AbstractOption;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -20,12 +24,14 @@ public final class FluxOptions {
     public static final FluxOptions DEFAULTS = FluxOptions.builder().build();
 
     private final FluxCsvParserOptions parserOptions;
+    private final List<AbstractOption> queryOptions = new ArrayList<>();
 
     private FluxOptions(@Nonnull final Builder builder) {
 
         Objects.requireNonNull(builder, "FluxOptions.Builder is required");
 
         this.parserOptions = builder.parserOptions;
+        this.queryOptions.addAll(builder.variables);
     }
 
     /**
@@ -35,6 +41,15 @@ public final class FluxOptions {
     @Nonnull
     public FluxCsvParserOptions getParserOptions() {
         return parserOptions;
+    }
+
+    /**
+     * @return the Flux query options that define variables
+     * @see Builder#addOption(AbstractOption)
+     */
+    @Nonnull
+    public List<AbstractOption> getQueryOptions() {
+        return queryOptions;
     }
 
     /**
@@ -57,6 +72,7 @@ public final class FluxOptions {
     public static class Builder {
 
         private FluxCsvParserOptions parserOptions = FluxCsvParserOptions.DEFAULTS;
+        private List<AbstractOption> variables = new ArrayList<>();
 
         /**
          * Set the CSV parser options.
@@ -74,6 +90,25 @@ public final class FluxOptions {
 
             return this;
         }
+
+        /**
+         * Add option that define variables of Flux query.
+         *
+         * @param option option that define variables of Flux query
+         * @return {@code this}
+         * @see org.influxdb.flux.options.query.NowOption
+         * @see org.influxdb.flux.options.query.TaskOption
+         */
+        @Nonnull
+        public <O extends AbstractOption> FluxOptions.Builder addOption(@Nonnull final O option) {
+
+            Objects.requireNonNull(parserOptions, "FluxCsvParserOptions is required");
+
+            this.variables.add(option);
+
+            return this;
+        }
+
 
         /**
          * Build an instance of FluxOptions.

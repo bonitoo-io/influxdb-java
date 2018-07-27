@@ -227,7 +227,7 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
             // Parameters
             //
             String orgID = this.fluxConnectionOptions.getOrgID();
-            String query = flux.print(new FluxChain().addParameters(properties));
+            String query = flux.print(new FluxChain().addParameters(properties).addOptions(options.getQueryOptions()));
 
             return fluxService
                     .query(query, orgID)

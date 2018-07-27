@@ -11,7 +11,7 @@ import java.util.StringJoiner;
  * @since 3.0.0
  */
 @ThreadSafe
-abstract class AbstractOption {
+public abstract class AbstractOption {
 
     private final String name;
     protected String value;

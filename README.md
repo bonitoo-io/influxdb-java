@@ -651,17 +651,26 @@ The Flux query can be configured by `FluxOptions`:
 
 - `parserOptions` - the CSV parser options
     - `valueDestinations` - the column names of the record where result will be placed (see [map function](#map))
+- `queryOptions` - the options specify a context in which a Flux query is to be run. Currently supported options are `NowOption`, `TaskOption` and `CustomOption`.
     
 ```java
 FluxCsvParserOptions parserOptions = FluxCsvParserOptions.builder()
     .valueDestinations("value1", "_value2", "value_str")
     .build();
 
-FluxOptions queryOptions = FluxOptions.builder()
-    .parserOptions(parserOptions)
+TaskOption task = TaskOption.builder("foo")
+    .every(1L, ChronoUnit.HOURS)
+    .delay(10L, ChronoUnit.MINUTES)
+    .cron("0 2 * * *")
+    .retry(5)
     .build();
 
-Flowable<FluxResult> results = fluxClient.flux(Flux.from("telegraf"), queryOptions);
+FluxOptions options = FluxOptions.builder()
+    .parserOptions(parserOptions)
+    .addOption(task)
+    .build();
+
+Flowable<FluxResult> results = fluxClient.flux(Flux.from("telegraf"), options);
 ```
 
 ### Events
