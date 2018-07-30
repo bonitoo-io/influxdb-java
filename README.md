@@ -1419,6 +1419,7 @@ Starting with version 3.0 is influxdb-java split into following modules:
 * influxdb-core - core client library backward compatible with 2.X (artifactId is `influxdb-java`)
 * influxdb-reactive - reactive client library based on RxJava
 * influxdb-flux - support for the Flux - Data Scripting Language
+* influxdb-flux-reactive - support for the Flux by reactive way
 * influxdb-jmx - jmx monitoring of client performance, connection pool, number of calls
 
 You can also add dependency `influxdb-java` to your project using BOM  "Bill Of Materials".     

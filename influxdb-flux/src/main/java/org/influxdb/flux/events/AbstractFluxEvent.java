@@ -1,6 +1,5 @@
 package org.influxdb.flux.events;
 
-import org.influxdb.flux.FluxClientReactive;
 import org.influxdb.flux.options.FluxConnectionOptions;
 import org.influxdb.impl.Preconditions;
 
@@ -8,7 +7,7 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
- * Base event triggered by {@link FluxClientReactive} client.
+ * Base event triggered by {@code Flux client}.
  *
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:58)
  */

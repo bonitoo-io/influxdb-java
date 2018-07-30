@@ -128,7 +128,7 @@ public final class OperatorProperties {
      * @param value to serialize
      * @return serialized value
      */
-    @Nonnull
+    @Nullable
     public static String serializeValue(@Nonnull final Object value) {
 
         Object serializedValue = value;
