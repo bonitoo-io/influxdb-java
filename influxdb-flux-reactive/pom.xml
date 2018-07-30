@@ -10,7 +10,7 @@
     <version>3.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>influxdb-flux</artifactId>
+  <artifactId>influxdb-flux-reactive</artifactId>
 
   <description>Support for the Flux - Data Scripting Language</description>
 
