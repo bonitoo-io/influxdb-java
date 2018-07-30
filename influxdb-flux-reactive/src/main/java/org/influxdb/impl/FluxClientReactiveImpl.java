@@ -6,7 +6,6 @@ import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import io.reactivex.subjects.PublishSubject;
-import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.BufferedSource;
@@ -18,7 +17,6 @@ import org.influxdb.flux.events.AbstractFluxEvent;
 import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
-import org.influxdb.flux.mapper.FluxResultMapper;
 import org.influxdb.flux.options.FluxConnectionOptions;
 import org.influxdb.flux.options.FluxCsvParserOptions;
 import org.influxdb.flux.options.FluxOptions;
@@ -41,16 +39,9 @@ import java.util.logging.Logger;
 /**
  * @author Jakub Bednar (bednar@github) (26/06/2018 11:59)
  */
-public class FluxClientReactiveImpl implements FluxClientReactive {
+public class FluxClientReactiveImpl extends AbstractFluxClient<FluxServiceReactive> implements FluxClientReactive {
 
     private static final Logger LOG = Logger.getLogger(FluxClientReactiveImpl.class.getName());
-
-    private final FluxResultMapper mapper = new FluxResultMapper();
-
-    private final FluxConnectionOptions fluxConnectionOptions;
-    private final FluxServiceReactive fluxService;
-    private final HttpLoggingInterceptor loggingInterceptor;
-    private final GzipRequestInterceptor gzipRequestInterceptor;
 
     private final PublishSubject<Object> eventPublisher;
 
@@ -62,32 +53,14 @@ public class FluxClientReactiveImpl implements FluxClientReactive {
     FluxClientReactiveImpl(@Nonnull final FluxConnectionOptions fluxConnectionOptions,
                            @Nullable final FluxServiceReactive fluxService) {
 
-        Objects.requireNonNull(fluxConnectionOptions, "FluxConnectionOptions are required");
-
-        this.fluxConnectionOptions = fluxConnectionOptions;
-
-        this.loggingInterceptor = new HttpLoggingInterceptor();
-        this.loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
-        this.gzipRequestInterceptor = new GzipRequestInterceptor();
-
-        if (fluxService != null) {
-            this.fluxService = fluxService;
-        } else {
-
-            OkHttpClient okHttpClient = fluxConnectionOptions.getOkHttpClient()
-                    .addInterceptor(loggingInterceptor)
-                    .addInterceptor(gzipRequestInterceptor)
-                    .build();
-
-            this.fluxService = new Retrofit.Builder()
-                    .baseUrl(fluxConnectionOptions.getUrl())
-                    .client(okHttpClient)
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .build()
-                    .create(FluxServiceReactive.class);
-        }
+        super(fluxConnectionOptions, FluxServiceReactive.class, fluxService);
 
         this.eventPublisher = PublishSubject.create();
+    }
+
+    @Override
+    protected void configure(@Nonnull final Retrofit.Builder serviceBuilder) {
+        serviceBuilder.addCallAdapterFactory(RxJava2CallAdapterFactory.create());
     }
 
     @Override

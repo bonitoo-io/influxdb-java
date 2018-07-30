@@ -678,6 +678,7 @@ The `FluxClientReactive` produces events that allow user to be notified and reac
 
 - `FluxSuccessEvent` - published when arrived the success response from Flux server
 - `FluxErrorEvent` - published when arrived the error response from Flux server
+- `UnhandledErrorEvent` -  published when occurs a unhandled exception
 
 #### Handling success response
 ```java

@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 
 /**
- * The client for the Flux service.
+ * The reactive client for the Flux service.
  *
  * @author Jakub Bednar (bednar@github) (26/06/2018 11:07)
  * @since 3.0.0

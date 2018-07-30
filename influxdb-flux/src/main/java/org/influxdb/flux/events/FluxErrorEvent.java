@@ -12,8 +12,9 @@ import java.util.logging.Logger;
  * The event is published when arrived the error response from Flux server.
  *
  * @author Jakub Bednar (bednar@github) (26/06/2018 15:35)
+ * @since 3.0.0
  */
-public class FluxErrorEvent extends AbstractFluxEvent {
+public class FluxErrorEvent extends AbstractQueryEvent {
 
     private static final Logger LOG = Logger.getLogger(FluxErrorEvent.class.getName());
 

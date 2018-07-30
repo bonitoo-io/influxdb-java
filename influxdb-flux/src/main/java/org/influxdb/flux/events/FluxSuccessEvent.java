@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  * @author Jakub Bednar (bednar@github) (26/06/2018 13:57)
  * @since 3.0.0
  */
-public class FluxSuccessEvent extends AbstractFluxEvent {
+public class FluxSuccessEvent extends AbstractQueryEvent {
 
     private static final Logger LOG = Logger.getLogger(FluxSuccessEvent.class.getName());
 
