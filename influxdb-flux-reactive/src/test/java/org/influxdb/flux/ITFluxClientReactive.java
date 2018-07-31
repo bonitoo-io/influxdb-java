@@ -11,7 +11,6 @@ import org.influxdb.flux.mapper.Record;
 import org.influxdb.flux.mapper.Table;
 import org.influxdb.flux.operators.restriction.Restrictions;
 import org.influxdb.impl.AbstractITFluxClientReactive;
-import org.influxdb.reactive.events.WriteSuccessEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
@@ -22,7 +21,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author Jakub Bednar (bednar@github) (28/06/2018 07:59)
@@ -68,14 +66,13 @@ class ITFluxClientReactive extends AbstractITFluxClientReactive {
                 .time(20, TimeUnit.SECONDS)
                 .build();
 
-        LongAdder successEventCount = new LongAdder();
-        influxDBReactive
-                .listenEvents(WriteSuccessEvent.class)
-                .subscribe(writeSuccessEvent -> successEventCount.add(1));
+        influxDB.write(point1);
+        influxDB.write(point2);
+        influxDB.write(point3);
+        influxDB.write(point4);
+        influxDB.write(point5);
+        influxDB.write(point6);
 
-        influxDBReactive.writePoints(Flowable.just(point1, point2, point3, point4, point5, point6));
-
-        waitToSecondsTo(() -> successEventCount.intValue() != 6);
         waitToFlux();
     }
 

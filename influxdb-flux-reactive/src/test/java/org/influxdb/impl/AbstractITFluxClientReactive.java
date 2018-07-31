@@ -1,17 +1,15 @@
 package org.influxdb.impl;
 
-import org.influxdb.InfluxDBOptions;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.flux.options.FluxConnectionOptions;
-import org.influxdb.reactive.options.BatchOptionsReactive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,7 +23,7 @@ public abstract class AbstractITFluxClientReactive {
     protected static final String DATABASE_NAME = "flux_database";
 
     protected FluxClientReactiveImpl fluxClient;
-    protected InfluxDBReactiveImpl influxDBReactive;
+    protected InfluxDB influxDB;
 
     @BeforeEach
     protected void setUp() {
@@ -47,15 +45,8 @@ public abstract class AbstractITFluxClientReactive {
         String influxURL = "http://" + influxdbIP + ":" + influxdbPort;
         LOG.log(Level.FINEST, "Influx URL: {0}", influxURL);
 
-        InfluxDBOptions options = InfluxDBOptions.builder()
-                .url(influxURL)
-                .username("admin")
-                .password("admin")
-                .database(DATABASE_NAME)
-                .precision(TimeUnit.SECONDS)
-                .build();
-
-        influxDBReactive = new InfluxDBReactiveImpl(options, BatchOptionsReactive.DISABLED);
+        influxDB = InfluxDBFactory.connect(influxURL);
+        influxDB.setDatabase(DATABASE_NAME);
 
         simpleQuery("CREATE DATABASE " + DATABASE_NAME);
     }
@@ -66,17 +57,6 @@ public abstract class AbstractITFluxClientReactive {
         simpleQuery("DROP DATABASE " + DATABASE_NAME);
 
         fluxClient.close();
-        influxDBReactive.close();
-    }
-
-    protected void waitToSecondsTo(@Nonnull final BooleanSupplier supplier) {
-
-        long start = System.currentTimeMillis();
-        while (!supplier.getAsBoolean()) {
-            if (System.currentTimeMillis() - start > 10_000) {
-                throw new RuntimeException("Condition was not success in 10 seconds.");
-            }
-        }
     }
 
     protected void waitToFlux() {
@@ -90,7 +70,7 @@ public abstract class AbstractITFluxClientReactive {
     private void simpleQuery(@Nonnull final String simpleQuery) {
 
         Objects.requireNonNull(simpleQuery, "SimpleQuery is required");
-        QueryResult result = influxDBReactive.query(new Query(simpleQuery, null)).blockingSingle();
+        QueryResult result = influxDB.query(new Query(simpleQuery, DATABASE_NAME));
 
         LOG.log(Level.FINEST, "Simple query: {0} result: {1}", new Object[]{simpleQuery, result});
     }
