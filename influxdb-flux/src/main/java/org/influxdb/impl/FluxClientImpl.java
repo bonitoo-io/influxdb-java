@@ -41,7 +41,7 @@ public class FluxClientImpl extends AbstractFluxClient<FluxService> implements F
 
     private final Map<Class<?>, Set<Consumer>> subscribers = new ConcurrentHashMap<>();
 
-    FluxClientImpl(@Nonnull final FluxConnectionOptions options) {
+    public FluxClientImpl(@Nonnull final FluxConnectionOptions options) {
         super(options, FluxService.class, null);
     }
 
