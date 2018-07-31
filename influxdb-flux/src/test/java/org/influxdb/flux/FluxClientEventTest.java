@@ -79,8 +79,9 @@ class FluxClientEventTest extends AbstractFluxClientTest {
 
             Assertions.assertThat(event).isNotNull();
             Assertions.assertThat(event.getThrowable())
-                    .isInstanceOf(FluxResultMapperException.class)
-                    .hasMessage("Unable to parse CSV response. Table definition was not found. Row:0");
+                    .isInstanceOf(FluxException.class)
+                    .hasCauseInstanceOf(FluxResultMapperException.class)
+                    .hasMessage("org.influxdb.flux.mapper.FluxResultMapperException: Unable to parse CSV response. Table definition was not found. Row:0");
 
             countDownLatch.countDown();
         });

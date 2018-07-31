@@ -1,6 +1,6 @@
 package org.influxdb.flux.events;
 
-import org.influxdb.InfluxDBException;
+import org.influxdb.flux.FluxException;
 import org.influxdb.flux.options.FluxConnectionOptions;
 
 import javax.annotation.Nonnull;
@@ -18,15 +18,15 @@ public class FluxErrorEvent extends AbstractQueryEvent {
 
     private static final Logger LOG = Logger.getLogger(FluxErrorEvent.class.getName());
 
-    private final InfluxDBException exception;
+    private final FluxException exception;
 
     public FluxErrorEvent(@Nonnull final FluxConnectionOptions options,
                           @Nonnull final String fluxQuery,
-                          @Nonnull final InfluxDBException exception) {
+                          @Nonnull final FluxException exception) {
 
         super(options, fluxQuery);
 
-        Objects.requireNonNull(exception, "InfluxDBException is required");
+        Objects.requireNonNull(exception, "FluxException is required");
 
         this.exception = exception;
     }
@@ -35,7 +35,7 @@ public class FluxErrorEvent extends AbstractQueryEvent {
      * @return the exception that was throw
      */
     @Nonnull
-    public InfluxDBException getException() {
+    public FluxException getException() {
         return exception;
     }
 

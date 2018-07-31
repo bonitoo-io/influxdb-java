@@ -4,7 +4,6 @@ import io.reactivex.Flowable;
 import io.reactivex.observers.TestObserver;
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
-import org.influxdb.InfluxDBException;
 import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.mapper.FluxResult;
@@ -101,7 +100,7 @@ class FluxClientReactiveQueryTest extends AbstractFluxClientReactiveTest {
         results
                 .take(1)
                 .test()
-                .assertError(InfluxDBException.class)
+                .assertError(FluxException.class)
                 .assertErrorMessage(influxDBError);
 
         listener
@@ -110,7 +109,7 @@ class FluxClientReactiveQueryTest extends AbstractFluxClientReactiveTest {
 
                     Assertions.assertThat(event.getFluxQuery()).isEqualTo("from(db:\"flux_database\")");
                     Assertions.assertThat(event.getOptions()).isNotNull();
-                    Assertions.assertThat(event.getException()).isInstanceOf(InfluxDBException.class);
+                    Assertions.assertThat(event.getException()).isInstanceOf(FluxException.class);
                     Assertions.assertThat(event.getException()).hasMessage(influxDBError);
 
                     return true;

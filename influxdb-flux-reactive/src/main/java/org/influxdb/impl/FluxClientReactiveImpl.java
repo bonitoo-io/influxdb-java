@@ -9,9 +9,9 @@ import io.reactivex.subjects.PublishSubject;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.BufferedSource;
-import org.influxdb.InfluxDBException;
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxClientReactive;
+import org.influxdb.flux.FluxException;
 import org.influxdb.flux.events.AbstractFluxEvent;
 import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
@@ -209,12 +209,11 @@ public class FluxClientReactiveImpl extends AbstractFluxClient<FluxServiceReacti
                             // error response
                             throwable -> (observer -> {
 
-                                InfluxDBException influxDBException = InfluxDBException
-                                        .buildExceptionForThrowable(throwable);
+                                FluxException fluxException = FluxException.fromCause(throwable);
 
                                 // publish event
-                                publishEvent(new FluxErrorEvent(fluxConnectionOptions, query, influxDBException));
-                                observer.onError(influxDBException);
+                                publishEvent(new FluxErrorEvent(fluxConnectionOptions, query, fluxException));
+                                observer.onError(fluxException);
                             }),
                             // end of response
                             Observable::empty)

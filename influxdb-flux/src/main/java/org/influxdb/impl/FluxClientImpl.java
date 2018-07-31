@@ -3,9 +3,9 @@ package org.influxdb.impl;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.BufferedSource;
-import org.influxdb.InfluxDBException;
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxClient;
+import org.influxdb.flux.FluxException;
 import org.influxdb.flux.events.AbstractFluxEvent;
 import org.influxdb.flux.events.FluxErrorEvent;
 import org.influxdb.flux.events.FluxSuccessEvent;
@@ -339,13 +339,13 @@ public class FluxClientImpl extends AbstractFluxClient<FluxService> implements F
                     return fluxResult;
                 } else {
 
-                    String error = response.headers().get("X-Influx-Error");
+                    String error = FluxException.getErrorMessage(response);
 
-                    InfluxDBException exception;
+                    FluxException exception;
                     if (error != null) {
-                        exception = InfluxDBException.buildExceptionFromErrorMessage(error);
-                    }          else {
-                        exception = new InfluxDBException("Unsuccessful request " + request);
+                        exception = new FluxException(error);
+                    } else {
+                        exception = new FluxException("Unsuccessful request " + request);
                     }
 
                     publish(new FluxErrorEvent(fluxConnectionOptions, query, exception));
@@ -353,7 +353,7 @@ public class FluxClientImpl extends AbstractFluxClient<FluxService> implements F
 
             } catch (Exception e) {
 
-                publish(new UnhandledErrorEvent(e));
+                publish(new UnhandledErrorEvent(FluxException.fromCause(e)));
             }
         }
 
