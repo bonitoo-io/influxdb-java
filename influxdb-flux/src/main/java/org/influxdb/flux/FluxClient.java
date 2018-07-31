@@ -220,8 +220,8 @@ public interface FluxClient {
      * @param <T>       type of event to listen
      * @param listener  listener to consume events
      */
-    <T extends AbstractFluxEvent> void listenEvents(@Nonnull final Class<T> eventType,
-                                                    @Nonnull final Consumer<T> listener);
+    <T extends AbstractFluxEvent> void subscribeEvents(@Nonnull final Class<T> eventType,
+                                                       @Nonnull final Consumer<T> listener);
 
     /**
      * Listen the events produced by {@link FluxClient}.

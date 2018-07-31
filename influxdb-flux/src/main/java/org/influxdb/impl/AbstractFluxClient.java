@@ -2,12 +2,16 @@ package org.influxdb.impl;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.influxdb.flux.Flux;
+import org.influxdb.flux.FluxChain;
 import org.influxdb.flux.mapper.FluxResultMapper;
 import org.influxdb.flux.options.FluxConnectionOptions;
+import org.influxdb.flux.options.FluxOptions;
 import retrofit2.Retrofit;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -61,5 +65,17 @@ public abstract class AbstractFluxClient<T> {
      * @param serviceBuilder builder
      */
     protected void configure(@Nonnull final Retrofit.Builder serviceBuilder) {
+    }
+
+    @Nonnull
+    protected String toFluxString(@Nonnull final Flux flux,
+                                  @Nonnull final Map<String, Object> properties,
+                                  @Nonnull final FluxOptions options) {
+
+        Objects.requireNonNull(flux, "Flux query is required");
+        Objects.requireNonNull(properties, "Properties are required");
+        Objects.requireNonNull(options, "FluxOptions are required");
+
+        return flux.print(new FluxChain().addParameters(properties).addOptions(options.getQueryOptions()));
     }
 }

@@ -1,15 +1,26 @@
 package org.influxdb.impl;
 
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
+import okio.BufferedSource;
+import org.influxdb.InfluxDBException;
 import org.influxdb.flux.Flux;
 import org.influxdb.flux.FluxClient;
 import org.influxdb.flux.events.AbstractFluxEvent;
+import org.influxdb.flux.events.FluxErrorEvent;
+import org.influxdb.flux.events.FluxSuccessEvent;
 import org.influxdb.flux.events.UnhandledErrorEvent;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.flux.options.FluxConnectionOptions;
 import org.influxdb.flux.options.FluxOptions;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.EOFException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,8 +226,14 @@ public class FluxClientImpl extends AbstractFluxClient<FluxService> implements F
         Objects.requireNonNull(properties, "Properties are required");
         Objects.requireNonNull(options, "FluxOptions are required");
 
-        return flux(query, properties, options, false, result -> {
+        FluxResult fluxResult = flux(query, properties, options, false, result -> {
         });
+
+        if (fluxResult == null) {
+            throw new IllegalStateException("Result is null");
+        }
+
+        return fluxResult;
     }
 
     @Override
@@ -233,24 +250,119 @@ public class FluxClientImpl extends AbstractFluxClient<FluxService> implements F
         flux(query, properties, options, true, callback);
     }
 
-    private FluxResult flux(@Nonnull final Flux query,
+    @Nullable
+    private FluxResult flux(@Nonnull final Flux flux,
                             @Nonnull final Map<String, Object> properties,
                             @Nonnull final FluxOptions options,
                             @Nonnull final Boolean async,
                             @Nonnull final Consumer<FluxResult> callback) {
 
-        Objects.requireNonNull(query, "Flux is required");
+        Objects.requireNonNull(flux, "Flux is required");
         Objects.requireNonNull(properties, "Properties are required");
         Objects.requireNonNull(options, "FluxOptions are required");
         Objects.requireNonNull(async, "Async configuration is required");
         Objects.requireNonNull(callback, "Callback consumer is required");
 
-        throw new IllegalStateException("Not implemented");
+        //TODO test chunked
+
+        String orgID = this.fluxConnectionOptions.getOrgID();
+        String query = toFluxString(flux, properties, options);
+
+        Call<ResponseBody> request = fluxService.query(query, orgID);
+        if (async) {
+            request.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(@Nonnull final Call<ResponseBody> call,
+                                       @Nonnull final Response<ResponseBody> response) {
+
+                    ResponseBody body = response.body();
+                    if (body == null) {
+                        return;
+                    }
+                    try {
+                        BufferedSource source = body.source();
+
+                        //
+                        // Source has data => parse
+                        //
+                        while (!source.exhausted()) {
+
+                            FluxResult fluxResult = mapper.toFluxResult(source, options.getParserOptions());
+                            if (fluxResult != null) {
+
+                                callback.accept(fluxResult);
+                            }
+                        }
+
+                        publish(new FluxSuccessEvent(fluxConnectionOptions, query));
+
+                    } catch (IOException e) {
+
+                        //
+                        // Socket closed by remote server or end of data
+                        //
+                        if (e.getMessage().equals("Socket closed") || e instanceof EOFException) {
+                            LOG.log(Level.FINEST, "Socket closed by remote server or end of data", e);
+                        } else {
+                            publish(new UnhandledErrorEvent(e));
+                        }
+                    }
+
+                    publish(new FluxSuccessEvent(fluxConnectionOptions, query));
+
+                    body.close();
+                }
+
+                @Override
+                public void onFailure(@Nonnull final Call<ResponseBody> call,
+                                      @Nonnull final Throwable t) {
+
+                    publish(new UnhandledErrorEvent(t));
+                }
+            });
+        } else {
+            try {
+
+                Response<ResponseBody> response = request.execute();
+                if (response.isSuccessful()) {
+
+                    ResponseBody body = response.body();
+                    if (body == null) {
+                        return FluxResult.empty();
+                    }
+
+                    BufferedSource source = body.source();
+                    FluxResult fluxResult = mapper.toFluxResult(source, options.getParserOptions());
+
+                    publish(new FluxSuccessEvent(fluxConnectionOptions, query));
+
+                    return fluxResult;
+                } else {
+
+                    String error = response.headers().get("X-Influx-Error");
+
+                    InfluxDBException exception;
+                    if (error != null) {
+                        exception = InfluxDBException.buildExceptionFromErrorMessage(error);
+                    }          else {
+                        exception = new InfluxDBException("Unsuccessful request " + request);
+                    }
+
+                    publish(new FluxErrorEvent(fluxConnectionOptions, query, exception));
+                }
+
+            } catch (Exception e) {
+
+                publish(new UnhandledErrorEvent(e));
+            }
+        }
+
+        return FluxResult.empty();
     }
 
     @Override
-    public <T extends AbstractFluxEvent> void listenEvents(@Nonnull final Class<T> eventType,
-                                                           @Nonnull final Consumer<T> listener) {
+    public <T extends AbstractFluxEvent> void subscribeEvents(@Nonnull final Class<T> eventType,
+                                                              @Nonnull final Consumer<T> listener) {
 
         Objects.requireNonNull(eventType, "Event type is required");
         Objects.requireNonNull(listener, "Consumer is required");

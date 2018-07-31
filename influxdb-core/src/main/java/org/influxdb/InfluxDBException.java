@@ -145,7 +145,7 @@ public class InfluxDBException extends RuntimeException {
     }
   }
 
-  private static InfluxDBException buildExceptionFromErrorMessage(final String errorMessage) {
+  public static InfluxDBException buildExceptionFromErrorMessage(final String errorMessage) {
     if (errorMessage.startsWith(PARTIAL_WRITE)) {
       return new PartialWriteException(errorMessage);
     }

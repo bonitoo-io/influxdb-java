@@ -353,7 +353,6 @@ class ITFluxClientReactive extends AbstractITFluxClientReactive {
 
         Flowable<Memory> results = fluxClient.flux(flux, Memory.class);
 
-
         results
                 .test()
                 .assertValueCount(4)

@@ -48,7 +48,7 @@ public abstract class AbstractFluxClientReactiveTest {
 
         return new MockResponse()
                 .setResponseCode(500)
-                .addHeader("X-Influxdb-Error", influxDBError)
+                .addHeader("X-Influx-Error", influxDBError)
                 .setBody(body);
     }
 }

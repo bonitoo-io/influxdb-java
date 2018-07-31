@@ -1,6 +1,7 @@
 package org.influxdb.impl;
 
 import okhttp3.ResponseBody;
+import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -18,8 +19,8 @@ public interface FluxService {
     @Streaming
     @POST("/v1/query")
     @Nonnull
-    ResponseBody query(@Query(value = InfluxDBService.Q, encoded = true) String query,
-                                   @Query(value = "orgID", encoded = true) String orgID);
+    Call<ResponseBody> query(@Query(value = InfluxDBService.Q, encoded = true) String query,
+                             @Query(value = "orgID", encoded = true) String orgID);
 
     @GET("/ping")
     Response<ResponseBody> ping();

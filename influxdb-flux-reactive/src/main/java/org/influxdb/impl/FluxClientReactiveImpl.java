@@ -11,7 +11,6 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import okio.BufferedSource;
 import org.influxdb.InfluxDBException;
 import org.influxdb.flux.Flux;
-import org.influxdb.flux.FluxChain;
 import org.influxdb.flux.FluxClientReactive;
 import org.influxdb.flux.events.AbstractFluxEvent;
 import org.influxdb.flux.events.FluxErrorEvent;
@@ -200,7 +199,7 @@ public class FluxClientReactiveImpl extends AbstractFluxClient<FluxServiceReacti
             // Parameters
             //
             String orgID = this.fluxConnectionOptions.getOrgID();
-            String query = flux.print(new FluxChain().addParameters(properties).addOptions(options.getQueryOptions()));
+            String query = toFluxString(flux, properties, options);
 
             return fluxService
                     .query(query, orgID)
