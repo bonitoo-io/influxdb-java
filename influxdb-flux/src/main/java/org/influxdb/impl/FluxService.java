@@ -2,7 +2,6 @@ package org.influxdb.impl;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Response;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
@@ -23,5 +22,5 @@ public interface FluxService {
                              @Query(value = "orgID", encoded = true) String orgID);
 
     @GET("/ping")
-    Response<ResponseBody> ping();
+    Call<ResponseBody> ping();
 }

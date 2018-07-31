@@ -412,7 +412,7 @@ public class FluxClientImpl extends AbstractFluxClient<FluxService> implements F
     public Boolean ping() {
 
         try {
-            return fluxService.ping().isSuccessful();
+            return fluxService.ping().execute().isSuccessful();
         } catch (Exception e) {
             publish(new UnhandledErrorEvent(e));
         }
