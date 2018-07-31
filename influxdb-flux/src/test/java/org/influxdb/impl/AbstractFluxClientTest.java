@@ -2,7 +2,6 @@ package org.influxdb.impl;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.assertj.core.api.Assertions;
 import org.influxdb.flux.options.FluxConnectionOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,17 +9,14 @@ import org.junit.jupiter.api.BeforeEach;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jakub Bednar (bednar@github) (31/07/2018 07:06)
  */
-public abstract class AbstractFluxClientTest {
+public abstract class AbstractFluxClientTest extends AbstractTest {
 
     protected MockWebServer fluxServer;
     protected FluxClientImpl fluxClient;
-    protected CountDownLatch countDownLatch;
 
     @BeforeEach
     protected void setUp() {
@@ -38,7 +34,6 @@ public abstract class AbstractFluxClientTest {
                 .build();
 
         fluxClient = new FluxClientImpl(fluxConnectionOptions);
-        countDownLatch = new CountDownLatch(1);
     }
 
     @AfterEach
@@ -80,13 +75,5 @@ public abstract class AbstractFluxClientTest {
                 .setResponseCode(500)
                 .addHeader("X-Influx-Error", influxDBError)
                 .setBody(body);
-    }
-
-    protected void waitToCallback() {
-        try {
-            Assertions.assertThat(countDownLatch.await(10, TimeUnit.SECONDS)).isTrue();
-        } catch (InterruptedException e) {
-            Assertions.fail("Unexpected exception", e);
-        }
     }
 }

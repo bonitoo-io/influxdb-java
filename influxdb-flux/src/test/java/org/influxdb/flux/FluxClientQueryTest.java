@@ -2,8 +2,6 @@ package org.influxdb.flux;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Condition;
-import org.influxdb.annotation.Column;
-import org.influxdb.annotation.Measurement;
 import org.influxdb.flux.mapper.FluxResult;
 import org.influxdb.impl.AbstractFluxClientTest;
 import org.junit.jupiter.api.Test;
@@ -128,19 +126,4 @@ class FluxClientQueryTest extends AbstractFluxClientTest {
         }, null));
     }
 
-    @Measurement(name = "mem")
-    public static class Memory {
-
-        @Column(name = "time")
-        private Instant time;
-
-        @Column(name = "free")
-        private Long free;
-
-        @Column(name = "host", tag = true)
-        private String host;
-
-        @Column(name = "region", tag = true)
-        private String region;
-    }
 }
