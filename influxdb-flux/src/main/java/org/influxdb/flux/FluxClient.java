@@ -13,6 +13,8 @@ import java.util.function.Consumer;
 /**
  * The client for the Flux service.
  *
+ * TODO simple string, documentation - first simple
+ *
  * @author Jakub Bednar (bednar@github) (30/07/2018 10:55)
  * @since 3.0.0
  */

@@ -53,6 +53,8 @@ import java.util.Objects;
  * <br>
  * <a href="https://github.com/influxdata/platform/blob/master/query/docs/SPEC.md">Flux Specification</a>
  *
+ * TODO: Rename, Drop, Keep
+ *
  * <h3>The operators:</h3>
  * <ul>
  * <li>{@link FromFlux}</li>
