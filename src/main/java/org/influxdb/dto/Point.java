@@ -347,7 +347,7 @@ public class Point {
         return sb.toString();
     }
 
-  private void concatenatedTags(final StringBuilder sb) {
+  void concatenatedTags(final StringBuilder sb) {
     for (Entry<String, String> tag : this.tags.entrySet()) {
       sb.append(',');
       escapeKey(sb, tag.getKey());
@@ -357,7 +357,7 @@ public class Point {
     sb.append(' ');
   }
 
-  private void concatenatedFields(final StringBuilder sb) {
+  void concatenatedFields(final StringBuilder sb) {
     for (Entry<String, Object> field : this.fields.entrySet()) {
       Object value = field.getValue();
       if (value == null) {
@@ -415,14 +415,14 @@ public class Point {
     }
   }
 
-  private void formatedTime(final StringBuilder sb) {
+  void formatedTime(final StringBuilder sb) {
     if (this.time == null || this.precision == null) {
       return;
     }
     sb.append(' ').append(TimeUnit.NANOSECONDS.convert(this.time, this.precision));
   }
 
-  private StringBuilder formatedTime(final StringBuilder sb, final TimeUnit precision) {
+  StringBuilder formatedTime(final StringBuilder sb, final TimeUnit precision) {
     if (this.time == null || this.precision == null) {
       return sb;
     }
