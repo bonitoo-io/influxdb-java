@@ -27,7 +27,7 @@ script: ./compile-and-test.sh
 deploy:
   provider: script
   script: "./deploy-snapshot.sh"
-  deploy.skip_cleanup: true
+  skip_cleanup: true
   on:
     repo: bonitoo-io/influxdb-java
     condition: $SNAPSHOT == "Y" && $DEPLOY_SNAPSHOT == "Y"
