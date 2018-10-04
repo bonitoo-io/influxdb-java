@@ -26,7 +26,7 @@ deploy:
   on:
     repo: bonitoo-io/influxdb-java
     condition: $SNAPSHOT == "Y" && $DEPLOY_SNAPSHOT == "Y"
-    branch: master
+    branch: snapshot-tests
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
