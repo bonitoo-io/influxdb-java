@@ -37,7 +37,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Consumer;
 
@@ -488,6 +487,52 @@ public class InfluxDBTest {
 
 		this.influxDB.deleteDatabase(dbName);
 	}
+
+	@Test
+	void writeNumberAdapter() throws Exception {
+
+		System.setProperty(InfluxDB.USE_LONGDECIMAL_JSON_ADAPTER, "true");
+
+		InfluxDB influxDB = TestUtils.connectToInfluxDB();
+
+		String dbName = "write_unittest_" + System.currentTimeMillis();
+		influxDB.setLogLevel(InfluxDB.LogLevel.FULL);
+
+		influxDB.createDatabase(dbName);
+		influxDB.setDatabase(dbName);
+
+		influxDB.write("numbers,atag=a integer_value=1i,float_value=2,string_value=\"abcde\"");
+		influxDB.write("numbers,atag=b integer_value=3i,float_value=4.123,string_value=\"fghi\"");
+
+		Point p = Point
+			.measurement("numbers")
+			.addField("integer_value", 1)
+			.addField("float_value", new Double(1.1d))
+			.addField("string_value", "xyz")
+			.tag("atag", "c").build();
+
+		influxDB.write(p);
+
+		QueryResult result = influxDB.query(new Query("SELECT * FROM numbers", dbName));
+
+		List<List<Object>> vals = result.getResults().get(0).getSeries().get(0).getValues();
+
+		Assertions.assertEquals(2L, vals.get(0).get(2));
+		Assertions.assertEquals(1L, vals.get(0).get(3));
+
+		Assertions.assertEquals(4.123D, vals.get(1).get(2));
+		Assertions.assertEquals(3L, vals.get(1).get(3));
+
+		//Point
+		Assertions.assertEquals(1.1D, vals.get(2).get(2));
+		Assertions.assertEquals(1L, vals.get(2).get(3));
+
+		influxDB.deleteDatabase(dbName);
+
+		System.setProperty(InfluxDB.USE_LONGDECIMAL_JSON_ADAPTER, "false");
+
+	}
+
 
 	@Test
 	public void testWriteRecordsWithPrecision() throws Exception {

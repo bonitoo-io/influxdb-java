@@ -33,6 +33,11 @@ public interface InfluxDB extends AutoCloseable {
    */
   public static final String LOG_LEVEL_PROPERTY = "org.influxdb.InfluxDB.logLevel";
 
+  /**
+   * The system property key to set the Long/Decimal json number deserialization based on decimal point presence.
+   */
+  public static final String USE_LONGDECIMAL_JSON_ADAPTER = "org.influxdb.InfluxDB.useLongDecimalJsonAdaptor";
+
   /** Controls the level of logging of the REST layer. */
   public enum LogLevel {
     /** No logging. */

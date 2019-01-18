@@ -2,6 +2,8 @@ package org.influxdb.impl;
 
 
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.JsonReader;
+import com.squareup.moshi.JsonWriter;
 import com.squareup.moshi.Moshi;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -38,6 +40,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -51,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -165,9 +170,13 @@ public class InfluxDBImpl implements InfluxDB {
       break;
     case JSON:
     default:
-      converterFactory = MoshiConverterFactory.create();
-
-      Moshi moshi = new Moshi.Builder().build();
+      Moshi.Builder moshiBuilder = new Moshi.Builder();
+      boolean useLongDecimalJsonAdaptor = Boolean.valueOf(System.getProperty(USE_LONGDECIMAL_JSON_ADAPTER, "false"));
+      if (useLongDecimalJsonAdaptor) {
+        moshiBuilder.add(customNumberJsonAdapter());
+      }
+      Moshi moshi = moshiBuilder.build();
+      converterFactory = MoshiConverterFactory.create(moshi);
       JsonAdapter<QueryResult> adapter = moshi.adapter(QueryResult.class);
       chunkProccesor = new JSONChunkProccesor(adapter);
       break;
@@ -178,6 +187,48 @@ public class InfluxDBImpl implements InfluxDB {
             .addConverterFactory(converterFactory).build();
     this.influxDBService = this.retrofit.create(InfluxDBService.class);
 
+  }
+
+  /**
+   * Creates the instance of JsonAdapter that deserializes json number
+   * to long or decimal based on decimal point presence.
+   */
+  private JsonAdapter.Factory customNumberJsonAdapter() {
+
+    return new JsonAdapter.Factory() {
+
+      @Override
+      public JsonAdapter<?> create(final Type type, final Set<? extends Annotation> annotations, final Moshi moshi) {
+
+        if (type != Object.class) {
+          return null;
+        }
+
+        final JsonAdapter<Object> delegate = moshi.nextAdapter(this, Object.class, annotations);
+
+        return new JsonAdapter<Object>() {
+          @Override
+          public
+          Object fromJson(final JsonReader reader) throws IOException {
+            if (reader.peek() != JsonReader.Token.NUMBER) {
+              return delegate.fromJson(reader);
+            } else {
+              String val = reader.nextString();
+              if (val.contains(".")) {
+                return new Double(val);
+              } else {
+                return new Long(val);
+              }
+            }
+          }
+
+          @Override
+          public void toJson(final JsonWriter writer, final Object value) {
+            throw new UnsupportedOperationException();
+          }
+        };
+      }
+    };
   }
 
   public InfluxDBImpl(final String url, final String username, final String password,

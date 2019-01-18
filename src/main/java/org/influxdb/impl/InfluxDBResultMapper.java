@@ -353,15 +353,15 @@ public class InfluxDBResultMapper {
   <T> boolean fieldValueForPrimitivesModified(final Class<?> fieldType, final Field field, final T object,
     final Object value) throws IllegalArgumentException, IllegalAccessException {
     if (double.class.isAssignableFrom(fieldType)) {
-      field.setDouble(object, ((Double) value).doubleValue());
+      field.setDouble(object, ((Number) value).doubleValue());
       return true;
     }
     if (long.class.isAssignableFrom(fieldType)) {
-      field.setLong(object, ((Double) value).longValue());
+      field.setLong(object, ((Number) value).longValue());
       return true;
     }
     if (int.class.isAssignableFrom(fieldType)) {
-      field.setInt(object, ((Double) value).intValue());
+      field.setInt(object, ((Number) value).intValue());
       return true;
     }
     if (boolean.class.isAssignableFrom(fieldType)) {
@@ -373,16 +373,17 @@ public class InfluxDBResultMapper {
 
   <T> boolean fieldValueForPrimitiveWrappersModified(final Class<?> fieldType, final Field field, final T object,
     final Object value) throws IllegalArgumentException, IllegalAccessException {
+
     if (Double.class.isAssignableFrom(fieldType)) {
-      field.set(object, value);
+      field.set(object,  Double.valueOf(((Number) value).doubleValue()));
       return true;
     }
     if (Long.class.isAssignableFrom(fieldType)) {
-      field.set(object, Long.valueOf(((Double) value).longValue()));
+      field.set(object, Long.valueOf(((Number) value).longValue()));
       return true;
     }
     if (Integer.class.isAssignableFrom(fieldType)) {
-      field.set(object, Integer.valueOf(((Double) value).intValue()));
+      field.set(object, Integer.valueOf(((Number) value).intValue()));
       return true;
     }
     if (Boolean.class.isAssignableFrom(fieldType)) {
